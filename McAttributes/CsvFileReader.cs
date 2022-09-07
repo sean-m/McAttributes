@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.VisualBasic.FileIO;
 
 namespace McAttributes
 {
@@ -7,10 +8,24 @@ namespace McAttributes
         static string csv_delimiter_pattern = @"(?:^|,)(?=[^""]|("")?)""?((?(1)(?:[^""]|"""")*|[^,""]*))""?(?=,|$)";
         static Regex csv_delimiter = new Regex(csv_delimiter_pattern, RegexOptions.Compiled);
 
-        readonly string file_path;
+        string file_path;
         StreamReader? file;
+        
 
         public CsvFileReader(string FilePath)
+        {
+            init(FilePath);
+        }
+
+
+        public CsvFileReader(string FilePath, bool EmtyStringsAsNull)
+        {
+            this.EmtyStringsAsNull = EmtyStringsAsNull;
+            init(FilePath);
+        }
+
+
+        private void init(string FilePath)
         {
             if (string.IsNullOrEmpty(FilePath)) throw new ArgumentNullException("FilePath needs to have a value.");
             if (!File.Exists(FilePath)) throw new FileNotFoundException(@"Cannot find file: {FilePath}");
@@ -18,10 +33,9 @@ namespace McAttributes
             file_path = FilePath;
         }
 
+        public bool EmtyStringsAsNull { get; set; } = false;
         public bool HasHeaderRow { get; set; } = true;
         public List<string>? Header;
-        public List<Dictionary<string, string>> Values = new List<Dictionary<string, string>>();
-
         private IEnumerable<string> GetLines()
         {
             while (file != null && !file.EndOfStream)
@@ -31,36 +45,36 @@ namespace McAttributes
 
         }
 
-        public void ReadFile()
+
+        public IEnumerable<Dictionary<string, string>> ReadFileValues()
         {
-            using (file = File.OpenText(file_path))
+            using (var parser = new TextFieldParser(file_path))
             {
-                string header_row = GetLines().First(x => !string.IsNullOrEmpty(x));
-                var matches = csv_delimiter.Matches(header_row).Select(
-                    x => x.Value
-                        .TrimStart(new char[] { ',', '"' })
-                        .TrimEnd('"'));
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
 
-                if (matches != null)
+                if (!parser.EndOfData)
                 {
-                    Header = new List<string>(matches);
+                    var header = parser.ReadFields();
+                    this.Header = new List<string>(header);
+                }
 
-                    foreach (var row in GetLines())
+
+                while (!parser.EndOfData)
+                {
+                    var record = new Dictionary<string, string>();
+                    var fields = parser.ReadFields();
+                    foreach (var i in Enumerable.Range(0, Header?.Count ?? 0))
                     {
-                        var line = csv_delimiter.Matches(row).Select(
-                                    x => x.Value
-                                        .TrimStart(new char[] { ',', '"' })
-                                        .TrimEnd('"'));
-
-                        var record = new Dictionary<string, string>();
-                        for (var i = 0; i < Header.Count; i++)
+                        var k = Header.Skip(i)?.Take(1)?.First();
+                        var f = fields.Skip(i)?.Take(1)?.First();
+                        if (EmtyStringsAsNull && String.IsNullOrEmpty(f))
                         {
-                            var key = Header.Skip(i).Take(1).First();
-                            var value = line.Skip(i).Take(1).First()?.Replace("&#xa;", Environment.NewLine) ?? string.Empty;
-                            record.Add(key, value);
+                            f = null;
                         }
-                        Values.Add(record);
+                        record.Add(k, f);
                     }
+                    yield return record;
                 }
             }
         }

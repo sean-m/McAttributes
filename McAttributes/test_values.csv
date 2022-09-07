@@ -1,3 +1,3 @@
-AadId," Deleted"," DisplayName"," EmployeeId"," GivenName"," Surname"," Pronouns"," Suffix"," "
-'5cb4dc92-1928-4b98-b3a1-7f725442128f'," false","   'Sean McArdle'"," 'E100'","     'Sean'","    'McArdle'"," 'He/Him/His'",,
-'61303c53-5e19-4bac-82d2-62e5f9e81d80'," false","   'Zaphod Beeblebrox'"," 'E42'","      'Zaphod'","  'Beeblebrox'"," 'They/They/Them'"," 'Esq'",
+"merged","modified","lastFetched","created","enabled","tenant","aadId","upn","mail","employeeId","adEmployeeId","wdEmployeeId","wid","creationType","company","displayName","preferredGivenName","preferredSurname","articles","pronouns"
+,,,"2021-11-14T14:55:01.5267029-08:00","true","garage.mcardletech.com","255fc0e3-1966-47be-9ad3-ab9d5491b73a","sean.mcardle@garage.mcardletech.com","sean.mcardle@garage.mcardletech.com","E001","E002",,,,"Garage","MCARDLE Sean","Sean","McArdle",,
+,,,"2020-11-12T14:55:48.5889216-08:00","true","garage.mcardletech.com","e546d330-955e-41be-aa99-aed140193efe","zaphod.beeblebrox@garage.mcardletech.com","mr.president@garage.mcardletech.com","E002","E002",,,,"Garage","MCARDLE Sean","Zaphod","Beeblebrox","Esq.","they/they/them"

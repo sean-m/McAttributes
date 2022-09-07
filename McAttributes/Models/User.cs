@@ -1,19 +1,28 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace McAttributes.Models {
-    [Table("User")]
+    [Table("azusers")]
     public class User {
         public int Id { get; set; }
+        public string? Merged { set; get; } = null;
+        public string? Modified { get; set; } = null;
+        public string? LastFetched { get; set; } = null;
+        public string? Created { get; set; } = null;
+        public bool Enabled { get; set; }
+        public string? Tenant { get; set; }
         public Guid AadId { get; set; }
-
-        private bool _deleted = false;
-        public bool Deleted { get => _deleted; set => _deleted = value; }
+        public string? Upn { get; set; }
+        public string? Mail { get; set; }
         public string? DisplayName { get; set; }
         public string? EmployeeId { get; set; }
-        public string? GivenName { get; set; }
-        public string? Surname { get; set; }
+        public string? AdEmployeeId { get; set; }
+        public string? WdEmployeeId { get; set; }
+        public string? Wid { get; set; }
+        public string? CreationType { get; set; }
+        public string? Company { get; set; }
+        public string? PreferredGivenName { get; set; }
+        public string? PreferredSurname { get; set; }
+        public string? Articles { get; set; }
         public string? Pronouns { get; set; }
-        public string? Suffix { get; set; }
-        
     }
 }

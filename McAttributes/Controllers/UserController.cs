@@ -11,10 +11,10 @@ namespace McAttributes.Controllers {
     [ApiController]
     public class UserController : ControllerBase {
 
+        ILogger _logger;
         readonly DbContext _ctx;
         readonly DbSet<Models.User> _users;
-        ILogger _logger;
-
+        
         public UserController(ILogger<UserController> logger, IdDbContext dbContext) {
             _logger = logger;
             _ctx = dbContext;
@@ -33,8 +33,9 @@ namespace McAttributes.Controllers {
 
         // GET api/<UserController>/5
         [HttpGet("{AadId}")]
-        public Models.User Get(Guid AadId) {
-            var result = _users.FirstOrDefault(x => x.AadId == AadId);
+        public Models.User Get(String AadId) {
+            var compare = Guid.Parse(AadId);
+            var result = _users.FirstOrDefault(x => x.AadId == compare);
             return result;
         }
 
