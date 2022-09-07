@@ -53,26 +53,35 @@ namespace McAttributes
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(",");
 
-                if (!parser.EndOfData)
+                if (!parser.EndOfData && HasHeaderRow)
                 {
-                    var header = parser.ReadFields();
-                    this.Header = new List<string>(header);
+                    var headerRow = parser.ReadFields();
+                    this.Header = new List<string>(headerRow);
                 }
 
+                IEnumerable<string>? header = null;
 
                 while (!parser.EndOfData)
                 {
                     var record = new Dictionary<string, string>();
                     var fields = parser.ReadFields();
-                    foreach (var i in Enumerable.Range(0, Header?.Count ?? 0))
+
+                    if (header == null && Header != null)
+                        header = Header;
+                    else if (header == null && fields != null)
+                        header = Enumerable.Range(0, fields.Length).Cast<string>();
+
+                    int i = 0;
+                    foreach (var f in fields)
                     {
-                        var k = Header.Skip(i)?.Take(1)?.First();
-                        var f = fields.Skip(i)?.Take(1)?.First();
+                        var val = f;
+                        var k = header.Skip(i)?.Take(1)?.First();
                         if (EmtyStringsAsNull && String.IsNullOrEmpty(f))
                         {
-                            f = null;
+                            val = null;
                         }
-                        record.Add(k, f);
+                        record.Add(k, val);
+                        i++;
                     }
                     yield return record;
                 }
