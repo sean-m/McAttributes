@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace McAttributes.Models {
     [Table("azusers")]
     public class User {
+        [Key]
         public int Id { get; set; }
         public string? Merged { set; get; } = null;
         public string? Modified { get; set; } = null;
