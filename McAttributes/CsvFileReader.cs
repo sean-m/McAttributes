@@ -35,7 +35,8 @@ namespace McAttributes
 
         public bool EmtyStringsAsNull { get; set; } = false;
         public bool HasHeaderRow { get; set; } = true;
-        public List<string>? Header;
+        public List<string>? Header { get; set; }
+
         private IEnumerable<string> GetLines()
         {
             while (file != null && !file.EndOfStream)
