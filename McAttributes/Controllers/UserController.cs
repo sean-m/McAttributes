@@ -3,10 +3,12 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.OData.Query;
+using McAttributes.Data;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace McAttributes.Controllers {
+namespace McAttributes.Controllers
+{
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase {

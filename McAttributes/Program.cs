@@ -3,8 +3,11 @@ using McAttributes;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using McAttributes.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 
@@ -29,9 +32,22 @@ else {
     DebugInit.DbInit(conn);
     builder.Services.AddDbContext<IdDbContext>(
         options => { options.UseSqlite(conn); });
+
+    builder.Services.AddDbContext<IssueLogContext>(options =>
+        options.UseSqlite(conn)
+    );
 }
 
+
+
 var app = builder.Build();
+
+using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
+{
+    var context = serviceScope.ServiceProvider.GetRequiredService<IssueLogContext>();
+    context.Database.EnsureCreated();
+}
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) {

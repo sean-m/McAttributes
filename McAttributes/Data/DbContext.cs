@@ -2,10 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace McAttributes {
-    public class IdDbContext : DbContext {
+namespace McAttributes.Data
+{
+    public class IdDbContext : DbContext
+    {
         public IdDbContext(DbContextOptions<IdDbContext> options)
-            : base(options) {  }
+            : base(options) { }
 
         public DbSet<User> Users { get; set; }
 

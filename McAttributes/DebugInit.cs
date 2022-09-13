@@ -52,6 +52,22 @@ create table if not exists EmployeeIdRecord (
 
 delete from EmployeeIdRecord;
 
+
+
+--drop table if exists IssueLogEntry;
+create table if not exists IssueLogEntry (
+    id integer primary key,
+    created TIMESTAMP not null,
+    targetUserId integer,
+    level integer default 1,
+    entryId integer,
+    message text, 
+    acknowledged boolean,
+    resolved boolean,
+
+    FOREIGN KEY(TargetUserId) REFERENCES azusers(id)
+);
+
 ";
             
             

@@ -1,4 +1,5 @@
-﻿using McAttributes.Models;
+﻿using McAttributes.Data;
+using McAttributes.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
