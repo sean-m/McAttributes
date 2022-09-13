@@ -18,7 +18,7 @@ namespace McAttributes.Models {
         public string? DisplayName { get; set; }
         public string? EmployeeId { get; set; }
         public string? AdEmployeeId { get; set; }
-        public string? WdEmployeeId { get; set; }
+        public string? HrEmployeeId { get; set; }
         public string? Wid { get; set; }
         public string? CreationType { get; set; }
         public string? Company { get; set; }

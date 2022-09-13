@@ -25,7 +25,7 @@ create table if not exists azusers (
     mail TEXT,
     employeeId TEXT,
     adEmployeeId TEXT,
-    wdEmployeeId TEXT,
+    hrEmployeeId TEXT,
     wid TEXT,
     creationType TEXT,
     company TEXT,
