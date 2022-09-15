@@ -75,7 +75,7 @@ create table if not exists IssueLogEntry (
             var userTableCmd = new SqliteCommand(userTableSchema, conn);
             userTableCmd.ExecuteNonQuery();
 
-            var csvReader = new CsvFileReader(@"C:\Users\smcardle_admin\source\repos\McAttributes\McAttributes\test_values.csv", true);
+            var csvReader = new CsvFileReader(@"C:\Users\smcardle_admin\source\repos\McAttributes\McAttributes\test_azusers.csv", true);
             var _ = csvReader.ReadFileValues().FirstOrDefault();
 
             var columns = String.Join(", ", csvReader.Header);
@@ -85,7 +85,7 @@ insert into azusers ({columns})
 values ({parameters});
 ";
 
-            csvReader = new CsvFileReader(@"C:\Users\smcardle_admin\source\repos\McAttributes\McAttributes\test_values.csv");
+            csvReader = new CsvFileReader(@"C:\Users\smcardle_admin\source\repos\McAttributes\McAttributes\test_azusers.csv");
             foreach (var row in csvReader.ReadFileValues())
             {
                 var sqlCmd = new SqliteCommand(paramQuery, conn);

@@ -14,6 +14,6 @@ namespace McAttributes.Data
         {
         }
 
-        public DbSet<McAttributes.Models.IssueLogEntry> IssueLogEntry { get; set; } = default!;
+        public DbSet<IssueLogEntry> IssueLogEntry { get; set; } = default!;
     }
 }
