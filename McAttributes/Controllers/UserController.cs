@@ -43,12 +43,42 @@ namespace McAttributes.Controllers
 
         // POST api/<UserController>
         [HttpPost]
-        public void Post([FromBody] string value) {
+        public async void Post([FromBody] User value) {
+            _users.Add(value);
+            await _ctx.SaveChangesAsync();
         }
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value) {
+        public async Task<IActionResult> Put(int id, [FromBody] User value) {
+
+            if (id != value.Id)
+                return BadRequest($"Specified id: {id} and entity id: {value.Id} do not match.");
+
+            _ctx.Entry(value).State = EntityState.Modified;
+
+            try
+            {
+                await _ctx.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UserRecordExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        private bool UserRecordExists(int id)
+        {
+            return (_users?.Any(x => x.Id == id)).GetValueOrDefault();
         }
     }
 }

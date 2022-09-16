@@ -33,21 +33,51 @@ namespace McAttributes.Controllers
         // GET api/<EmployeeIdController>/5
         [HttpGet("{id}")]
         [EnableQuery]
-        public IQueryable<EmployeeIdRecord> Get(string id) => from eid in _employeeIds
-                                            where (eid.CloudSourceAnchor.Equals(id, StringComparison.CurrentCultureIgnoreCase))
-                                            || eid.UserPrincipalName.Equals(id, StringComparison.CurrentCultureIgnoreCase)
-                                            select eid;
+        public IQueryable<EmployeeIdRecord> Get(string id) 
+            => from eid in _employeeIds
+            where (eid.CloudSourceAnchor.Equals(id, StringComparison.CurrentCultureIgnoreCase))
+            || eid.UserPrincipalName.Equals(id, StringComparison.CurrentCultureIgnoreCase)
+            select eid;
 
         // POST api/<EmployeeIdController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public void Post([FromBody] EmployeeIdRecord value)
         {
+            _employeeIds.Add(value);
+            _ctx.SaveChanges();
         }
 
         // PUT api/<EmployeeIdController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Put(int id, [FromBody] EmployeeIdRecord value)
         {
+            if (id != value.Id)
+                return BadRequest($"Specified id: {id} and entity id: {value.Id} do not match.");
+
+            _ctx.Entry(value).State = EntityState.Modified;
+
+            try
+            {
+                await _ctx.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EmployeeIdRecordExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        private bool EmployeeIdRecordExists(int id)
+        {
+            return (_employeeIds?.Any(x => x.Id == id)).GetValueOrDefault();
         }
     }
 }
