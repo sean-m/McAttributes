@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.OData.Query;
 using McAttributes.Data;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,7 +12,7 @@ namespace McAttributes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase {
+    public class UserController : ODataController {
 
         ILogger _logger;
         readonly DbContext _ctx;
@@ -26,7 +27,7 @@ namespace McAttributes.Controllers
         // GET: api/<UserController>
         [HttpGet]
         [EnableQuery]
-        public IEnumerable<User> Get() {
+        public IQueryable<User> Get() {
             // TODO filter based on requestor identity
             // TODO enforce result set size
             // TODO implement iqueryable for ODATA filtering and pagination

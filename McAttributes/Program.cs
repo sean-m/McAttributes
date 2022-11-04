@@ -5,20 +5,32 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using McAttributes.Data;
+using McAttributes.Models;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-// Add services to the container.
+static IEdmModel GetEdmModel() {
+    var edmBuilder = new ODataConventionModelBuilder();
+    var users = edmBuilder.EntitySet<User>("User");
+    users.EntityType.Ignore(u => u.Pronouns);
+    edmBuilder.EntitySet<IssueLogEntry>("IssueLogEntry");
+    return edmBuilder.GetEdmModel();
+}
 
+// Add services to the container.
 builder.Services.AddControllers()
     .AddNewtonsoftJson()
     .AddOData(
-        options => options.Select().Filter().OrderBy().Count().SkipToken().SetMaxTop(500));
+        options => options.AddRouteComponents("odata", GetEdmModel())
+            .Select().Filter().OrderBy().Count().SkipToken().SetMaxTop(500));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(
+    opt => opt.ResolveConflictingActions(a => a.First()));
 builder.Logging.AddConsole();
 
 
@@ -27,7 +39,7 @@ if (builder.Environment.IsProduction()) {
     throw new NotImplementedException("Haven't done the Production db setup yet.");
 } 
 else {
-    var conn = new SqliteConnection("Filename=mcattributes.db");
+    var conn = new SqliteConnection("Data Source=:memory:");
     conn.Open();
     DebugInit.DbInit(conn);
     builder.Services.AddDbContext<IdDbContext>(
@@ -51,14 +63,23 @@ using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
 
+//app.MapControllers();
+
+app.UseRouting();
+
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Run();
