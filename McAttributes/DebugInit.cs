@@ -75,7 +75,7 @@ create table if not exists IssueLogEntry (
             var userTableCmd = new SqliteCommand(userTableSchema, conn);
             userTableCmd.ExecuteNonQuery();
 
-            var csvReader = new CsvFileReader(@"C:\Users\smcardle_admin\source\repos\McAttributes\McAttributes\test_azusers.csv", true);
+            var csvReader = new CsvFileReader(@"./test_values.csv", true);
             var _ = csvReader.ReadFileValues().FirstOrDefault();
 
             var columns = String.Join(", ", csvReader.Header);
@@ -85,7 +85,7 @@ insert into azusers ({columns})
 values ({parameters});
 ";
 
-            csvReader = new CsvFileReader(@"C:\Users\smcardle_admin\source\repos\McAttributes\McAttributes\test_azusers.csv");
+            csvReader = new CsvFileReader(@"./test_values.csv");
             foreach (var row in csvReader.ReadFileValues())
             {
                 var sqlCmd = new SqliteCommand(paramQuery, conn);
@@ -100,7 +100,7 @@ values ({parameters});
 insert into EmployeeIdRecord (CloudAnchor, UserPrincipalName, EmployeeId)
 values (@cloudanchor, @userprincipalname, @employeeid);
 ";
-            csvReader = new CsvFileReader(@"C:\Users\smcardle_admin\source\repos\McAttributes\McAttributes\employeeId_values.csv");
+            csvReader = new CsvFileReader(@"./employeeId_values.csv");
             _ = csvReader.ReadFileValues().FirstOrDefault();
 
             columns = String.Join(", ", csvReader.Header);
