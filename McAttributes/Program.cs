@@ -8,8 +8,24 @@ using McAttributes.Data;
 using McAttributes.Models;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NuGet.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
+    config.Sources.Clear();
+    var env = hostingContext.HostingEnvironment;
+
+    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+    config.AddEnvironmentVariables();
+
+    if (args != null) {
+        config.AddCommandLine(args);
+    }
+});
+
 
 
 static IEdmModel GetEdmModel() {
@@ -39,6 +55,15 @@ if (builder.Environment.IsProduction()) {
     throw new NotImplementedException("Haven't done the Production db setup yet.");
 } 
 else {
+    var connString = builder.Configuration.GetConnectionString("Identity");
+    var conn = new Npgsql.NpgsqlConnection(connString);
+    builder.Services.AddDbContext<IdDbContext>(
+        options => { options.UseNpgsql(conn); });
+
+    builder.Services.AddDbContext<IssueLogContext>(options =>
+        options.UseNpgsql(conn)
+    );
+    /*
     var conn = new SqliteConnection("Data Source=:memory:");
     conn.Open();
     DebugInit.DbInit(conn);
@@ -48,6 +73,7 @@ else {
     builder.Services.AddDbContext<IssueLogContext>(options =>
         options.UseSqlite(conn)
     );
+    */
 }
 
 
