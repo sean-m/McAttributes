@@ -40,8 +40,8 @@ static IEdmModel GetEdmModel() {
 builder.Services.AddControllers()
     .AddNewtonsoftJson()
     .AddOData(
-        options => options.AddRouteComponents("odata", GetEdmModel())
-            .Select().Filter().OrderBy().Count().SkipToken().SetMaxTop(500));
+        options => options.AddRouteComponents("v1", GetEdmModel())
+            .EnableQueryFeatures(maxTopValue: 250));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -63,10 +63,9 @@ else {
     builder.Services.AddDbContext<IssueLogContext>(options =>
         options.UseNpgsql(conn)
     );
+
     /*
     var conn = new SqliteConnection("Data Source=:memory:");
-    conn.Open();
-    DebugInit.DbInit(conn);
     builder.Services.AddDbContext<IdDbContext>(
         options => { options.UseSqlite(conn); });
 
@@ -74,6 +73,9 @@ else {
         options.UseSqlite(conn)
     );
     */
+
+    //conn.Open();
+    //DebugInit.DbInit(conn);
 }
 
 
