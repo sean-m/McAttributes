@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using McAttributes.Models;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OData.Query;
 using McAttributes.Data;
-using McAttributes.Models;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace McAttributes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class IssueLogEntriesController : ControllerBase
+    public class IssueLogEntriesController : ODataController
     {
         private readonly IssueLogContext _context;
 
@@ -23,29 +21,17 @@ namespace McAttributes.Controllers
 
         // GET: api/IssueLogEntries
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<IssueLogEntry>>> GetIssueLogEntry()
+        [EnableQuery(PageSize = 100)]
+        public IQueryable<IssueLogEntry> Get()
         {
-          if (_context.IssueLogEntry == null)
-          {
-              return NotFound();
-          }
-            return await _context.IssueLogEntry.ToListAsync();
+            return _context.IssueLogEntry;
         }
 
         // GET: api/IssueLogEntries/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<IssueLogEntry>> GetIssueLogEntry(int id)
+        public IssueLogEntry Get(int id)
         {
-          if (_context.IssueLogEntry == null)
-          {
-              return NotFound();
-          }
-            var issueLogEntry = await _context.IssueLogEntry.FindAsync(id);
-
-            if (issueLogEntry == null)
-            {
-                return NotFound();
-            }
+            var issueLogEntry = _context.IssueLogEntry.Find(id);
 
             return issueLogEntry;
         }
@@ -53,11 +39,11 @@ namespace McAttributes.Controllers
         // PUT: api/IssueLogEntries/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutIssueLogEntry(int id, IssueLogEntry issueLogEntry)
+        public async Task<IActionResult> Put(int id, IssueLogEntry issueLogEntry)
         {
             if (id != issueLogEntry.Id)
             {
-                return BadRequest();
+                return BadRequest($"IssueLogEntry record id {issueLogEntry?.Id} does not match specified record id: {id}");
             }
 
             _context.Entry(issueLogEntry).State = EntityState.Modified;
@@ -70,7 +56,7 @@ namespace McAttributes.Controllers
             {
                 if (!IssueLogEntryExists(id))
                 {
-                    return NotFound();
+                    return NotFound($"Record with id: {id} not found.");
                 }
                 else
                 {

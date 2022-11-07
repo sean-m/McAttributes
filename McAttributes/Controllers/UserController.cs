@@ -26,12 +26,12 @@ namespace McAttributes.Controllers
 
         // GET: api/<UserController>
         [HttpGet]
-        [EnableQuery]
+        [EnableQuery(PageSize = 100)]
         public IQueryable<User> Get() {
             // TODO filter based on requestor identity
             // TODO enforce result set size
             // TODO implement iqueryable for ODATA filtering and pagination
-            return from User in _users select User;
+            return _users;
         }
 
         // GET api/<UserController>/5

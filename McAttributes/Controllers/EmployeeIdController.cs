@@ -2,6 +2,7 @@
 using McAttributes.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -10,7 +11,7 @@ namespace McAttributes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmployeeIdController : ControllerBase
+    public class EmployeeIdController : ODataController
     {
         private ILogger _logger;
         private DbContext _ctx;
@@ -24,10 +25,10 @@ namespace McAttributes.Controllers
 
         // GET: api/<EmployeeIdController>
         [HttpGet]
-        [EnableQuery]
+        [EnableQuery(PageSize = 100)]
         public IEnumerable<EmployeeIdRecord> Get()
         {
-            return _employeeIds.AsQueryable();
+            return _employeeIds;
         }
 
         // GET api/<EmployeeIdController>/5
