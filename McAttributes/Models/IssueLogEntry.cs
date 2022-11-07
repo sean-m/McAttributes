@@ -3,17 +3,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace McAttributes.Models
 {
+    [Table("idalerts")]
     public class IssueLogEntry
     {
         [Key]
+        [Column("id")]
         public int Id { get; set; }
-        public DateTime Created { get; set; }
-        public User? TargetUser { get; set; }
-        public LogLevel Level { get; set; }
-        public int EntryId { get; set; }
-        public string? Message { get; set; }
-        public bool Acknowledged { get; set; } = false;
-        public bool Resolved { get; set;} = false;
+        [Column("attrname")]
+        public string? AttrName { get; set; }
+        [Column("alerthash")]
+        public string? AlertHash { get; set; }
+        [Column("created")]
+        public DateTime? Created { get; set; }
+        [Column("status")]
+        public string? Status { get; set; }
+        [Column("description")]
+        public string? Description { get; set; }
     }
 
     public enum LogLevel

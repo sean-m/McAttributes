@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace McAttributes.Models
 {
-    [Table("EmployeeIdRecord")]
+    [Table("employeeidrecord")]
     public class EmployeeIdRecord
     {
         [Key]
