@@ -12,5 +12,7 @@ namespace McAttributes.Data
         public DbSet<User> Users { get; set; }
 
         public DbSet<EmployeeIdRecord> EmployeeIds { get; set; }
+
+        public DbSet<Stargate> Stargate { get; set; }
     }
 }

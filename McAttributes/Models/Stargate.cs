@@ -12,7 +12,7 @@ namespace McAttributes.Models {
         [Column("globalid")]
         public long? globalId { get; set; }
         [Column("localid")]
-        public string? localId { get; set; }
+        public string localId { get; set; }
         public string? upn  { get; set; }
         public string? partition { get; set; }
         public string? joinseed { get; set; }

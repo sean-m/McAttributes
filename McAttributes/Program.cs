@@ -64,16 +64,7 @@ else {
         options.UseNpgsql(conn)
     );
 
-    /*
-    var conn = new SqliteConnection("Data Source=:memory:");
-    builder.Services.AddDbContext<IdDbContext>(
-        options => { options.UseSqlite(conn); });
-
-    builder.Services.AddDbContext<IssueLogContext>(options =>
-        options.UseSqlite(conn)
-    );
-    */
-
+    // Uncomment to load in test values from CSV file
     //conn.Open();
     //DebugInit.DbInit(conn);
 }
