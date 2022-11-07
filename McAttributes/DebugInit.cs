@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace McAttributes {
     public static class DebugInit {
-        public static void DbInit(NpgsqlConnection conn) {
+        public async static void DbInit(NpgsqlConnection conn) {
             if (conn == null) throw new ArgumentNullException("Gonna hand me a viable databse connection.");
             if (conn.State != System.Data.ConnectionState.Open) {
                 throw new Exception("Database connection is borkened. I need a working/opened one!");
@@ -79,13 +79,7 @@ create table if not exists IssueLogEntry (
 
             var csvReader = new CsvFileReader(@"./test_values.csv", true);
             var _ = csvReader.ReadFileValues().FirstOrDefault();
-
-            var columns = String.Join(", ", csvReader.Header);
-            var parameters = String.Join(", ", csvReader.Header.Select(x => $"@{x}"));
-            var paramQuery = @$"
-insert into azusers ({columns})
-values ({parameters});
-";
+                        
             var types = new Dictionary<string, Type>();
             var azuser = System.Reflection.TypeInfo.GetType("McAttributes.Models.User");
 
@@ -102,18 +96,28 @@ values ({parameters});
                 return prop.PropertyType;
             }
 
+            var inserts = new List<Task>();
+
             csvReader = new CsvFileReader(@"./test_values.csv");
             foreach (var row in csvReader.ReadFileValues())
             {
+                var columns = row.Keys.Where(k => !String.IsNullOrEmpty(row.GetValueOrDefault(k)));
+
+                var paramQuery = @$"
+                insert into azusers ({String.Join(',', columns)})
+                values ({String.Join(',', columns.Select(x => $"@{x}"))});
+                ";
                 var sqlCmd = new NpgsqlCommand(paramQuery, conn);
-                foreach (var col in row)
+                foreach (var col in columns)
                 {
-                    var type = GetParamType(col.Key);
-                    object value = GetAsType(col.Value, type);
-                    sqlCmd.Parameters.Add(new NpgsqlParameter($"@{col.Key}", value));
+                    var type = GetParamType(col);
+                    object value = GetAsType(row[col], type);
+                    sqlCmd.Parameters.Add(new NpgsqlParameter($"@{col}", value));
                 }
-                sqlCmd.ExecuteNonQuery();
+                inserts.Add(sqlCmd.ExecuteNonQueryAsync());
             }
+
+            Task.WaitAll(Task.FromResult(inserts));
         }
 
         static object GetAsType(object source, Type desiredType) {
