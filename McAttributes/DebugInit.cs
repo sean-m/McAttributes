@@ -120,9 +120,7 @@ values ({parameters});
             if (source == null) return source;
 
             string strSrc = source.ToString();
-            if (string.IsNullOrEmpty(strSrc) && desiredType == typeof(System.String)) {
-                return "";
-            } else if (string.IsNullOrEmpty(strSrc)) {
+            if (string.IsNullOrEmpty(strSrc)) {
                   return null;
             }
 
