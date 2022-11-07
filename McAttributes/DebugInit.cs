@@ -1,9 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
+using Npgsql;
 using System.Linq;
 
 namespace McAttributes {
     public static class DebugInit {
-        public static void DbInit(SqliteConnection conn) {
+        public static void DbInit(NpgsqlConnection conn) {
             if (conn == null) throw new ArgumentNullException("Gonna hand me a viable databse connection.");
             if (conn.State != System.Data.ConnectionState.Open) {
                 throw new Exception("Database connection is borkened. I need a working/opened one!");
@@ -71,9 +72,10 @@ create table if not exists IssueLogEntry (
 ";
             
             
-
+            /*
             var userTableCmd = new SqliteCommand(userTableSchema, conn);
             userTableCmd.ExecuteNonQuery();
+            */
 
             var csvReader = new CsvFileReader(@"./test_values.csv", true);
             var _ = csvReader.ReadFileValues().FirstOrDefault();
@@ -84,41 +86,53 @@ create table if not exists IssueLogEntry (
 insert into azusers ({columns})
 values ({parameters});
 ";
+            var types = new Dictionary<string, Type>();
+            var azuser = System.Reflection.TypeInfo.GetType("McAttributes.Models.User");
+
+
+            Type GetParamType(string name) {
+                if (types.ContainsKey(name)) return types[name];
+
+                var prop = azuser.GetProperties().FirstOrDefault(x => x.Name.ToString().Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                if (prop == null) {
+                    throw new Exception($"Cannot resolve property with name: {name} on class 'Models.User'");
+                }
+
+                types.Add(name, prop.PropertyType);
+                return prop.PropertyType;
+            }
 
             csvReader = new CsvFileReader(@"./test_values.csv");
             foreach (var row in csvReader.ReadFileValues())
             {
-                var sqlCmd = new SqliteCommand(paramQuery, conn);
+                var sqlCmd = new NpgsqlCommand(paramQuery, conn);
                 foreach (var col in row)
                 {
-                    sqlCmd.Parameters.Add(new SqliteParameter($"@{col.Key}", col.Value));
+                    var type = GetParamType(col.Key);
+                    object value = GetAsType(col.Value, type);
+                    sqlCmd.Parameters.Add(new NpgsqlParameter($"@{col.Key}", value));
                 }
-                sqlCmd.ExecuteReader();
+                sqlCmd.ExecuteNonQuery();
+            }
+        }
+
+        static object GetAsType(object source, Type desiredType) {
+            if (source == null) return source;
+
+            string strSrc = source.ToString();
+            if (string.IsNullOrEmpty(strSrc) && desiredType == typeof(System.String)) {
+                return "";
+            } else if (string.IsNullOrEmpty(strSrc)) {
+                  return null;
             }
 
-            paramQuery = @"
-insert into EmployeeIdRecord (CloudAnchor, UserPrincipalName, EmployeeId)
-values (@cloudanchor, @userprincipalname, @employeeid);
-";
-            csvReader = new CsvFileReader(@"./employeeId_values.csv");
-            _ = csvReader.ReadFileValues().FirstOrDefault();
+            if (desiredType == typeof(Guid)) {
+                return Guid.Parse(source.ToString());
+            } else if (desiredType == typeof(DateTime?)) {
+                return DateTime.Parse(source.ToString());
+            } 
 
-            columns = String.Join(", ", csvReader.Header);
-            parameters = String.Join(", ", csvReader.Header.Select(x => $"@{x}"));
-            paramQuery = @$"
-insert into EmployeeIdRecord ({columns})
-values ({parameters});
-";
-
-            foreach (var row in csvReader.ReadFileValues())
-            {
-                var sqlCmd = new SqliteCommand(paramQuery, conn);
-                foreach (var col in row)
-                {
-                    sqlCmd.Parameters.Add(new SqliteParameter($"@{col.Key.ToLower()}", col.Value));
-                }
-                //sqlCmd.ExecuteReader();
-            }
+            return Convert.ChangeType(source, desiredType);  
         }
     }
 }
