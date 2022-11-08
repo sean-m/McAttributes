@@ -73,6 +73,10 @@ else {
 
 var app = builder.Build();
 
+// Updating an entity bombs without this. Postgresql requires UTC timestamps and for whatever
+// reason, the default DateTime behavior is to just try shoving in a value with out a timezone.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
 {
     var context = serviceScope.ServiceProvider.GetRequiredService<IssueLogContext>();
