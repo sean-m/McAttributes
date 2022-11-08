@@ -77,6 +77,34 @@ namespace McAttributes.Controllers
             return NoContent();
         }
 
+        // PATCH api/<UserController>/5
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> Patch(int id, [FromBody] Dictionary<string, object> value) {
+
+            var entry = _ctx.Set<User>().First(x => x.Id == id);
+            if (entry == null) return NotFound();
+
+            // Loop through properties on the model and update them if
+            // they exist in the patch value and differ from the database entry.
+            var properties = typeof(User).GetProperties();
+            foreach (var property in properties) {
+                if (property.Name == "Id") continue;
+                if (value.ContainsKey(property.Name) && property.GetValue(entry) != value[property.Name]) {
+                    property.SetValue(entry, value[property.Name]);
+                }
+            }
+
+            _ctx.Entry(entry).State = EntityState.Modified;
+
+            try {
+                await _ctx.SaveChangesAsync();
+            } catch (DbUpdateConcurrencyException) {
+                throw;
+            }
+
+            return NoContent();
+        }
+
         private bool UserRecordExists(int id)
         {
             return (_users?.Any(x => x.Id == id)).GetValueOrDefault();
