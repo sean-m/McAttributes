@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.OData.Query;
 using McAttributes.Data;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
+using Newtonsoft.Json.Linq;
 
 namespace McAttributes.Controllers
 {
@@ -12,11 +13,11 @@ namespace McAttributes.Controllers
     [ApiController]
     public class IssueLogEntriesController : ODataController
     {
-        private readonly IssueLogContext _context;
+        private readonly IssueLogContext _ctx;
 
         public IssueLogEntriesController(IssueLogContext context)
         {
-            _context = context;
+            _ctx = context;
         }
 
         // GET: api/IssueLogEntries
@@ -24,14 +25,14 @@ namespace McAttributes.Controllers
         [EnableQuery(PageSize = 100)]
         public IQueryable<IssueLogEntry> Get()
         {
-            return _context.IssueLogEntry;
+            return _ctx.IssueLogEntry;
         }
 
         // GET: api/IssueLogEntries/5
         [HttpGet("{id}")]
         public IssueLogEntry Get(int id)
         {
-            var issueLogEntry = _context.IssueLogEntry.Find(id);
+            var issueLogEntry = _ctx.IssueLogEntry.Find(id);
 
             return issueLogEntry;
         }
@@ -46,11 +47,11 @@ namespace McAttributes.Controllers
                 return BadRequest($"IssueLogEntry record id {issueLogEntry?.Id} does not match specified record id: {id}");
             }
 
-            _context.Entry(issueLogEntry).State = EntityState.Modified;
+            _ctx.Entry(issueLogEntry).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _ctx.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -67,17 +68,55 @@ namespace McAttributes.Controllers
             return NoContent();
         }
 
+        // PUT: api/IssueLogEntries/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Patch(int id, Dictionary<string,object> value) {
+
+            var entry = _ctx.Set<IssueLogEntry>().First(x => x.Id == id);
+            if (entry == null) return NotFound();
+
+            // Loop through properties on the model and update them if
+            // they exist in the patch value and differ from the database entry.
+            var properties = typeof(IssueLogEntry).GetProperties();
+            foreach (var property in properties) {
+                // Cannot update the id, created or alertHash value of the model.
+                if (property.Name.Equals("Id", StringComparison.CurrentCultureIgnoreCase)) continue;
+                if (property.Name.Equals("Created", StringComparison.CurrentCultureIgnoreCase)) continue;
+                if (property.Name.Equals("AlertHash", StringComparison.CurrentCultureIgnoreCase)) continue;
+
+                if (value.ContainsKey(property.Name) && property.GetValue(entry) != value[property.Name]) {
+                    property.SetValue(entry, value[property.Name]);
+                }
+            }
+
+            _ctx.Entry(entry).State = EntityState.Modified;
+
+            try {
+                await _ctx.SaveChangesAsync();
+            } catch (DbUpdateConcurrencyException) {
+                if (!IssueLogEntryExists(id)) {
+                    return NotFound($"Record with id: {id} not found.");
+                } else {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
         // POST: api/IssueLogEntries
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<IssueLogEntry>> PostIssueLogEntry(IssueLogEntry issueLogEntry)
         {
-          if (_context.IssueLogEntry == null)
+          if (_ctx.IssueLogEntry == null)
           {
               return Problem("Entity set 'IssueLogContext.IssueLogEntry'  is null.");
           }
-            _context.IssueLogEntry.Add(issueLogEntry);
-            await _context.SaveChangesAsync();
+            _ctx.IssueLogEntry.Add(issueLogEntry);
+            await _ctx.SaveChangesAsync();
 
             return CreatedAtAction("GetIssueLogEntry", new { id = issueLogEntry.Id }, issueLogEntry);
         }
@@ -86,25 +125,25 @@ namespace McAttributes.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteIssueLogEntry(int id)
         {
-            if (_context.IssueLogEntry == null)
+            if (_ctx.IssueLogEntry == null)
             {
                 return NotFound();
             }
-            var issueLogEntry = await _context.IssueLogEntry.FindAsync(id);
+            var issueLogEntry = await _ctx.IssueLogEntry.FindAsync(id);
             if (issueLogEntry == null)
             {
                 return NotFound();
             }
 
-            _context.IssueLogEntry.Remove(issueLogEntry);
-            await _context.SaveChangesAsync();
+            _ctx.IssueLogEntry.Remove(issueLogEntry);
+            await _ctx.SaveChangesAsync();
 
             return NoContent();
         }
 
         private bool IssueLogEntryExists(int id)
         {
-            return (_context.IssueLogEntry?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_ctx.IssueLogEntry?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
