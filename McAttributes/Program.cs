@@ -40,7 +40,7 @@ static IEdmModel GetEdmModel() {
 builder.Services.AddControllers()
     .AddNewtonsoftJson()
     .AddOData(
-        options => options.AddRouteComponents("v1", GetEdmModel())
+        options => options.AddRouteComponents("odata", GetEdmModel())
             .EnableQueryFeatures(maxTopValue: 250));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
