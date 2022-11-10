@@ -10,8 +10,23 @@ using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Configuration;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+
+static IEdmModel GetEdmModel() {
+    var edmBuilder = new ODataConventionModelBuilder();
+    var users = edmBuilder.EntitySet<User>("User");
+    users.EntityType.Ignore(u => u.Pronouns);
+    edmBuilder.EntitySet<IssueLogEntry>("IssueLogEntry");
+    return edmBuilder.GetEdmModel();
+}
+
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
     config.Sources.Clear();
     var env = hostingContext.HostingEnvironment;
@@ -27,14 +42,22 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
 });
 
 
+builder.Services.AddAuthentication(options => {
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddOpenIdConnect(options => {
+    builder.Configuration.Bind("AzureAD", options);
+})
+.AddCookie();
 
-static IEdmModel GetEdmModel() {
-    var edmBuilder = new ODataConventionModelBuilder();
-    var users = edmBuilder.EntitySet<User>("User");
-    users.EntityType.Ignore(u => u.Pronouns);
-    edmBuilder.EntitySet<IssueLogEntry>("IssueLogEntry");
-    return edmBuilder.GetEdmModel();
-}
+
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddMicrosoftIdentityWebApi(builder.Configuration, "AzureAD");
+
+
+builder.Services.AddRazorPages();
+
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -90,19 +113,23 @@ if (app.Environment.IsDevelopment()) {
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
-//app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.UseRouting();
 
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-});
+
+app.MapRazorPages();
+app.MapControllers();
 
 app.UseSwagger();
-app.UseSwaggerUI();
+//app.UseSwaggerUI();
+
 
 app.Run();
