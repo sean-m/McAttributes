@@ -11,11 +11,11 @@ namespace McAttributes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class IssueLogEntriesController : ODataController
+    public class IssueLogEntryController : ODataController
     {
         private readonly IssueLogContext _ctx;
 
-        public IssueLogEntriesController(IssueLogContext context)
+        public IssueLogEntryController(IssueLogContext context)
         {
             _ctx = context;
         }
@@ -30,7 +30,7 @@ namespace McAttributes.Controllers
 
         // GET: api/IssueLogEntries/5
         [HttpGet("{id}")]
-        public IssueLogEntry Get(int id)
+        public IssueLogEntry? Get(int id)
         {
             var issueLogEntry = _ctx.IssueLogEntry.Find(id);
 
