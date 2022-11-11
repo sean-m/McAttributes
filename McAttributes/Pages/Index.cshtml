@@ -4,7 +4,20 @@
     ViewData["Title"] = "McAttributes";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div id="app">
+    
+    <button @@click="newIssueEntry()">New Issue</button>
+    <div id="issueForm">
+        <strong>Issue</strong>
+        <div id="issueFields">
+            <ul>
+                <li v-for="(value, field, index) in currentIssue.model">
+                    <div class="preference"> 
+                        <label for="issue-{{field}}">{{field}}</label>
+                        <input type="text" name="issue-{{field}}" id="issue-{{field}}" readonly="{{!this.currentIssue.edit}}"/>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>
