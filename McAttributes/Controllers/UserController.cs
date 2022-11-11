@@ -36,10 +36,11 @@ namespace McAttributes.Controllers
 
         // GET api/<UserController>/5
         [HttpGet("{AadId}")]
-        public Models.User Get(String AadId) {
+        [EnableQuery]
+        public User? Get(String AadId) {
+
             var compare = Guid.Parse(AadId);
-            var result = _users.FirstOrDefault(x => x.AadId == compare);
-            return result;
+            return _users.FirstOrDefault(x => x.AadId == compare);
         }
 
         // POST api/<UserController>
