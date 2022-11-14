@@ -10,14 +10,14 @@
     <div id="issueForm">
         <strong>Issue</strong>
         <div id="issueFields">
-            <ul>
-                <li v-for="(value, field, index) in currentIssue.model">
-                    <div class="preference"> 
-                        <label for="issue-{{field}}">{{field}}</label>
-                        <input type="text" name="issue-{{field}}" id="issue-{{field}}" readonly="{{!this.currentIssue.edit}}"/>
-                    </div>
-                </li>
-            </ul>
+            
+            <div class="preference form-group" v-for="(value, field, index) in currentIssue.model"> 
+                <label for="issue-{{field}}">{{field}}</label>
+                <input type="text" name="issue-{{field}}" 
+                    id="issue-{{field}}" readonly="{{!this.currentIssue.edit}}"/>
+            </div>
+
+            
         </div>
     </div>
 </div>

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web.UI;
 
 static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
@@ -49,14 +50,15 @@ builder.Services.AddAuthentication(options => {
 .AddOpenIdConnect(options => {
     builder.Configuration.Bind("AzureAD", options);
 })
+.AddJwtBearer(options => {
+    builder.Configuration.Bind("AzureAD", options);
+})
 .AddCookie();
 
 
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddMicrosoftIdentityWebApi(builder.Configuration, "AzureAD");
 
-
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages()
+    .AddMicrosoftIdentityUI(); ;
 
 
 // Add services to the container.

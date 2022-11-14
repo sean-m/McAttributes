@@ -6,16 +6,18 @@ using Microsoft.AspNetCore.OData.Query;
 using McAttributes.Data;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace McAttributes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class IssueLogEntryController : ODataController
     {
         private readonly IssueLogContext _ctx;
 
-        public IssueLogEntryController(IssueLogContext context)
+        public IssueLogEntryController(ILogger<IssueLogEntryController> logger, IssueLogContext context)
         {
             _ctx = context;
         }

@@ -1,5 +1,6 @@
 ﻿using McAttributes.Data;
 using McAttributes.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
@@ -11,6 +12,7 @@ namespace McAttributes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EmployeeIdController : ODataController
     {
         private ILogger _logger;
