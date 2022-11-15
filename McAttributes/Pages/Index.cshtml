@@ -9,8 +9,17 @@
     <div id="userForm">
         <div>
             <label>User search</label>
-            <input type="text" name="search-input" onsubmit="searchForUsers()" v-model="searchTerm" />
+            <input type="text" name="search-input" onsubmit="searchForUsers()" v-model="currentUserSearch.searchTerm" />
             <button @@click="searchForUsers()">Search</button>
+        </div>
+        <div>
+            <label class="preference" for="paginatePreference">Paginate results</label>
+            <input id="paginatePreference" type="checkbox" name="paginatePreference" v-model="currentUserSearch.paginate" />
+            
+            <label class="preference" for="pageSize">Result size</label>
+            <input id="pageSize" type="number" name="pageSize" v-model="currentUserSearch.pageSize" />
+
+            <button @@click="currentUserSearch.clearResults()">Clear Results</button>
         </div>
         <ul class="no-bullets">
             <li v-for="value in currentUserSearch.results">

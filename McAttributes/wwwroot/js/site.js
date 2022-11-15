@@ -18,12 +18,29 @@ const uriUser = {
 createApp({
     data() {
         return {
-            searchTerm: "",
             currentUserSearch: {
-                page: 0,
+                pageNumber: 0,
+                pageSize: 10,
+                paginate: true,
                 results: [],
+                searchTerm: "",
                 getQueryString() {
-                    return "$top=10&$skip=" + (this.page * 10).toString();
+                    if (this.paginate) {
+                     return `$count=true&$top=${this.pageSize}&$skip=${this.pageNumber * this.pageSize}&$filter=startswith(mail,'${this.searchTerm}')`;
+                    }
+                    return `$filter=startswith(mail,'${this.searchTerm}')`;
+                },
+                updateResultSet(json) {
+
+                    var list = json.value;
+                    if (Array.isArray(list)) {
+                        this.results = this.results.concat(list)
+                    } else {
+                        this.results.push(list)
+                    }
+                },
+                clearResults() {
+                    this.results = [];
                 }
             },
             includeResolved: false,
@@ -38,16 +55,15 @@ createApp({
         }
     },
     methods: {
+        clearResults() {
+            this.currentUserSearch.clearResults();
+        },
         searchForUsers() {
             this.currentUserSearch.page++
 
             $.getJSON(`${uriUser.odata}?${this.currentUserSearch.getQueryString()}`,
                 json => {
-                    if (Array.isArray(json.value)) {
-                        this.currentUserSearch.results = this.currentUserSearch.results.concat(json.value)
-                    } else {
-                        this.currentUserSearch.results.push(json.value)
-                    }
+                    this.currentUserSearch.updateResultSet(json);
                 }
             );
         },
