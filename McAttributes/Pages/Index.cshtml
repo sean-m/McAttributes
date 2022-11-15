@@ -6,8 +6,21 @@
 
 <div id="app">
     
-    <button @@click="newIssueEntry()">New Issue</button>
+    <div id="userForm">
+        <div>
+            <label>User search</label>
+            <input type="text" name="search-input" onsubmit="searchForUsers()" v-model="searchTerm" />
+            <button @@click="searchForUsers()">Search</button>
+        </div>
+        <ul class="no-bullets">
+            <li v-for="value in currentUserSearch.results">
+                {{value.Upn}}
+            </li>
+        </ul>
+    </div>
+
     <div id="issueForm">
+        <button @@click="newIssueEntry()">New Issue</button>
         <strong>Issue</strong>
         <div id="issueFields">
             
@@ -20,4 +33,5 @@
             
         </div>
     </div>
+
 </div>

@@ -6,10 +6,26 @@
 
 const { createApp } = Vue
 
+class ResultPager {
+
+}
+
+const uriUser = {
+    api: "/api/User",
+    odata: "/odata/User"
+}
+
 createApp({
     data() {
         return {
             searchTerm: "",
+            currentUserSearch: {
+                page: 0,
+                results: [],
+                getQueryString() {
+                    return "$top=10&$skip=" + (this.page * 10).toString();
+                }
+            },
             includeResolved: false,
             issues: {
                 count() { return this.issueList.count },
@@ -22,6 +38,19 @@ createApp({
         }
     },
     methods: {
+        searchForUsers() {
+            this.currentUserSearch.page++
+
+            $.getJSON(`${uriUser.odata}?${this.currentUserSearch.getQueryString()}`,
+                json => {
+                    if (Array.isArray(json.value)) {
+                        this.currentUserSearch.results = this.currentUserSearch.results.concat(json.value)
+                    } else {
+                        this.currentUserSearch.results.push(json.value)
+                    }
+                }
+            );
+        },
         searchForIssues() {
 
         },

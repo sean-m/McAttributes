@@ -36,15 +36,6 @@ namespace McAttributes.Controllers
             return _users;
         }
 
-        // GET api/<UserController>/5
-        [HttpGet("{AadId}")]
-        [EnableQuery]
-        public User? Get(String AadId) {
-
-            var compare = Guid.Parse(AadId);
-            return _users.FirstOrDefault(x => x.AadId == compare);
-        }
-
         // POST api/<UserController>
         [HttpPost]
         public async void Post([FromBody] User value) {
