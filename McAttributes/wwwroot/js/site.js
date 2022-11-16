@@ -23,24 +23,50 @@ createApp({
                 pageSize: 10,
                 paginate: true,
                 results: [],
+                resultCount: 0,
                 searchTerm: "",
-                getQueryString() {
+                getQueryString(skip = 0) {
+                    let filterString = `$count=true&$filter=startswith(mail,'${this.searchTerm}') or startswith(employeeId, '${this.searchTerm}') or startswith(preferredSurname,'${this.searchTerm}') or startswith(preferredGivenName,'${this.searchTerm}')`;
                     if (this.paginate) {
-                     return `$count=true&$top=${this.pageSize}&$skip=${this.pageNumber * this.pageSize}&$filter=startswith(mail,'${this.searchTerm}')`;
+                     return `$top=${this.pageSize}&$skip=${skip}&${filterString}`;
                     }
-                    return `$filter=startswith(mail,'${this.searchTerm}')`;
+                    return filterString;
                 },
                 updateResultSet(json) {
-
+                    this.resultCount = json['@odata.count'];
                     var list = json.value;
                     if (Array.isArray(list)) {
                         this.results = this.results.concat(list)
+                        return true;
                     } else {
                         this.results.push(list)
+                        return true;
+                    }
+                    return false;
+                },
+                searchForUsers(skip=0) {
+                    let queryString = this.getQueryString();
+                    if (skip) { queryString = this.getQueryString(skip); }
+                    console.log(queryString);
+                    $.getJSON(`${uriUser.odata}?${queryString}`,
+                        json => {
+                            this.updateResultSet(json);
+                        }
+                    );
+                },
+                loadNextSet() {
+                    // Grab the current page value advanced by one, we'll only update
+                    // the pageNumber value if the lookup succeeded.
+                    var currentPage = this.pageNumber + 1;
+
+                    // We want to skip over the results we've already fetched.
+                    if (this.searchForUsers(this.results.length)) {
+                        this.pageNumber = currentPage;
                     }
                 },
                 clearResults() {
                     this.results = [];
+                    this.resultCount = 0;
                 }
             },
             includeResolved: false,
@@ -51,6 +77,9 @@ createApp({
             currentIssue: {
                 edit: false,
                 model: {}
+            },
+            searchButton: {
+                class: "button"
             }
         }
     },
@@ -59,13 +88,11 @@ createApp({
             this.currentUserSearch.clearResults();
         },
         searchForUsers() {
-            this.currentUserSearch.page++
-
-            $.getJSON(`${uriUser.odata}?${this.currentUserSearch.getQueryString()}`,
-                json => {
-                    this.currentUserSearch.updateResultSet(json);
-                }
-            );
+            this.clearResults();
+            this.currentUserSearch.searchForUsers();
+        },
+        loadMoreUserResults() {
+            this.currentUserSearch.loadNextSet();
         },
         searchForIssues() {
 

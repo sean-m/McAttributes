@@ -7,29 +7,43 @@
 <div id="app">
     
     <div id="userForm">
-        <div>
-            <label>User search</label>
-            <input type="text" name="search-input" onsubmit="searchForUsers()" v-model="currentUserSearch.searchTerm" />
-            <button @@click="searchForUsers()">Search</button>
+        <div class="input-group mb-3">
+            <input class="form-control" type="text" placeholder="User search" name="search-input" v-on:keyup.enter="searchForUsers()" v-model="currentUserSearch.searchTerm" />
+            <button class="button input-group-text" @@click="searchForUsers()">Search</button>
         </div>
         <div>
             <label class="preference" for="paginatePreference">Paginate results</label>
             <input id="paginatePreference" type="checkbox" name="paginatePreference" v-model="currentUserSearch.paginate" />
-            
+        </div>
+        <div>
             <label class="preference" for="pageSize">Result size</label>
             <input id="pageSize" type="number" name="pageSize" v-model="currentUserSearch.pageSize" />
-
-            <button @@click="currentUserSearch.clearResults()">Clear Results</button>
         </div>
-        <ul class="no-bullets">
-            <li v-for="value in currentUserSearch.results">
+        <div>
+            <button class="btn btn-outline-warning" @@click="currentUserSearch.clearResults()">Clear Results</button>
+        </div>
+        
+
+        <div>
+            <label v-if="currentUserSearch.resultCount">Total Results: {{currentUserSearch.resultCount}}</label>
+            <br />
+            <label v-if="currentUserSearch.results">Results Fetched: {{currentUserSearch.results.length}}</label>
+        </div>
+        
+        <button class="btn btn-link" id="btnLoadMore" v-if="currentUserSearch.resultCount > currentUserSearch.results.length" @@click="loadMoreUserResults()">Load More</button>
+
+        <ul class="list-group">
+            
+            <li class="list-group-item" v-for="value in currentUserSearch.results">
                 {{value.Upn}}
             </li>
         </ul>
+
+        <button class="btn btn-link" id="btnLoadMore" v-if="currentUserSearch.resultCount > currentUserSearch.results.length" @@click="loadMoreUserResults()">Load More</button>
     </div>
 
     <div id="issueForm">
-        <button @@click="newIssueEntry()">New Issue</button>
+        <button class="btn btn-primary" @@click="newIssueEntry()">New Issue</button>
         <strong>Issue</strong>
         <div id="issueFields">
             
@@ -38,7 +52,6 @@
                 <input type="text" name="issue-{{field}}" 
                     id="issue-{{field}}" readonly="{{!this.currentIssue.edit}}"/>
             </div>
-
             
         </div>
     </div>
