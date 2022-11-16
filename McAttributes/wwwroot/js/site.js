@@ -25,10 +25,11 @@ createApp({
                 results: [],
                 resultCount: 0,
                 searchTerm: "",
+                searchError: null,
                 getQueryString(skip = 0) {
                     let filterString = `$count=true&$filter=startswith(mail,'${this.searchTerm}') or startswith(employeeId, '${this.searchTerm}') or startswith(preferredSurname,'${this.searchTerm}') or startswith(preferredGivenName,'${this.searchTerm}')`;
                     if (this.paginate) {
-                     return `$top=${this.pageSize}&$skip=${skip}&${filterString}`;
+                        return `$top=${this.pageSize}&$skip=${skip}&${filterString}`;
                     }
                     return filterString;
                 },
@@ -44,15 +45,22 @@ createApp({
                     }
                     return false;
                 },
-                searchForUsers(skip=0) {
+                searchForUsers(skip = 0) {
                     let queryString = this.getQueryString();
                     if (skip) { queryString = this.getQueryString(skip); }
                     console.log(queryString);
+
                     $.getJSON(`${uriUser.odata}?${queryString}`,
                         json => {
                             this.updateResultSet(json);
                         }
-                    );
+                    ).fail(e => {
+                        var errorMessageObj = null;
+                        if (errorMessageObj = JSON.parse(e.responseText)) {
+                            this.searchError = errorMessageObj;
+                        }
+                        else { this.searchError = e; }
+                    });
                 },
                 loadNextSet() {
                     // Grab the current page value advanced by one, we'll only update
