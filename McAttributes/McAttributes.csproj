@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="CsvOutputFormatter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="mcattributes.db" />
   </ItemGroup>
 
