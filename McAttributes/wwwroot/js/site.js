@@ -1,4 +1,4 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
@@ -65,6 +65,37 @@ const uriUser = {
     odata: "/odata/User"
 }
 
+class FilterBuilder {
+    constructor(startMatch, eqMatch, operator='or') {
+        this.startMatch = Array.isArray(startMatch) ? startMatch : [startMatch];
+        this.eqMatch = Array.isArray(eqMatch) ? eqMatch : [eqMatch];
+        this.operator = operator;
+    }
+
+    addStartMatch(property) {
+        this.init();
+        this.startMatch.push(property)
+    }
+
+    addEqMatch(property) {
+        this.init();
+        this.eqMatch.push(property)
+    }
+
+    buildFilterString(searchTerm) {
+        const predicates = []
+        for (let t of this.startMatch) {
+            predicates.push(`startswith(tolower(${t}), tolower('${searchTerm}'))`)
+        }
+        for (let t of this.eqMatch) {
+            predicates.push(`tolower(${t}) eq tolower('${searchTerm}')`)
+        }
+
+        let filterPredicate = predicates.join(` ${this.operator} `)
+        return filterPredicate
+    }
+}
+
 const appDefinition = {
     data() {
         return {
@@ -79,21 +110,12 @@ const appDefinition = {
                 getQueryString(skip = 0) {
                     let startMatch = ['mail']
                     let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
-
                     const opOr = 'or'
-                    const opAnd = 'and'
 
-                    const predicates = []
-                    for (t of startMatch) {
-                        predicates.push(`startswith(tolower(${t}), tolower('${this.searchTerm}'))`)
-                    }
-                    for (t of eqMatch) {
-                        predicates.push(`tolower(${t}) eq tolower('${this.searchTerm}')`)
-                    }
+                    const filterBuilder = new FilterBuilder(startMatch, eqMatch, opOr);
 
-                    let filterPredicate = predicates.join(` ${opOr} `)
-
-                    let filterString = `$filter=${filterPredicate}`;
+                    
+                    let filterString = `$filter=${filterBuilder.buildFilterString(this.searchTerm)}`;
                     if (this.paginate) {
                         return `$count=true&$top=${this.pageSize}&$skip=${skip}&${filterString}`;
                     }
