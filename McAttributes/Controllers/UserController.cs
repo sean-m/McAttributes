@@ -32,9 +32,6 @@ namespace McAttributes.Controllers
         public IQueryable<User> Get(string? aadid) {
 
             // TODO filter based on requestor identity
-            // TODO enforce result set size
-            // TODO implement iqueryable for ODATA filtering and pagination
-
             if (string.IsNullOrEmpty(aadid)) {
                 return _users;
             }
@@ -44,8 +41,8 @@ namespace McAttributes.Controllers
                 return _users.Where(u => u.AadId == id).AsQueryable();
             }
 
-            throw new HttpRequestException($"Could not parse provided addid value in a Guid: {aadid.Substring(0, Math.Min(64, aadid.Length))}", null, System.Net.HttpStatusCode.BadRequest);
-
+            throw new HttpRequestException($"Could not parse provided addid value in a Guid: {aadid.Substring(0, Math.Min(64, aadid.Length))}",
+                inner: null, statusCode: System.Net.HttpStatusCode.BadRequest);
         }
 
 
