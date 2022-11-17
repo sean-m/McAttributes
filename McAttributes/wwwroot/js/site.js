@@ -77,9 +77,25 @@ const appDefinition = {
                 searchTerm: "",
                 searchError: null,
                 getQueryString(skip = 0) {
-                    let filterString = `$count=true&$filter=startswith(mail,'${this.searchTerm}') or startswith(employeeId, '${this.searchTerm}') or startswith(preferredSurname,'${this.searchTerm}') or startswith(preferredGivenName,'${this.searchTerm}')`;
+                    let startMatch = ['mail']
+                    let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
+
+                    const opOr = 'or'
+                    const opAnd = 'and'
+
+                    const predicates = []
+                    for (t of startMatch) {
+                        predicates.push(`startswith(tolower(${t}), tolower('${this.searchTerm}'))`)
+                    }
+                    for (t of eqMatch) {
+                        predicates.push(`tolower(${t}) eq tolower('${this.searchTerm}')`)
+                    }
+
+                    let filterPredicate = predicates.join(` ${opOr} `)
+
+                    let filterString = `$filter=${filterPredicate}`;
                     if (this.paginate) {
-                        return `$top=${this.pageSize}&$skip=${skip}&${filterString}`;
+                        return `$count=true&$top=${this.pageSize}&$skip=${skip}&${filterString}`;
                     }
                     return filterString;
                 },
@@ -90,8 +106,9 @@ const appDefinition = {
                         this.results = this.results.concat(list)
                         return true;
                     } else {
-                        this.results.push(list)
-                        return true;
+                        if (this.results.push(list)) {
+                            return true;
+                        }
                     }
                     return false;
                 },
