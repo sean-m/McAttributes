@@ -1,4 +1,4 @@
-
+<#
 docker stop postgresql_database
 
 docker run --name postgresql_database `
@@ -11,11 +11,9 @@ docker run --name postgresql_database `
     -p 5432:5432 `
     docker.io/library/postgres:latest
     #-v "$((pwd).Path))/data":/var/lib/postgresql/data `
-    
-$sqlQuery = @"
+    #>
 
-DROP DATABASE IF EXISTS identity;
-
+$sqlQueryCreateDB = @"
 CREATE DATABASE identity
     WITH
     OWNER = pguser
@@ -25,7 +23,9 @@ CREATE DATABASE identity
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1
     IS_TEMPLATE = False;
+"@ 
 
+$sqlQuery = @"
 
 create table if not exists graphraw (
 	id serial primary key,
@@ -274,7 +274,7 @@ AS `$$
 `$$
 LANGUAGE 'sql'
 ;
-"@
+"@ 
 
 Start-Sleep -Seconds 10 -Verbose
 
@@ -287,17 +287,40 @@ $cred = New-Object pscredential $user, $pass
 # TODO refactor this out into an environment variable
 $dbServer = "localhost"
 
-Open-PostGreConnection `
-    -ConnectionName 'idDbMerge' `
-    -TrustSSL `
-    -Server $dbServer `
-    -Credential $cred `
-    -ErrorAction Stop `
-    -Verbose
+try {
+    Open-PostGreConnection `
+        -ConnectionName 'idDbMerge' `
+        -TrustSSL `
+        -Server $dbServer `
+        -Credential $cred `
+        -ErrorAction Stop `
+        -Verbose
+
+    Write-Host "Creating identity database."
+    Invoke-SqlUpdate -ConnectionName 'idDbMerge' `
+        -Query $sqlQueryCreateDB -ErrorAction Stop
+}
+finally {
+    Close-SqlConnection -ConnectionName 'idDbMerge'
+}
+
+Start-Sleep -Seconds 1
 
 try {
+    Write-Host 'Connecting to identity database.'    
+    Open-PostGreConnection `
+        -ConnectionName 'idDbMerge' `
+        -TrustSSL `
+        -Database 'identity' `
+        -Server $dbServer `
+        -Credential $cred `
+        -ErrorAction Stop `
+        -Verbose
+
+    Write-Host 'Creating tables and functions.'
     Invoke-SqlUpdate -ConnectionName 'idDbMerge' `
-            -Query $sqlQuery -ErrorAction Stop
+        -Query $sqlQuery -ErrorAction Stop
+        
 }
 finally {
     Close-SqlConnection -ConnectionName 'idDbMerge'
