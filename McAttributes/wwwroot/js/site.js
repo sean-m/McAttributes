@@ -58,12 +58,6 @@ let SearchTable = {
     `
 }
 
-const { createApp } = Vue
-
-const uriUser = {
-    api: "/api/User",
-    odata: "/odata/User"
-}
 
 class FilterBuilder {
     constructor(startMatch, eqMatch, operator='or') {
@@ -96,6 +90,14 @@ class FilterBuilder {
     }
 }
 
+
+const { createApp } = Vue
+
+const uriUser = {
+    api: "/api/User",
+    odata: "/odata/User"
+}
+
 const appDefinition = {
     data() {
         return {
@@ -111,10 +113,8 @@ const appDefinition = {
                     let startMatch = ['mail']
                     let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
                     const opOr = 'or'
-
                     const filterBuilder = new FilterBuilder(startMatch, eqMatch, opOr);
 
-                    
                     let filterString = `$filter=${filterBuilder.buildFilterString(this.searchTerm)}`;
                     if (this.paginate) {
                         return `$count=true&$top=${this.pageSize}&$skip=${skip}&${filterString}`;
@@ -137,7 +137,7 @@ const appDefinition = {
                 searchForUsers(skip = 0) {
                     let queryString = this.getQueryString();
                     if (skip) { queryString = this.getQueryString(skip); }
-                    console.log(queryString);
+                    console.log(`Query string: ${queryString}`);
 
                     $.getJSON(`${uriUser.odata}?${queryString}`, null,
                         json => {

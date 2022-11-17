@@ -22,8 +22,9 @@
 
     <!-- Tab Content -->
     <div id="myTabContent" class="tab-content">
-        <div id="userForm" class="tab-pane active" role="tabpanel" aria-labelledby="user-tab">
 
+        <!-- User Search -->
+        <div id="userForm" class="tab-pane active" role="tabpanel" aria-labelledby="user-tab">
             <!-- User search input field -->
             <div class="input-group mb-3">
                 <input class="form-control" type="text" placeholder="search" name="search-input" v-on:keyup.enter="searchForUsers()" v-model="currentUserSearch.searchTerm" />
@@ -63,6 +64,7 @@
             <button class="btn btn-link" id="btnLoadMore" v-if="currentUserSearch.resultCount > currentUserSearch.results.length" @@click="loadMoreUserResults()">Load More</button>
         </div>
 
+        <!-- Issue Search -->
         <div id="issueForm" class="tab-pane" role="tabpanel" aria-labelledby="issue-tab">
             <button class="btn btn-primary" @@click="newIssueEntry()">New Issue</button>
             <strong>Issue</strong>
