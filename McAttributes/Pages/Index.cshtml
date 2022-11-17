@@ -7,10 +7,14 @@
 <div id="app">
     
     <div id="userForm">
+
+        <!-- User search input field -->
         <div class="input-group mb-3">
             <input class="form-control" type="text" placeholder="User search" name="search-input" v-on:keyup.enter="searchForUsers()" v-model="currentUserSearch.searchTerm" />
             <button class="button input-group-text" @@click="searchForUsers()">Search</button>
         </div>
+
+        <!-- Search configuration options: pagination, result page size, clear button -->
         <div>
             <label class="preference" for="paginatePreference">Paginate results</label>
             <input id="paginatePreference" type="checkbox" name="paginatePreference" v-model="currentUserSearch.paginate" />
@@ -20,24 +24,25 @@
             <input id="pageSize" type="number" name="pageSize" v-model="currentUserSearch.pageSize" />
         </div>
         <div>
-            <button class="btn btn-outline-warning" @@click="currentUserSearch.clearResults()">Clear Results</button>
-        </div>
-        
-
-        <div>
             <label v-if="currentUserSearch.resultCount">Total Results: {{currentUserSearch.resultCount}}</label>
             <br />
             <label v-if="currentUserSearch.results">Results Fetched: {{currentUserSearch.results.length}}</label>
         </div>
+        <div>
+            <button v-if="currentUserSearch.resultCount > 0" class="btn btn-outline-warning" @@click="currentUserSearch.clearResults()">Clear Results</button>
+        </div>
         
+        <!-- User search results -->
         <button class="btn btn-link" id="btnLoadMore" v-if="currentUserSearch.resultCount > currentUserSearch.results.length" @@click="loadMoreUserResults()">Load More</button>
 
-        <ul class="list-group">
-            
-            <li class="list-group-item" v-for="value in currentUserSearch.results">
-                {{value.Upn}}
-            </li>
-        </ul>
+        <table class="table">
+            <tr>
+                <th v-for="(value, key, i) in currentUserSearch.results[0]">{{ expandOnCase(key) }}</td>
+            </tr>
+            <tr v-for="value of currentUserSearch.results">
+                <td v-for="(val, key, i) in value">{{ val }}</td>
+            </tr>
+        </table>
 
         <button class="btn btn-link" id="btnLoadMore" v-if="currentUserSearch.resultCount > currentUserSearch.results.length" @@click="loadMoreUserResults()">Load More</button>
     </div>

@@ -3,19 +3,69 @@
 
 // Write your JavaScript code.
 
+let ObjectTable = {
+    props: ['record', 'title', 'expand', 'list'],
+    data() {
+        return {};
+    },
+    methods: {
+        expandOnCase(input) {
+            return input.replace(/([a-z])([A-Z])/g, '$1 $2')
+        }
+    },
+    template: `<div>
+    <table class="table table-responsive-sm">
+        <thead v-if="title">
+            <tr><td><strong>{{ title }}</strong></td><td></td></tr>
+        </thead>
+        <tbody>
+            <tr v-for="(value, key, i) in record">
+                <td>{{ expandOnCase(key) }}</td>
+                <td v-if="expand && expand.includes(key)">
+                    <ObjectTable :record="value" :list="list"></ObjectTable>
+                </td>
+                <td v-else-if="list && list.includes(key)">
+                    <ul class="no-bullets">
+                        <li v-for="(entry) in value.sort()">{{ entry }}</li>
+                    </ul>
+                </td>
+                <td v-else>{{ value }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>`
+}
+
+let SearchTable = {
+    props: ['records', 'columns'],
+    data() {
+        return {};
+    },
+    methods : {        
+        expandOnCase(input) {
+            return input.replace(/([a-z])([A-Z])/g, '$1 $2')
+        }
+    },
+    template: `
+    <table class="table">
+    <tr>
+        <th v-for="(value, key, i) in records[0]">{{ expandOnCase(key) }}</td>
+    </tr>
+    <tr v-for="value of records">
+        <td v-for="(val, key, i) in value">{{ val }}</td>
+    </tr>
+</table>
+    `
+}
 
 const { createApp } = Vue
-
-class ResultPager {
-
-}
 
 const uriUser = {
     api: "/api/User",
     odata: "/odata/User"
 }
 
-createApp({
+const appDefinition = {
     data() {
         return {
             currentUserSearch: {
@@ -50,7 +100,7 @@ createApp({
                     if (skip) { queryString = this.getQueryString(skip); }
                     console.log(queryString);
 
-                    $.getJSON(`${uriUser.odata}?${queryString}`,
+                    $.getJSON(`${uriUser.odata}?${queryString}`, null,
                         json => {
                             this.updateResultSet(json);
                         }
@@ -117,6 +167,14 @@ createApp({
                     notes:''
                 }
             }
+        },
+        expandOnCase(input) {
+            return input.replace(/([a-z])([A-Z])/g, '$1 $2')
         }
     }
-}).mount('#app')
+};
+
+const app = createApp(appDefinition);
+app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-')
+app.component('SearchTable', SearchTable);
+app.mount('#app');
