@@ -60,8 +60,9 @@ let SearchTable = {
 
 
 class FilterBuilder {
-    constructor(startMatch, eqMatch, operator='or') {
+    constructor(startMatch, eqMatch, endMatch, operator='or') {
         this.startMatch = Array.isArray(startMatch) ? startMatch : [startMatch];
+        this.endMatch = Array.isArray(endMatch) ? endMatch : [endMatch];
         this.eqMatch = Array.isArray(eqMatch) ? eqMatch : [eqMatch];
         this.operator = operator;
     }
@@ -78,8 +79,12 @@ class FilterBuilder {
 
     buildFilterString(searchTerm) {
         const predicates = []
+
         for (let t of this.startMatch) {
             predicates.push(`startswith(tolower(${t}), tolower('${searchTerm}'))`)
+        }
+        for (let t of this.endMatch) {
+            predicates.push(`endswith(tolower(${t}), tolower('${searchTerm}'))`)
         }
         for (let t of this.eqMatch) {
             predicates.push(`tolower(${t}) eq tolower('${searchTerm}')`)
@@ -98,6 +103,12 @@ const uriUser = {
     odata: "/odata/User"
 }
 
+const uriIssue = {
+    api: "/api/IssueLogEntry",
+    odata: "/odata/IssueLogEntry"
+}
+
+
 const appDefinition = {
     data() {
         return {
@@ -113,7 +124,7 @@ const appDefinition = {
                     let startMatch = ['mail']
                     let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
                     const opOr = 'or'
-                    const filterBuilder = new FilterBuilder(startMatch, eqMatch, opOr);
+                    const filterBuilder = new FilterBuilder(startMatch, eqMatch, [], opOr);
 
                     let filterString = `$filter=${filterBuilder.buildFilterString(this.searchTerm)}`;
                     if (this.paginate) {
@@ -134,7 +145,7 @@ const appDefinition = {
                     }
                     return false;
                 },
-                searchForUsers(skip = 0) {
+                executeSearch(skip = 0) {
                     let queryString = this.getQueryString();
                     if (skip) { queryString = this.getQueryString(skip); }
                     console.log(`Query string: ${queryString}`);
@@ -157,7 +168,76 @@ const appDefinition = {
                     var currentPage = this.pageNumber + 1;
 
                     // We want to skip over the results we've already fetched.
-                    if (this.searchForUsers(this.results.length)) {
+                    if (this.executeSearch(this.results.length)) {
+                        this.pageNumber = currentPage;
+                    }
+                },
+                clearResults() {
+                    this.results = [];
+                    this.resultCount = 0;
+                }
+            },
+            currentIssueSearch: {
+                pageNumber: 0,
+                pageSize: 10,
+                paginate: true,
+                results: [],
+                resultCount: 0,
+                searchTerm: "",
+                searchError: null,
+                getQueryString(skip = 0) {
+                    let startMatch = ['attrName']
+                    let endMatch = ['attrName']
+                    let eqMatch = ['status']
+                    const opOr = 'or'
+                    const filterBuilder = new FilterBuilder(startMatch, eqMatch, endMatch, opOr);
+
+                    let filterString = `$filter=${filterBuilder.buildFilterString(this.searchTerm)}`;
+                    if (startMatch.length == 0 && eqMatch.length ==0) {
+                        filterString = '';
+                    }
+                    if (this.paginate) {
+                        return `$count=true&$top=${this.pageSize}&$skip=${skip}&${filterString}`;
+                    }
+                    return filterString;
+                },
+                updateResultSet(json) {
+                    this.resultCount = json['@odata.count'];
+                    var list = json.value;
+                    if (Array.isArray(list)) {
+                        this.results = this.results.concat(list)
+                        return true;
+                    } else {
+                        if (this.results.push(list)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                executeSearch(skip = 0) {
+                    let queryString = this.getQueryString();
+                    if (skip) { queryString = this.getQueryString(skip); }
+                    console.log(`Query string: ${queryString}`);
+
+                    $.getJSON(`${uriIssue.odata}?${queryString}`, null,
+                        json => {
+                            this.updateResultSet(json);
+                        }
+                    ).fail(e => {
+                        var errorMessageObj = null;
+                        if (errorMessageObj = JSON.parse(e.responseText)) {
+                            this.searchError = errorMessageObj;
+                        }
+                        else { this.searchError = e; }
+                    });
+                },
+                loadNextSet() {
+                    // Grab the current page value advanced by one, we'll only update
+                    // the pageNumber value if the lookup succeeded.
+                    var currentPage = this.pageNumber + 1;
+
+                    // We want to skip over the results we've already fetched.
+                    if (this.executeSearch(this.results.length)) {
                         this.pageNumber = currentPage;
                     }
                 },
@@ -181,18 +261,18 @@ const appDefinition = {
         }
     },
     methods: {
-        clearResults() {
-            this.currentUserSearch.clearResults();
-        },
+        // User search supporting methods
         searchForUsers() {
-            this.clearResults();
-            this.currentUserSearch.searchForUsers();
+            this.currentUserSearch.clearResults();
+            this.currentUserSearch.executeSearch();
         },
         loadMoreUserResults() {
             this.currentUserSearch.loadNextSet();
         },
+        // Issue handling support methods
         searchForIssues() {
-
+            this.currentIssueSearch.clearResults();
+            this.currentIssueSearch.executeSearch();
         },
         newIssueEntry() {
             this.currentIssue = {

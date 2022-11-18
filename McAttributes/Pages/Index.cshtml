@@ -61,22 +61,49 @@
                 </tr>
             </table>
 
-            <button class="btn btn-link" id="btnLoadMore" v-if="currentUserSearch.resultCount > currentUserSearch.results.length" @@click="loadMoreUserResults()">Load More</button>
+            <button class="btn btn-link" id="btnLoadMore" v-if="currentUserSearch.resultCount > currentUserSearch.results.length" @@click="currentUserSearch.loadNextSet()">Load More</button>
         </div>
 
         <!-- Issue Search -->
         <div id="issueForm" class="tab-pane" role="tabpanel" aria-labelledby="issue-tab">
-            <button class="btn btn-primary" @@click="newIssueEntry()">New Issue</button>
-            <strong>Issue</strong>
-            <div id="issueFields">
-                
-                <div class="preference form-group" v-for="(value, field, index) in currentIssue.model"> 
-                    <label for="issue-{{field}}">{{field}}</label>
-                    <input type="text" name="issue-{{field}}" 
-                        id="issue-{{field}}" readonly="{{!this.currentIssue.edit}}"/>
-                </div>
-                
+            
+            <!-- Issue search input field -->
+            <div class="input-group mb-3">
+                <input class="form-control" type="text" placeholder="search" name="search-input" v-on:keyup.enter="searchForIssues()" v-model="currentIssueSearch.searchTerm" />
+                <button class="button input-group-text" @@click="searchForIssues()">Search</button>
             </div>
+
+            <!-- Search configuration options: pagination, result page size, clear button -->
+            <div>
+                <label class="preference" for="paginatePreference">Paginate results</label>
+                <input id="paginatePreference" type="checkbox" name="paginatePreference" v-model="currentIssueSearch.paginate" />
+            </div>
+            <div>
+                <label class="preference" for="pageSize">Result size</label>
+                <input id="pageSize" type="number" name="pageSize" v-model="currentIssueSearch.pageSize" />
+            </div>
+            <div>
+                <label v-if="currentIssueSearch.resultCount">Total Results: {{currentIssueSearch.resultCount}}</label>
+                <br />
+                <label v-if="currentIssueSearch.results">Results Fetched: {{currentIssueSearch.results.length}}</label>
+            </div>
+            <div>
+                <button v-if="currentIssueSearch.resultCount > 0" class="btn btn-outline-warning" @@click="currentIssueSearch.clearResults()">Clear Results</button>
+            </div>
+            
+            <!-- User search results -->
+            <button class="btn btn-link" id="btnLoadMore" v-if="currentIssueSearch.resultCount > currentIssueSearch.results.length" @@click="currentIssueSearch.loadNextSet()">Load More</button>
+
+            <table class="table">
+                <tr>
+                    <th v-for="(value, key, i) in currentIssueSearch.results[0]">{{ expandOnCase(key) }}</td>
+                </tr>
+                <tr v-for="value of currentIssueSearch.results">
+                    <td v-for="(val, key, i) in value">{{ val }}</td>
+                </tr>
+            </table>
+
+            <button class="btn btn-link" id="btnLoadMore" v-if="currentIssueSearch.resultCount > currentIssueSearch.results.length" @@click="currentIssueSearch.loadNextSet()">Load More</button>
         </div>
     </div>
 </div>
