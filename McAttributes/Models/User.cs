@@ -7,12 +7,13 @@ namespace McAttributes.Models {
         [Key]
         [Column("id")]
         public int Id { get; set; }
+        [Column("lastfetched")]
+        public DateTime? LastFetched { get; set; } = null;
         [Column("merged")]
         public DateTime? Merged { set; get; } = null;
         [Column("modified")]
         public DateTime? Modified { get; set; } = null;
-        [Column("lastfetched")]
-        public DateTime? LastFetched { get; set; } = null;
+        
         [Column("created")]
         public DateTime? Created { get; set; } = null;
         [Column("enabled")]
