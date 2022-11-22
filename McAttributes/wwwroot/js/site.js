@@ -78,6 +78,10 @@ class FilterBuilder {
     }
 
     buildFilterString(searchTerm) {
+        if (searchTerm === null || searchTerm === undefined || String.length(searchTerm) === 0) {
+            return null;
+        }
+
         const predicates = []
 
         for (let t of this.startMatch) {
@@ -91,7 +95,7 @@ class FilterBuilder {
         }
 
         let filterPredicate = predicates.join(` ${this.operator} `)
-        return filterPredicate
+        return `$filter=${filterPredicate}`
     }
 }
 
@@ -121,16 +125,22 @@ const appDefinition = {
                 searchTerm: "",
                 searchError: null,
                 getQueryString(skip = 0) {
+                    let queryString = ''
                     let startMatch = ['mail']
                     let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
                     const opOr = 'or'
                     const filterBuilder = new FilterBuilder(startMatch, eqMatch, [], opOr);
 
-                    let filterString = `$filter=${filterBuilder.buildFilterString(this.searchTerm)}`;
                     if (this.paginate) {
-                        return `$count=true&$top=${this.pageSize}&$skip=${skip}&${filterString}`;
+                        queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
+                        return queryString;
                     }
-                    return filterString;
+
+                    let filterString = filterBuilder.buildFilterString();
+                    if (filterString) {
+                        queryString = `${queryString}&${filterString}`
+                    }
+                    return queryString;
                 },
                 updateResultSet(json) {
                     this.resultCount = json['@odata.count'];
@@ -186,20 +196,23 @@ const appDefinition = {
                 searchTerm: "",
                 searchError: null,
                 getQueryString(skip = 0) {
+                    let queryString = ''
                     let startMatch = ['attrName']
                     let endMatch = ['attrName']
                     let eqMatch = ['status']
                     const opOr = 'or'
                     const filterBuilder = new FilterBuilder(startMatch, eqMatch, endMatch, opOr);
 
-                    let filterString = `$filter=${filterBuilder.buildFilterString(this.searchTerm)}`;
-                    if (startMatch.length == 0 && eqMatch.length ==0) {
-                        filterString = '';
-                    }
                     if (this.paginate) {
-                        return `$count=true&$top=${this.pageSize}&$skip=${skip}&${filterString}`;
+                        queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
+                        return queryString;
                     }
-                    return filterString;
+
+                    let filterString = filterBuilder.buildFilterString();
+                    if (filterString) {
+                        queryString = `${queryString}&${filterString}`
+                    }
+                    return queryString;
                 },
                 updateResultSet(json) {
                     this.resultCount = json['@odata.count'];
