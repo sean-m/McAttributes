@@ -105,7 +105,9 @@ create table if not exists IssueLogEntry (
 
                 var paramQuery = @$"
                 insert into azusers ({String.Join(',', columns)})
-                values ({String.Join(',', columns.Select(x => $"@{x}"))});
+                values ({String.Join(',', columns.Select(x => $"@{x}"))})
+                on conflict(aadid)
+                do nothing;
                 ";
                 var sqlCmd = new NpgsqlCommand(paramQuery, conn);
                 foreach (var col in columns)
@@ -117,7 +119,7 @@ create table if not exists IssueLogEntry (
                 inserts.Add(sqlCmd.ExecuteNonQueryAsync());
             }
 
-            Task.WaitAll(Task.FromResult(inserts));
+            await Task.WhenAll(inserts.ToArray());
         }
 
         static object GetAsType(object source, Type desiredType) {
