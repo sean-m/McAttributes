@@ -120,11 +120,8 @@ $employeeIds = @()
 
 $pronounRate = 0.01
 $articleRate = 0.001
-$spoofRate = 0.0001
-
-
-
-
+$spoofRate = 0.04
+$guestRate = 0.8
 
 ################################################################################
 ##                                    Main                                    ##
@@ -161,16 +158,18 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
     $employeeId = "OT{0:D7}" -f (Get-Random -min 999 -max 999999)
     $employeeIds += $employeeId
 
-    New-Object PSObject -Property @{
-        merged = $false
+    $fetched = (Get-Date).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
+    
+    $account = New-Object PSObject -Property @{
+        merged = $fetched.AddSeconds((Get-Random -Min 300 -Max 6555))
         modified = (Get-Date).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
-        lastFetched = (Get-Date).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
+        lastFetched = $fetched
         created = (Get-Date).Addyears(- (Get-Random -Minimum 0 -Maximum 4)).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
         enabled = if ((RndFloat) -le 0.005) { $false } else { $true }
         tenant = $tenant
         aadId = [Guid]::NewGuid()
         upn = "$first`.$last@$tenant"
-        mail = "$first`.$last@$tenant"
+        mail = "$first`.$last@$($tenant.Replace('.onthecloud',''))"
         employeeId = $employeeId
         adEmployeeId = if (RndFloat -le $spoofRate) { $i = Get-Random -Minimum 0 -Maximum $employeeIds.Count; $employeeIds[$i] } else { $employeeId }  # randomly select from previous employeeIds that have been issued consistent with the spoofing rate
         hrEmployeeId = ''
@@ -182,5 +181,18 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
         preferredSurname = $last
         articles = $article
         pronouns = $pronoun
+    }
+
+    $account
+
+    if (RndFloat -le $guestRate) {
+        $tenant | where $account.Upn -NotLike "*$_" | foreach {
+            $guest = $account.PSObject.Copy()
+            $upn = $guest.upn.Replace("@","_") + "%EXT%@" + $_
+            $guest.upn = $upn
+            $guest.creationType = 'Invitation'
+            $guest.aadId = [Guid]::NewGuid()
+            $guest
+        }
     }
 } | export-csv -NoTypeInformation .\test_azusers_1.csv
