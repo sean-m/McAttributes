@@ -418,7 +418,7 @@ LANGUAGE 'sql'
         $columnTypes = @{}
         $columns | foreach { $columnTypes.Add($_.column_name, $_.data_type) }
 
-        $testValues = @(Import-Csv .\McAttributes\test_values_1.csv)
+        $testValues = @(Import-Csv .\McAttributes\test_values.csv)
 
         $tasks = @()
 
