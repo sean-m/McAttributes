@@ -21,7 +21,11 @@ static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
     var users = edmBuilder.EntitySet<User>("User");
     users.EntityType.Ignore(u => u.Pronouns);
+
     edmBuilder.EntitySet<IssueLogEntry>("IssueLogEntry");
+    
+    edmBuilder.EntitySet<Stargate>("Stargate");
+    
     return edmBuilder.GetEdmModel();
 }
 

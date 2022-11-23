@@ -5,17 +5,21 @@ namespace McAttributes.Models {
     [Table("stargate")]
     public class Stargate {
         [Key]
-        public long id { get; set; }
+        [Column("id")]
+        public long Id { get; set; }
         [Column("recordtype")]
-        public StargateType recordType { get; set; }
+        public StargateType RecordType { get; set; }
         [ForeignKey("id")]
         [Column("globalid")]
-        public long? globalId { get; set; }
+        public long? GlobalId { get; set; }
         [Column("localid")]
-        public string localId { get; set; }
-        public string? upn  { get; set; }
-        public string? partition { get; set; }
-        public string? joinseed { get; set; }
+        public string? LocalId { get; set; }
+        [Column("upn")]
+        public string? Upn  { get; set; }
+        [Column("partition")]
+        public string? Partition { get; set; }
+        [Column("joinseed")]
+        public string? Joinseed { get; set; }
     }
 
 

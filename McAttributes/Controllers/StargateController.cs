@@ -36,19 +36,43 @@ namespace McAttributes.Controllers {
 
         // GET api/<StargateController>/5
         [HttpGet("{id}")]
-        public Stargate Get(int id) {
-           return _stargate.First(x => x.id == id);
+        public Stargate Get(string id) {
+            // If the passed value can parse as a long, assume it's the primary key,
+            // otherwise lookup by LocalId string value.
+            if (long.TryParse(id, out long _id)) {
+                return _stargate.First(x => x.Id == _id);
+            } 
+            return _stargate.First(x => x.LocalId == id);
         }
 
-        // TODO implement these
-        //// POST api/<StargateController>
-        //[HttpPost]
-        //public void Post([FromBody] string value) {
-        //}
+        //TODO implement these
+        // POST api/<StargateController>
+        [HttpPost]
+        public async Task<long> Post([FromBody] Stargate value) {
+            _stargate.Add(value);
+            await _ctx.SaveChangesAsync();
+            return value.Id;
+        }
 
-        //// PUT api/<StargateController>/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value) {
-        //}
+        // PUT api/<StargateController>/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, [FromBody] Stargate value) {
+            if (id != value.Id)
+                return BadRequest($"Specified id: {id} and entity id: {value.Id} do not match.");
+
+            _ctx.Entry(value).State = EntityState.Modified;
+
+            try {
+                await _ctx.SaveChangesAsync();
+            } catch (DbUpdateConcurrencyException) {
+                if (!_stargate.Any(x => x.Id == id)) {
+                    return NotFound();
+                } else {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
     }
 }
