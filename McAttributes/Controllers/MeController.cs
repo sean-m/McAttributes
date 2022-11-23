@@ -6,6 +6,7 @@ using System.Security.Claims;
 namespace McAttributes.Controllers {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MeController : ControllerBase {
         ILogger _logger;
         MeController(ILogger<MeController> logger) {
