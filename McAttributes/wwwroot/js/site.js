@@ -99,164 +99,135 @@ class FilterBuilder {
     }
 }
 
+class ObjectSearchContext {
+    pageNumber= 0;
+    pageSize= 10;
+    paginate= true;
+    results= [];
+    resultCount= 0;
+    searchTerm= "";
+    searchError= null;
+    apiPath = { odata: null, api: null };
+
+    getQueryString(skip = 0) {
+    }
+
+    updateResultSet(json) {
+        this.resultCount = json['@odata.count'];
+        var list = json.value;
+        if (Array.isArray(list)) {
+            this.results = this.results.concat(list)
+            return true;
+        } else {
+            if (this.results.push(list)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    executeSearch(skip = 0) {
+        let queryString = this.getQueryString();
+        if (skip) { queryString = this.getQueryString(skip); }
+        console.log(`Query string: ${this.apiPath.odata}?${queryString}`);
+
+        $.getJSON(`${this.apiPath.odata}?${queryString}`, null,
+            json => {
+                this.updateResultSet(json);
+            }
+        ).fail(e => {
+            var errorMessageObj = null;
+            if (errorMessageObj = JSON.parse(e.responseText)) {
+                this.searchError = errorMessageObj;
+            }
+            else { this.searchError = e; }
+        });
+    }
+
+    loadNextSet() {
+        // Grab the current page value advanced by one, we'll only update
+        // the pageNumber value if the lookup succeeded.
+        var currentPage = this.pageNumber + 1;
+
+        // We want to skip over the results we've already fetched.
+        if (this.executeSearch(this.results.length)) {
+            this.pageNumber = currentPage;
+        }
+    }
+
+    clearResults() {
+        this.results = [];
+        this.resultCount = 0;
+    }
+}
+
+class UserSearchContext extends ObjectSearchContext {
+    constructor() {
+        super()
+
+        this.apiPath = {
+            api: "/api/User",
+            odata: "/odata/User"
+        }
+    }
+
+    getQueryString(skip = 0) {
+        let queryString = ''
+        let startMatch = ['mail']
+        let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
+        const opOr = 'or'
+        const filterBuilder = new FilterBuilder(startMatch, eqMatch, [], opOr);
+
+        if (this.paginate) {
+            queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
+        }
+
+        let filterString = filterBuilder.buildFilterString(this.searchTerm);
+        if (filterString) {
+            queryString = `${queryString}&${filterString}`
+        }
+        return queryString;
+    }
+}
+
+class IssueSearchContext extends ObjectSearchContext {
+    constructor() {
+        super()
+
+        this.apiPath = {
+            api: "/api/IssueLogEntry",
+            odata: "/odata/IssueLogEntry"
+        }
+    }
+
+    getQueryString(skip = 0) {
+        let queryString = ''
+        let startMatch = ['attrName']
+        let endMatch = ['attrName']
+        let eqMatch = ['status']
+        const opOr = 'or'
+        const filterBuilder = new FilterBuilder(startMatch, eqMatch, endMatch, opOr);
+
+        if (this.paginate) {
+            queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
+        }
+
+        let filterString = filterBuilder.buildFilterString(this.searchTerm);
+        if (filterString) {
+            queryString = `${queryString}&${filterString}`
+        }
+        return queryString;
+    }
+}
+
 
 const { createApp } = Vue
-
-const uriUser = {
-    api: "/api/User",
-    odata: "/odata/User"
-}
-
-const uriIssue = {
-    api: "/api/IssueLogEntry",
-    odata: "/odata/IssueLogEntry"
-}
-
 
 const appDefinition = {
     data() {
         return {
-            currentUserSearch: {
-                pageNumber: 0,
-                pageSize: 10,
-                paginate: true,
-                results: [],
-                resultCount: 0,
-                searchTerm: "",
-                searchError: null,
-                getQueryString(skip = 0) {
-                    let queryString = ''
-                    let startMatch = ['mail']
-                    let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
-                    const opOr = 'or'
-                    const filterBuilder = new FilterBuilder(startMatch, eqMatch, [], opOr);
-
-                    if (this.paginate) {
-                        queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
-                    }
-
-                    let filterString = filterBuilder.buildFilterString(this.searchTerm);
-                    if (filterString) {
-                        queryString = `${queryString}&${filterString}`
-                    }
-                    return queryString;
-                },
-                updateResultSet(json) {
-                    this.resultCount = json['@odata.count'];
-                    var list = json.value;
-                    if (Array.isArray(list)) {
-                        this.results = this.results.concat(list)
-                        return true;
-                    } else {
-                        if (this.results.push(list)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                },
-                executeSearch(skip = 0) {
-                    let queryString = this.getQueryString();
-                    if (skip) { queryString = this.getQueryString(skip); }
-                    console.log(`Query string: ${queryString}`);
-
-                    $.getJSON(`${uriUser.odata}?${queryString}`, null,
-                        json => {
-                            this.updateResultSet(json);
-                        }
-                    ).fail(e => {
-                        var errorMessageObj = null;
-                        if (errorMessageObj = JSON.parse(e.responseText)) {
-                            this.searchError = errorMessageObj;
-                        }
-                        else { this.searchError = e; }
-                    });
-                },
-                loadNextSet() {
-                    // Grab the current page value advanced by one, we'll only update
-                    // the pageNumber value if the lookup succeeded.
-                    var currentPage = this.pageNumber + 1;
-
-                    // We want to skip over the results we've already fetched.
-                    if (this.executeSearch(this.results.length)) {
-                        this.pageNumber = currentPage;
-                    }
-                },
-                clearResults() {
-                    this.results = [];
-                    this.resultCount = 0;
-                }
-            },
-            currentIssueSearch: {
-                pageNumber: 0,
-                pageSize: 10,
-                paginate: true,
-                results: [],
-                resultCount: 0,
-                searchTerm: "",
-                searchError: null,
-                getQueryString(skip = 0) {
-                    let queryString = ''
-                    let startMatch = ['attrName']
-                    let endMatch = ['attrName']
-                    let eqMatch = ['status']
-                    const opOr = 'or'
-                    const filterBuilder = new FilterBuilder(startMatch, eqMatch, endMatch, opOr);
-
-                    if (this.paginate) {
-                        queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
-                    }
-
-                    let filterString = filterBuilder.buildFilterString(this.searchTerm);
-                    if (filterString) {
-                        queryString = `${queryString}&${filterString}`
-                    }
-                    return queryString;
-                },
-                updateResultSet(json) {
-                    this.resultCount = json['@odata.count'];
-                    var list = json.value;
-                    if (Array.isArray(list)) {
-                        this.results = this.results.concat(list)
-                        return true;
-                    } else {
-                        if (this.results.push(list)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                },
-                executeSearch(skip = 0) {
-                    let queryString = this.getQueryString();
-                    if (skip) { queryString = this.getQueryString(skip); }
-                    console.log(`Query string: ${queryString}`);
-
-                    $.getJSON(`${uriIssue.odata}?${queryString}`, null,
-                        json => {
-                            this.updateResultSet(json);
-                        }
-                    ).fail(e => {
-                        var errorMessageObj = null;
-                        if (errorMessageObj = JSON.parse(e.responseText)) {
-                            this.searchError = errorMessageObj;
-                        }
-                        else { this.searchError = e; }
-                    });
-                },
-                loadNextSet() {
-                    // Grab the current page value advanced by one, we'll only update
-                    // the pageNumber value if the lookup succeeded.
-                    var currentPage = this.pageNumber + 1;
-
-                    // We want to skip over the results we've already fetched.
-                    if (this.executeSearch(this.results.length)) {
-                        this.pageNumber = currentPage;
-                    }
-                },
-                clearResults() {
-                    this.results = [];
-                    this.resultCount = 0;
-                }
-            },
+            currentUserSearch: new UserSearchContext(),
+            currentIssueSearch: new IssueSearchContext(),
             includeResolved: false,
             issues: {
                 count() { return this.issueList.count },
