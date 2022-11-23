@@ -226,6 +226,7 @@ const { createApp } = Vue
 const appDefinition = {
     data() {
         return {
+            currentTab: 'userForm',
             currentUserSearch: new UserSearchContext(),
             currentIssueSearch: new IssueSearchContext(),
             includeResolved: false,
@@ -259,7 +260,8 @@ const appDefinition = {
         showIssuesForUser(term) {
             console.log("Issue lookup: " + term)
             this.currentIssueSearch.searchTerm = term;
-            this.currentIssueSearch.executeSearch();
+            this.searchForIssues();
+            this.currentTab = 'issueForm';
         },
         newIssueEntry() {
             this.currentIssue = {

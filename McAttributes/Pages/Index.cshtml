@@ -11,11 +11,11 @@
     <div>
         <ul class="nav nav-tabs" id="navTabs" role="tablist">
              <li class="nav-item"   role="tab">
-                <a class="nav-link active" id="user-tab" data-bs-toggle="tab" href="#userForm" aria-current="page" aria-controls="User Search" aria-selected="true">User Search</a>
+                <a :class="currentTab === 'userForm' ? 'nav-link active' : 'nav-link'" @@click="this.currentTab = 'userForm'" id="user-tab" data-bs-toggle="tab" href="#userForm" aria-current="page" aria-controls="User Search" aria-selected="true">User Search</a>
             </li>
 
             <li class="nav-item"  role="tab">
-                <a class="nav-link" id="issue-tab" data-bs-toggle="tab" href="#issueForm" aria-controls="Issue Form" aria-selected="false">Issue Form</a>
+                <a :class="currentTab === 'issueForm' ? 'nav-link active' : 'nav-link'" @@click="this.currentTab = 'issueForm'" id="issue-tab" data-bs-toggle="tab" href="#issueForm" aria-controls="Issue Form" aria-selected="false">Issue Form</a>
             </li>
         </ul>
     </div>
@@ -24,7 +24,7 @@
     <div id="myTabContent" class="tab-content">
 
         <!-- User Search -->
-        <div id="userForm" class="tab-pane active" role="tabpanel" aria-labelledby="user-tab">
+        <div id="userForm" :class="currentTab === 'userForm' ? 'tab-pane active' : 'tab-pane'" role="tabpanel" aria-labelledby="user-tab">
             <!-- User search input field -->
             <div class="input-group mb-3">
                 <input class="form-control" type="text" placeholder="search" name="search-input" v-on:keyup.enter="searchForUsers()" v-model="currentUserSearch.searchTerm" />
@@ -57,7 +57,7 @@
                     <th>Issues</th><th v-for="(value, key, i) in currentUserSearch.results[0]">{{ expandOnCase(key) }}</td>
                 </tr>
                 <tr v-for="value of currentUserSearch.results">
-                    <td><button v-if="value.AdEmployeeId" @@click="this.showIssuesForUser(value.AdEmployeeId)">{{value.AdEmployeeId}}</button></td><td v-for="(val, key, i) in value">{{ val }}</td>
+                    <td><button class="btn btn-outline-secondary" v-if="value.AdEmployeeId" @@click="this.showIssuesForUser(value.AdEmployeeId)">{{value.AdEmployeeId}}</button></td><td v-for="(val, key, i) in value">{{ val }}</td>
                 </tr>
             </table>
 
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Issue Search -->
-        <div id="issueForm" class="tab-pane" role="tabpanel" aria-labelledby="issue-tab">
+        <div id="issueForm" :class="currentTab === 'issueForm' ? 'tab-pane active' : 'tab-pane'" role="tabpanel" aria-labelledby="issue-tab">
             
             <!-- Issue search input field -->
             <div class="input-group mb-3">
