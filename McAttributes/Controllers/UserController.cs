@@ -52,9 +52,10 @@ namespace McAttributes.Controllers
 
         // POST api/<UserController>
         [HttpPost]
-        public async void Post([FromBody] User value) {
+        public async Task<int> Post([FromBody] User value) {
             _users.Add(value);
             await _ctx.SaveChangesAsync();
+            return value.Id;
         }
 
         // PUT api/<UserController>/5
