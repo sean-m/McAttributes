@@ -1,19 +1,94 @@
+#Requires -Version 5
 <#
-docker stop postgresql_database
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+begin {
+    Push-Location (Split-Path -Parent -Path $MyInvocation.MyCommand.Definition)
 
-docker run --name postgresql_database `
-    --memory 512M `
-    --rm `
-    -d `
-    -e POSTGRES_USER=pguser `
-    -e POSTGRES_PASSWORD=egm7DfeK `
-    -e POSTGRESQL_DATABASE=identity `
-    -p 5432:5432 `
-    docker.io/library/postgres:latest
-    #-v "$((pwd).Path))/data":/var/lib/postgresql/data `
-    #>
 
-$sqlQueryCreateDB = @"
+    
+    class TimeEstimator {
+
+        $Total
+
+        hidden $Ticks = 0
+        static hidden $bufferSize = 100
+        hidden $Timeline = (New-Object decimal[] ([TimeEstimator]::bufferSize))
+        hidden [double] $Rate = 0.0
+        hidden $ComputeInterval
+
+        TimeEstimator($Total) {
+            $this.Total = $Total
+            $this.ComputeInterval = [int]([Math]::Min(100, $Total / 10))
+        }
+
+        TimeEstimator([int]$Total, [int]$ComputeInterval) {
+            $this.Total = $Total
+            $this.ComputeInterval = [Math]::Max($ComputeInterval, 15)
+        }
+    
+        [void] Tick() {
+            $this.Ticks++
+            $this.Timeline[$this.Ticks % [TimeEstimator]::bufferSize] = [DateTime]::Now.Ticks
+        
+            if ($this.Ticks % $this.ComputeInterval -eq 0) {
+                # Generate a time estimate based on work done in the last 30 seconds
+                # TODO improve by doing a rolling weighted average based on how many have been performed minute over minute since the beginning, ignoring minutes which fall outside the stddev for the last 2 minutes
+                $measurement = ($this.Timeline.Where({ $_ -ne 0 }) | measure -Minimum -Maximum)
+                $done_this_minute = $measurement.Count
+                $this.Rate = ([double]($measurement.Count) / ([decimal]($measurement.Maximum - $measurement.Minimum) / [timespan]::TicksPerSecond))
+            
+            }
+        }
+
+        [string] GetStatusQuote() {
+            if ($this.Rate -eq 0.0) { return 'Too early to tell.' }
+            return "More than {0}/{1} completed. Rate: {2:N2} / sec." -f $this.Ticks, $this.Total, $this.Rate
+        }
+
+        [int] GetSecondsRemaining() {
+            if ($this.Rate -eq 0.0) { return [int]::MaxValue }
+            return  [Math]::Max(0, [Math]::Min([int]::MaxValue, (($this.Total - $this.Ticks) / $this.Rate)))
+        }
+
+        [int] GetPercentage () {
+            filter Percentage { 
+                param ([ValidateRange(0,[int32]::MaxValue)]$count=0, 
+                       [ValidateRange(1,[int32]::MaxValue)]$total=1) 
+                [Math]::Min(100, [Math]::Round(($count/$total) * 100))
+            }
+
+            return (Percentage -count ($this.Ticks) -total ($this.Total))
+        }
+    }
+
+
+}
+process {
+
+    #<#
+    docker stop postgresql_database
+
+    docker run --name postgresql_database `
+        --memory 512M `
+        --rm `
+        -d `
+        -e POSTGRES_USER=pguser `
+        -e POSTGRES_PASSWORD=egm7DfeK `
+        -e POSTGRESQL_DATABASE=identity `
+        -p 5432:5432 `
+        docker.io/library/postgres:latest
+        #-v "$((pwd).Path))/data":/var/lib/postgresql/data `
+        #>
+
+    $sqlQueryCreateDB = @"
 CREATE DATABASE identity
     WITH
     OWNER = pguser
@@ -25,7 +100,7 @@ CREATE DATABASE identity
     IS_TEMPLATE = False;
 "@ 
 
-$sqlQuery = @"
+    $sqlQuery = @"
 
 create table if not exists graphraw (
 	id serial primary key,
@@ -276,52 +351,121 @@ LANGUAGE 'sql'
 ;
 "@ 
 
-Start-Sleep -Seconds 10 -Verbose
+    Start-Sleep -Seconds 10 -Verbose
 
-Import-Module SimplySQL
+    Import-Module SimplySQL
 
-$user = 'pguser'
-$pass = ConvertTo-SecureString "egm7DfeK" -AsPlainText -Force
-$cred = New-Object pscredential $user, $pass
+    $user = 'pguser'
+    $pass = ConvertTo-SecureString "egm7DfeK" -AsPlainText -Force
+    $cred = New-Object pscredential $user, $pass
 
-# TODO refactor this out into an environment variable
-$dbServer = "localhost"
+    # TODO refactor this out into an environment variable
+    $dbServer = "localhost"
 
-try {
-    Open-PostGreConnection `
-        -ConnectionName 'idDbMerge' `
-        -TrustSSL `
-        -Server $dbServer `
-        -Credential $cred `
-        -ErrorAction Stop `
-        -Verbose
+    try {
+        Open-PostGreConnection `
+            -ConnectionName 'idDbMerge' `
+            -TrustSSL `
+            -Server $dbServer `
+            -Credential $cred `
+            -ErrorAction Stop `
+            -Verbose
 
-    Write-Host "Creating identity database."
-    Invoke-SqlUpdate -ConnectionName 'idDbMerge' `
-        -Query $sqlQueryCreateDB -ErrorAction Stop
+        Write-Host "Creating identity database."
+        Invoke-SqlUpdate -ConnectionName 'idDbMerge' `
+            -Query $sqlQueryCreateDB -ErrorAction Stop
+    
+        Start-Sleep -Seconds 1
+        Close-SqlConnection -ConnectionName 'idDbMerge'
+        Start-Sleep -Seconds 2
+
+        Open-PostGreConnection `
+            -ConnectionName 'idDbMerge' `
+            -TrustSSL `
+            -Database 'identity' `
+            -Server $dbServer `
+            -Credential $cred `
+            -ErrorAction Stop `
+            -Verbose
+
+        Start-Sleep -Seconds 4
+
+        Get-SqlConnection
+
+        Write-Host 'Creating tables and functions.'
+        Invoke-SqlUpdate -ConnectionName 'idDbMerge' `
+            -Query $sqlQuery -ErrorAction Stop
+    
+    
+        $fmtColumnType = @{
+            Name='type'
+            Expression={
+                switch ($_.data_type) {
+                    timestamp { [datetime] }
+                    int4 { [int] }
+                    bool { [boolean] }
+                    uuid { [guid] }
+                    default { [string] }
+                }
+            }
+        } 
+
+        $conn = Get-SqlConnection -ConnectionName 'idDbMerge'
+        $table = $conn.GetSchema('Tables', @('azusers'))
+        $columns = $conn.GetSchema('Columns', $table) | where table_name -like 'azusers'
+        $columns = $columns | select column_name, data_type, $fmtColumnType
+        $columnNames = $columns.column_name
+        $columnTypes = @{}
+        $columns | foreach { $columnTypes.Add($_.column_name, $_.data_type) }
+
+        $testValues = @(Import-Csv .\McAttributes\test_values_1.csv)
+
+        $tasks = @()
+
+        $estimator = [TimeEstimator]::new($testValues.Count)
+        foreach ($testValue in $testValues) {
+            $estimator.Tick()
+            Write-Progress -Activity "Stirring this mess up.." `
+                -Status ($estimator.GetStatusQuote()) `
+                -PercentComplete ($estimator.GetPercentage()) `
+                -SecondsRemaining ($estimator.GetSecondsRemaining())
+
+            $props = @()
+            $params = @{}
+            $columns | foreach {
+                $propName = $_.column_name
+                
+                if ($testValue.$propName) {
+                    $propType = $_.data_type
+                    $props += $propName
+                    $t = $columnTypes[$propName]
+                    $val = switch ($propType) {
+                        timestamp { Get-Date ($testValue.$propName) }
+                        int4 { [int]$testValue.$propName }
+                        bool { [boolean]::Parse($testValue.$propName) }
+                        uuid { [guid]::Parse($testValue.$propName) }
+                        default { ($testValue.$propName).ToString() }
+                    }
+
+                    $params.Add($propName, $val)
+                }
+            }
+
+            $insertQuery = @"
+insert into azusers ($($props -join ','))
+values ($(@($props | foreach { "@$_" }) -join ', '))
+on conflict(aadid)
+do nothing;
+"@
+            Invoke-SqlUpdate -Query $insertQuery -Parameters $params -ConnectionName 'idDbMerge' | Out-Null
+        }
+
+    }
+    finally {
+        Close-SqlConnection -ConnectionName 'idDbMerge'
+    }
 }
-finally {
-    Close-SqlConnection -ConnectionName 'idDbMerge'
+end {
+    Pop-Location
 }
 
-Start-Sleep -Seconds 1
-
-try {
-    Write-Host 'Connecting to identity database.'    
-    Open-PostGreConnection `
-        -ConnectionName 'idDbMerge' `
-        -TrustSSL `
-        -Database 'identity' `
-        -Server $dbServer `
-        -Credential $cred `
-        -ErrorAction Stop `
-        -Verbose
-
-    Write-Host 'Creating tables and functions.'
-    Invoke-SqlUpdate -ConnectionName 'idDbMerge' `
-        -Query $sqlQuery -ErrorAction Stop
-        
-}
-finally {
-    Close-SqlConnection -ConnectionName 'idDbMerge'
-}
