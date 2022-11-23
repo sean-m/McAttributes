@@ -78,7 +78,7 @@ class FilterBuilder {
     }
 
     buildFilterString(searchTerm) {
-        if (searchTerm === null || searchTerm === undefined || String.length(searchTerm) === 0) {
+        if (searchTerm === null || searchTerm === undefined || searchTerm.length === 0) {
             return null;
         }
 
@@ -133,10 +133,9 @@ const appDefinition = {
 
                     if (this.paginate) {
                         queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
-                        return queryString;
                     }
 
-                    let filterString = filterBuilder.buildFilterString();
+                    let filterString = filterBuilder.buildFilterString(this.searchTerm);
                     if (filterString) {
                         queryString = `${queryString}&${filterString}`
                     }
@@ -205,10 +204,9 @@ const appDefinition = {
 
                     if (this.paginate) {
                         queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
-                        return queryString;
                     }
 
-                    let filterString = filterBuilder.buildFilterString();
+                    let filterString = filterBuilder.buildFilterString(this.searchTerm);
                     if (filterString) {
                         queryString = `${queryString}&${filterString}`
                     }
