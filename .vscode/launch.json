@@ -5,7 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (web)",
+            "name": "launch TestCliApp",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/TestCliApp/bin/Debug/net6.0/TestCliApp.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/TestCliApp",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "watch web app",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "watch",
