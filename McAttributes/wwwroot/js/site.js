@@ -220,6 +220,21 @@ class IssueSearchContext extends ObjectSearchContext {
     }
 }
 
+class StargateSearchContext extends ObjectSearchContext {
+    constructor() {
+        super()
+
+        this.apiPath = {
+            api: "/api/Stargate",
+            odata: "/odata/Stargate"
+        }
+    }
+
+    getQueryString(skip = 0) {
+        console.log("Dialing gate...")
+        return "$count=true"
+    }
+}
 
 const { createApp } = Vue
 
@@ -229,6 +244,7 @@ const appDefinition = {
             currentTab: 'userForm',
             currentUserSearch: new UserSearchContext(),
             currentIssueSearch: new IssueSearchContext(),
+            stargateSearch: new StargateSearchContext(),
             includeResolved: false,
             issues: {
                 count() { return this.issueList.count },
@@ -256,6 +272,10 @@ const appDefinition = {
         searchForIssues() {
             this.currentIssueSearch.clearResults();
             this.currentIssueSearch.executeSearch();
+        },
+        searchStargate() {
+            this.stargateSearch.clearResults();
+            this.stargateSearch.executeSearch();
         },
         showIssuesForUser(term) {
             console.log("Issue lookup: " + term)
