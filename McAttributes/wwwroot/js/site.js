@@ -256,6 +256,11 @@ const appDefinition = {
             this.currentIssueSearch.clearResults();
             this.currentIssueSearch.executeSearch();
         },
+        showIssuesForUser(term) {
+            console.log("Issue lookup: " + term)
+            this.currentIssueSearch.searchTerm = term;
+            this.currentIssueSearch.executeSearch();
+        },
         newIssueEntry() {
             this.currentIssue = {
                 edit: false,
