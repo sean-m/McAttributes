@@ -41,8 +41,12 @@ namespace McAttributes.Controllers
                 return _users.Where(u => u.AadId == id).AsQueryable();
             }
 
-            throw new HttpRequestException($"Could not parse provided addid value in a Guid: {aadid.Substring(0, Math.Min(64, aadid.Length))}",
+            var errMsg = $"Could not parse provided addid value in a Guid: {aadid.Substring(0, Math.Min(64, aadid.Length))}";
+            var error = new HttpRequestException(errMsg,
                 inner: null, statusCode: System.Net.HttpStatusCode.BadRequest);
+
+            _logger.LogError(-1, error, errMsg);
+            throw error;
         }
 
 
