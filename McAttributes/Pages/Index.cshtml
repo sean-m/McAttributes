@@ -57,7 +57,7 @@
                     <th>Issues</th><th v-for="(value, key, i) in currentUserSearch.results[0]">{{ expandOnCase(key) }}</td>
                 </tr>
                 <tr v-for="value of currentUserSearch.results">
-                    <td><button class="btn btn-outline-secondary" v-if="value.AdEmployeeId" @@click="this.showIssuesForUser(value.AdEmployeeId)">{{value.AdEmployeeId}}</button></td><td v-for="(val, key, i) in value">{{ val }}</td>
+                    <td><button class="btn btn-outline-secondary" v-if="value.EmployeeId" @@click="this.showIssuesForUser(value.EmployeeId)">{{value.EmployeeId}}</button></td><td v-for="(val, key, i) in value">{{ val }}</td>
                 </tr>
             </table>
 
