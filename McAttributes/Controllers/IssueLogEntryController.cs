@@ -30,15 +30,6 @@ namespace McAttributes.Controllers
             return _ctx.IssueLogEntry;
         }
 
-        // GET: api/IssueLogEntries/5
-        [HttpGet("{id}")]
-        public IssueLogEntry? Get(int id)
-        {
-            var issueLogEntry = _ctx.IssueLogEntry.Find(id);
-
-            return issueLogEntry;
-        }
-
         // PUT: api/IssueLogEntries/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
