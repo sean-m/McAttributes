@@ -60,21 +60,70 @@ let SearchTable = {
 
 
 class FilterBuilder {
-    constructor(startMatch, eqMatch, endMatch, operator='or') {
-        this.startMatch = Array.isArray(startMatch) ? startMatch : [startMatch];
-        this.endMatch = Array.isArray(endMatch) ? endMatch : [endMatch];
-        this.eqMatch = Array.isArray(eqMatch) ? eqMatch : [eqMatch];
+    startMatch = []
+    endMatch = []
+    eqMatch = []
+    containsMatch = []
+
+    constructor(operator='or') {
         this.operator = operator;
     }
 
     addStartMatch(property) {
-        this.init();
-        this.startMatch.push(property)
+        if (property == null || property == undefined) {
+            return this;
+        }
+
+        if (Array.isArray(property)) {
+            this.startMatch = this.startMatch.concat(property)
+        } else {
+            this.startMatch.push(property)
+        }
+        return this;
     }
 
     addEqMatch(property) {
-        this.init();
-        this.eqMatch.push(property)
+        if (property == null || property == undefined) {
+            return this;
+        }
+
+        if (Array.isArray(property)) {
+            this.eqMatch = this.eqMatch.concat(property)
+        } else {
+            this.eqMatch.push(property)
+        }
+        return this;
+    }
+
+    addEndMatch(property) {
+        if (property == null || property == undefined) {
+            return this;
+        }
+
+        if (Array.isArray(property)) {
+            this.endMatch = this.endMatch.concat(property)
+        } else {
+            this.endMatch.push(property)
+        }
+        return this;
+    }
+
+    addContainsMatch(property) {
+        if (property == null || property == undefined) {
+            return this;
+        }
+
+        if (Array.isArray(property)) {
+            this.containsMatch = this.containsMatch.concat(property)
+        } else {
+            this.containsMatch.push(property)
+        }
+        return this;
+    }
+
+    setOperator(operator) {
+        this.operator = operator
+        return this;
     }
 
     buildFilterString(searchTerm) {
@@ -92,6 +141,9 @@ class FilterBuilder {
         }
         for (let t of this.eqMatch) {
             predicates.push(`tolower(${t}) eq tolower('${searchTerm}')`)
+        }
+        for (let t of this.containsMatch) {
+            predicates.push(`contains(${t}, '${searchTerm}')`)
         }
 
         let filterPredicate = predicates.join(` ${this.operator} `)
@@ -175,8 +227,7 @@ class UserSearchContext extends ObjectSearchContext {
         let queryString = ''
         let startMatch = ['mail']
         let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
-        const opOr = 'or'
-        const filterBuilder = new FilterBuilder(startMatch, eqMatch, [], opOr);
+        const filterBuilder = new FilterBuilder('or').addStartMatch(startMatch).addEqMatch(eqMatch);
 
         if (this.paginate) {
             queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
@@ -202,11 +253,9 @@ class IssueSearchContext extends ObjectSearchContext {
 
     getQueryString(skip = 0) {
         let queryString = ''
-        let startMatch = ['attrName']
-        let endMatch = ['attrName']
+        let contains = ['attrName']
         let eqMatch = ['status']
-        const opOr = 'or'
-        const filterBuilder = new FilterBuilder(startMatch, eqMatch, endMatch, opOr);
+        const filterBuilder = new FilterBuilder('or').addContainsMatch(contains).addEqMatch(eqMatch);
 
         if (this.paginate) {
             queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
