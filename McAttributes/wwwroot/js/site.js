@@ -189,7 +189,7 @@ class ObjectSearchContext {
             }
         ).fail(e => {
             var errorMessageObj = null;
-            if (errorMessageObj = JSON.parse(e.responseText)) {
+            if (e.responseText && (errorMessageObj = JSON.parse(e.responseText))) {
                 this.searchError = errorMessageObj;
             }
             else { this.searchError = e; }
