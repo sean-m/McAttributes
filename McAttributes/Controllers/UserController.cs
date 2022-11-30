@@ -18,12 +18,10 @@ namespace McAttributes.Controllers
 
         ILogger _logger;
         readonly DbContext _ctx;
-        readonly DbSet<Models.User> _users;
         
         public UserController(ILogger<UserController> logger, IdDbContext dbContext) {
             _logger = logger;
             _ctx = dbContext;
-            _users = _ctx.Set<Models.User>();
         }
 
         // GET: api/<UserController>
@@ -33,12 +31,12 @@ namespace McAttributes.Controllers
 
             // TODO filter based on requestor identity
             if (string.IsNullOrEmpty(aadid)) {
-                return _users;
+                return _ctx.Set<User>();
             }
 
             Guid id;
             if (Guid.TryParse(aadid, out id)) {
-                return _users.Where(u => u.AadId == id).AsQueryable();
+                return _ctx.Set<User>().Where(u => u.AadId == id).AsQueryable();
             }
 
             var errMsg = $"Could not parse provided addid value in a Guid: {aadid.Substring(0, Math.Min(64, aadid.Length))}";
@@ -53,7 +51,7 @@ namespace McAttributes.Controllers
         // POST api/<UserController>
         [HttpPost]
         public async Task<int> Post([FromBody] User value) {
-            _users.Add(value);
+            _ctx.Set<User>().Add(value);
             await _ctx.SaveChangesAsync();
             return value.Id;
         }
@@ -116,7 +114,7 @@ namespace McAttributes.Controllers
 
         private bool UserRecordExists(int id)
         {
-            return (_users?.Any(x => x.Id == id)).GetValueOrDefault();
+            return (_ctx.Set<User>()?.Any(x => x.Id == id)).GetValueOrDefault();
         }
     }
 }

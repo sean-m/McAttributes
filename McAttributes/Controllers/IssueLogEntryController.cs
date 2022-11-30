@@ -27,7 +27,7 @@ namespace McAttributes.Controllers
         [EnableQuery(PageSize = 100)]
         public IQueryable<IssueLogEntry> Get()
         {
-            return _ctx.IssueLogEntry;
+            return _ctx.Set<IssueLogEntry>();
         }
 
         // PUT: api/IssueLogEntries/5
@@ -118,17 +118,17 @@ namespace McAttributes.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteIssueLogEntry(int id)
         {
-            if (_ctx.IssueLogEntry == null)
+            if (_ctx.Set<IssueLogEntry>() == null)
             {
                 return NotFound();
             }
-            var issueLogEntry = await _ctx.IssueLogEntry.FindAsync(id);
-            if (issueLogEntry == null)
+            var entry = await _ctx.Set<IssueLogEntry>().FindAsync(id);
+            if (entry == null)
             {
                 return NotFound();
             }
 
-            _ctx.IssueLogEntry.Remove(issueLogEntry);
+            _ctx.IssueLogEntry.Remove(entry);
             await _ctx.SaveChangesAsync();
 
             return NoContent();
@@ -136,7 +136,7 @@ namespace McAttributes.Controllers
 
         private bool IssueLogEntryExists(int id)
         {
-            return (_ctx.IssueLogEntry?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_ctx.Set<IssueLogEntry>()?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

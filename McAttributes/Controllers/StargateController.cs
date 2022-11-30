@@ -19,37 +19,23 @@ namespace McAttributes.Controllers {
 
         ILogger _logger;
         readonly DbContext _ctx;
-        readonly DbSet<Stargate> _stargate;
 
         public StargateController(ILogger<StargateController> logger, IdDbContext dbContext) {
             _logger = logger;
             _ctx = dbContext;
-            _stargate = _ctx.Set<Stargate>();
         }
 
         // GET: api/<StargateController>
-        [HttpGet]
         [EnableQuery(PageSize = 100)]
         public IQueryable<Stargate> Get() {
-            return _stargate;
-        }
-
-        // GET api/<StargateController>/5
-        [HttpGet("{id}")]
-        public Stargate Get(string id) {
-            // If the passed value can parse as a long, assume it's the primary key,
-            // otherwise lookup by LocalId string value.
-            if (long.TryParse(id, out long _id)) {
-                return _stargate.First(x => x.Id == _id);
-            } 
-            return _stargate.First(x => x.LocalId == id);
+            return _ctx.Set<Stargate>();
         }
 
         //TODO implement these
         // POST api/<StargateController>
         [HttpPost]
         public async Task<long> Post([FromBody] Stargate value) {
-            _stargate.Add(value);
+            _ctx.Set<Stargate>().Add(value);
             await _ctx.SaveChangesAsync();
             return value.Id;
         }
@@ -65,7 +51,7 @@ namespace McAttributes.Controllers {
             try {
                 await _ctx.SaveChangesAsync();
             } catch (DbUpdateConcurrencyException) {
-                if (!_stargate.Any(x => x.Id == id)) {
+                if (!_ctx.Set<Stargate>().Any(x => x.Id == id)) {
                     return NotFound();
                 } else {
                     throw;
