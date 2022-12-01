@@ -15,9 +15,9 @@ namespace McAttributes.Controllers
     [Authorize]
     public class IssueLogEntryController : ODataController
     {
-        private readonly IssueLogContext _ctx;
+        private readonly IdDbContext _ctx;
 
-        public IssueLogEntryController(ILogger<IssueLogEntryController> logger, IssueLogContext context)
+        public IssueLogEntryController(ILogger<IssueLogEntryController> logger, IdDbContext context)
         {
             _ctx = context;
         }
@@ -104,11 +104,11 @@ namespace McAttributes.Controllers
         [HttpPost]
         public async Task<ActionResult<IssueLogEntry>> PostIssueLogEntry(IssueLogEntry issueLogEntry)
         {
-          if (_ctx.IssueLogEntry == null)
-          {
-              return Problem("Entity set 'IssueLogContext.IssueLogEntry'  is null.");
-          }
-            _ctx.IssueLogEntry.Add(issueLogEntry);
+            if (_ctx.Set<IssueLogEntry>() == null)
+            {
+                return Problem("Entity set 'IssueLogContext.IssueLogEntry'  is null.");
+            }
+            _ctx.Set<IssueLogEntry>().Add(issueLogEntry);
             await _ctx.SaveChangesAsync();
 
             return CreatedAtAction("GetIssueLogEntry", new { id = issueLogEntry.Id }, issueLogEntry);
@@ -128,7 +128,7 @@ namespace McAttributes.Controllers
                 return NotFound();
             }
 
-            _ctx.IssueLogEntry.Remove(entry);
+            _ctx.Set<IssueLogEntry>().Remove(entry);
             await _ctx.SaveChangesAsync();
 
             return NoContent();
