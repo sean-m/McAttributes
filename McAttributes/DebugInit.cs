@@ -1,6 +1,9 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using McAttributes.Data;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using Npgsql;
 using System.Linq;
+using System.Reflection;
 
 namespace McAttributes {
     public static class DebugInit {
@@ -121,6 +124,63 @@ create table if not exists IssueLogEntry (
 
             await Task.WhenAll(inserts.ToArray());
         }
+
+
+        public static void DbInit(IdDbContext context) {
+            if (context == null) throw new ArgumentNullException("Gonna hand me a viable databse connection.");
+            
+
+
+            var csvReader = new CsvFileReader(@"./test_values.csv", true);
+            var _ = csvReader.ReadFileValues().FirstOrDefault();
+
+            var types = new Dictionary<string, PropertyInfo>();
+            var azuser = System.Reflection.TypeInfo.GetType("McAttributes.Models.User");
+
+
+            Type GetPropType(string name) {
+                if (types.ContainsKey(name)) return types[name].PropertyType;
+
+                var prop = azuser.GetProperties().FirstOrDefault(x => x.Name.ToString().Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                if (prop == null) {
+                    throw new Exception($"Cannot resolve property with name: {name} on class 'Models.User'");
+                }
+
+                types.Add(name, prop);
+                return prop.PropertyType;
+            }
+
+            PropertyInfo GetPropInfo(string name) {
+                if (types.ContainsKey(name)) return types[name];
+
+                var prop = azuser.GetProperties().FirstOrDefault(x => x.Name.ToString().Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                if (prop == null) {
+                    throw new Exception($"Cannot resolve property with name: {name} on class 'Models.User'");
+                }
+
+                types.Add(name, prop);
+                return prop;
+            }
+
+            csvReader = new CsvFileReader(@"./test_values.csv");
+            var userType = typeof(Models.User);
+
+            foreach (var row in csvReader.ReadFileValues()) {
+                var columns = row.Keys.Where(k => !String.IsNullOrEmpty(row.GetValueOrDefault(k)));
+
+                var record = Activator.CreateInstance(azuser);
+                foreach (var col in columns) {
+                    var prop = GetPropInfo(col);
+                    var type = GetPropType(col);
+                    object value = GetAsType(row[col], type);
+                    prop.SetValue(record, value);
+                }
+                context.Add(Convert.ChangeType(record, azuser));
+            }
+
+            context.SaveChanges();
+        }
+
 
         static object GetAsType(object source, Type desiredType) {
             if (source == null) return source;
