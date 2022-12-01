@@ -23,6 +23,22 @@ namespace McAttributes.Data
                 entity.Property(p => p.Created).HasDefaultValue(DateTime.UtcNow)
                     .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             });
+
+            // AadId should be unique
+            builder.Entity<IssueLogEntry>()
+                .HasIndex(u => u.AlertHash)
+                .IsUnique();
+
+            // AadId should be unique
+            builder.Entity<User>()
+                .HasIndex(u => u.AadId)
+                .IsUnique();
+
+            // Index Mail and EmployeeId
+            builder.Entity<User>()
+                .HasIndex(u => u.Mail);
+            builder.Entity<User>()
+                .HasIndex(u => u.EmployeeId);
         }
     }
 }
