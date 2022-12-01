@@ -89,13 +89,8 @@ else {
     builder.Services.AddDbContext<IdDbContext>(
         options => { options.UseNpgsql(conn); });
 
-    builder.Services.AddDbContext<IssueLogContext>(options =>
-        options.UseNpgsql(conn)
-    );
-
-    // Uncomment to load in test values from CSV file
-    //conn.Open();
-    //DebugInit.DbInit(conn);
+    //builder.Services.AddDbContext<IdDbContext>(
+    //    options => { options.UseSqlServer(connString); });
 }
 
 
@@ -108,8 +103,14 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
 {
-    var context = serviceScope.ServiceProvider.GetRequiredService<IssueLogContext>();
-    context.Database.EnsureCreated();
+    var idDbContext = serviceScope.ServiceProvider.GetRequiredService<IdDbContext>();
+    if (idDbContext.Database.EnsureCreated()) {
+        if (!builder.Environment.IsProduction()) {
+            // Initialize the database with test data when running in 
+            // debug mode and having just created tables.
+            DebugInit.DbInit(idDbContext);
+        }
+    }
 }
 
 
