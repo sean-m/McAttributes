@@ -351,7 +351,7 @@ LANGUAGE 'sql'
 ;
 "@ 
 
-    Start-Sleep -Seconds 10 -Verbose
+    Start-Sleep -Seconds 15 -Verbose
 
     Import-Module SimplySQL
 
@@ -363,20 +363,27 @@ LANGUAGE 'sql'
     $dbServer = "localhost"
 
     try {
-        Open-PostGreConnection `
-            -ConnectionName 'idDbMerge' `
-            -TrustSSL `
-            -Server $dbServer `
-            -Credential $cred `
-            -ErrorAction Stop `
-            -Verbose
+        do {
+            Open-PostGreConnection `
+                -ConnectionName 'idDbMerge' `
+                -TrustSSL `
+                -Server $dbServer `
+                -Credential $cred `
+                -ErrorAction Stop `
+                -Verbose
+        } while (-not @(Get-SqlConnection -ConnectionName 'idDbMerge'))
 
         Write-Host "Creating identity database."
+        Start-Sleep -Seconds 2
         Invoke-SqlUpdate -ConnectionName 'idDbMerge' `
             -Query $sqlQueryCreateDB -ErrorAction Stop
     
         Start-Sleep -Seconds 1
+        
+        return
+
         Close-SqlConnection -ConnectionName 'idDbMerge'
+
         Start-Sleep -Seconds 2
 
         Open-PostGreConnection `
