@@ -108,6 +108,7 @@ using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory
         if (!builder.Environment.IsProduction()) {
             // Initialize the database with test data when running in 
             // debug mode and having just created tables.
+            System.Diagnostics.Trace.WriteLine("Initialized database tables. Loading table data from test_values.csv.");
             DebugInit.DbInit(idDbContext);
         }
     }
