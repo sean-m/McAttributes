@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace McAttributes.Models {
     [Table("azusers")]
+    [Index(nameof(AadId))]
     public class User {
         [Key]
         [Column("id")]

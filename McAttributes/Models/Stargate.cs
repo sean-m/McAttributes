@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace McAttributes.Models {
     [Table("stargate")]
+    [Index(nameof(LocalId))]
     public class Stargate {
         [Key]
         [Column("id")]
