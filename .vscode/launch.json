@@ -36,6 +36,26 @@
             }
         },
         {
+            "name": "debug web app",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/McAttributes/bin/Debug/net6.0/McAttributes.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/McAttributes",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Pages": "${workspaceFolder}/Pages"
+            }
+        },
+        {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach"
