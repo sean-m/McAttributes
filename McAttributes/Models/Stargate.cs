@@ -4,23 +4,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace McAttributes.Models {
     [Table("stargate")]
-    [Index(nameof(LocalId))]
+    [Index(nameof(LocalId), nameof(Partition))]
     public class Stargate {
         [Key]
         [Column("id")]
         public long Id { get; set; }
-        [Column("recordtype")]
+
+        [Column("recordtype", TypeName="integer")]
         public StargateType RecordType { get; set; }
+
         [ForeignKey("id")]
         [Column("globalid")]
         public long? GlobalId { get; set; }
+
         [Column("localid")]
+        [StringLength(256)]
         public string? LocalId { get; set; }
+
         [Column("upn")]
+        [StringLength(256)]
         public string? Upn  { get; set; }
+
         [Column("partition")]
+        [StringLength(256)]
         public string? Partition { get; set; }
+        
         [Column("joinseed")]
+        [StringLength(256)]
         public string? Joinseed { get; set; }
     }
 
