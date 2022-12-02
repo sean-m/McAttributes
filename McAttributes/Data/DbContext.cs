@@ -10,11 +10,11 @@ namespace McAttributes.Data
         public IdDbContext(DbContextOptions<IdDbContext> options)
             : base(options) { }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<User>? Users { get; set; }
 
-        public DbSet<EmployeeIdRecord> EmployeeIds { get; set; }
+        public DbSet<EmployeeIdRecord>? EmployeeIds { get; set; }
 
-        public DbSet<Stargate> Stargate { get; set; }
+        public DbSet<Stargate>? Stargate { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
