@@ -4,7 +4,7 @@
     ViewData["Title"] = "McAttributes";
 }
 
-<div id="app">
+<div id="app" class="container">
 
 <div>
     <!-- Tabs -->
@@ -118,37 +118,57 @@
                 <button class="button input-group-text" @@click="searchStargate()">Search</button>
             </div>
 
-            <!-- Search configuration options: pagination, result page size, clear button -->
-            <div>
-                <label class="preference" for="paginatePreference">Paginate results</label>
-                <input id="paginatePreference" type="checkbox" name="paginatePreference" v-model="stargateSearch.paginate" />
-            </div>
-            <div>
-                <label class="preference" for="pageSize">Result size</label>
-                <input id="pageSize" type="number" name="pageSize" v-model="stargateSearch.pageSize" />
-            </div>
-            <div>
-                <label v-if="stargateSearch.resultCount">Total Results: {{stargateSearch.resultCount}}</label>
-                <br />
-                <label v-if="stargateSearch.results">Results Fetched: {{stargateSearch.results.length}}</label>
-            </div>
-            <div>
-                <button v-if="stargateSearch.resultCount > 0" class="btn btn-outline-warning" @@click="stargateSearch.clearResults()">Clear Results</button>
-            </div>
-            
-            <!-- Stargate search results -->
-            <button class="btn btn-link" id="btnLoadMore" v-if="stargateSearch.resultCount > stargateSearch.results.length" @@click="loadMoreStargateResults()">Load More</button>
+            <div style="display: grid;">
+                <div id="stargateSearch">
+                    <div class="row">
+                        <!-- Search configuration options: pagination, result page size, clear button -->
+                        <div>
+                            <label class="preference" for="paginatePreference">Paginate results</label>
+                            <input id="paginatePreference" type="checkbox" name="paginatePreference" v-model="stargateSearch.paginate" />
+                        </div>
+                        <div>
+                            <label class="preference" for="pageSize">Result size</label>
+                            <input id="pageSize" type="number" name="pageSize" v-model="stargateSearch.pageSize" />
+                        </div>
+                        <div>
+                            <label v-if="stargateSearch.resultCount">Total Results: {{stargateSearch.resultCount}}</label>
+                            <br />
+                            <label v-if="stargateSearch.results">Results Fetched: {{stargateSearch.results.length}}</label>
+                        </div>
+                        <div>
+                            <button v-if="stargateSearch.resultCount > 0" class="btn btn-outline-warning" 
+                                @@click="stargateSearch.clearResults()">Clear Results</button>
+                        </div>
 
-            <table class="table">
-                <tr>
-                    <th>Issues</th><th v-for="(value, key, i) in stargateSearch.results[0]">{{ expandOnCase(key) }}</td>
-                </tr>
-                <tr v-for="value of stargateSearch.results">
-                    <td v-for="(val, key, i) in value">{{ val }}</td>
-                </tr>
-            </table>
+                         <!-- Stargate search results -->
+                        <button class="btn btn-link" id="btnLoadMore" v-if="stargateSearch.resultCount > stargateSearch.results.length" 
+                            @@click="loadMoreStargateResults()">Load More</button>
 
-            <button class="btn btn-link" id="btnLoadMore" v-if="stargateSearch.resultCount > stargateSearch.results.length" @@click="stargateSearch.loadNextSet()">Load More</button>
+                        <table class="table">
+                            <tr>
+                                <th>Issues</th><th v-for="(value, key, i) in stargateSearch.results[0]">{{ expandOnCase(key) }}</td>
+                            </tr>
+                            <tr v-for="value of stargateSearch.results">
+                                <td v-for="(val, key, i) in value">{{ val }}</td>
+                            </tr>
+                        </table>
+
+                        <button class="btn btn-link" id="btnLoadMore" v-if="stargateSearch.resultCount > stargateSearch.results.length" 
+                            @@click="stargateSearch.loadNextSet()">Load More</button>
+                    </div>
+
+                    </div>
+                    <div class="row">
+                       
+                    <div id="userList" class="col">
+                        <p>Foo</p>
+                    </div>
+
+                    <div id="userSearch" class="col">
+                        <p>Bar</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>

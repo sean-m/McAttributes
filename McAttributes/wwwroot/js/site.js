@@ -3,6 +3,7 @@
 
 // Write your JavaScript code.
 
+
 let ObjectTable = {
     props: ['record', 'title', 'expand', 'list'],
     data() {
@@ -64,6 +65,7 @@ class FilterBuilder {
     endMatch = []
     eqMatch = []
     containsMatch = []
+    select = []
 
     constructor(operator='or') {
         this.operator = operator;
@@ -121,6 +123,19 @@ class FilterBuilder {
         return this;
     }
 
+    addPropertySelection(property) {
+        if (property == null || property == undefined) {
+            return this;
+        }
+
+        if (Array.isArray(property)) {
+            this.select = this.select.concat(property)
+        } else {
+            this.select.push(property)
+        }
+        return this;
+    }
+
     setOperator(operator) {
         this.operator = operator
         return this;
@@ -146,8 +161,54 @@ class FilterBuilder {
             predicates.push(`contains(${t}, '${searchTerm}')`)
         }
 
-        let filterPredicate = predicates.join(` ${this.operator} `)
-        return `$filter=${filterPredicate}`
+        let filterPredicate = `$filter=${predicates.join(` ${this.operator} `)}`
+
+        let filterString = filterPredicate
+
+        if (this.select && this.select.length > 0) {
+            filterString = `${filterString}&$select=${this.select.join(',')}`
+        }
+
+        return filterString
+    }
+
+    buildFilterStringWithList(list) {
+        // Warning! This gets out of hand really quickly and can build a gnarly query string
+        // that straig up wont work. Be sure you're using it correctly.
+        if (list === null || list === undefined) {
+            return null;
+        }
+
+        if (!Array.isArray(list)) {
+            return this.buildFilterString(list);
+        }
+
+        const predicates = []
+
+        for (let term of list) {
+            for (let t of this.startMatch) {
+                predicates.push(`startswith(tolower(${t}), tolower('${term}'))`)
+            }
+            for (let t of this.endMatch) {
+                predicates.push(`endswith(tolower(${t}), tolower('${term}'))`)
+            }
+            for (let t of this.eqMatch) {
+                predicates.push(`tolower(${t}) eq tolower('${term}')`)
+            }
+            for (let t of this.containsMatch) {
+                predicates.push(`contains(${t}, '${term}')`)
+            }
+        }
+        
+        let filterPredicate = `$filter=${predicates.join(` ${this.operator} `)}`
+
+        let filterString = filterPredicate
+
+        if (this.select && this.select.length > 0) {
+            filterString = `${filterString}&$select=${this.select.join(',')}`
+        }
+
+        return filterString
     }
 }
 
@@ -178,7 +239,7 @@ class ObjectSearchContext {
         return false;
     }
 
-    executeSearch(skip = 0) {
+    async executeSearch(skip = 0) {
         let queryString = this.getQueryString();
         if (skip) { queryString = this.getQueryString(skip); }
         console.log(`Query string: ${this.apiPath.odata}?${queryString}`);
@@ -214,23 +275,28 @@ class ObjectSearchContext {
 }
 
 class UserSearchContext extends ObjectSearchContext {
-    constructor() {
+    constructor(global) {
         super()
 
         this.apiPath = {
             api: "/api/User",
             odata: "/odata/User"
         }
+
+        this.parent = global;
+        this.sgApiPath = new StargateSearchContext().apiPath;
     }
 
     getQueryString(skip = 0) {
-        let queryString = ''
+        let queryString = '$count=true'
         let startMatch = ['mail']
         let eqMatch = ['employeeId', 'preferredSurname', 'preferredGivenName']
         const filterBuilder = new FilterBuilder('or').addStartMatch(startMatch).addEqMatch(eqMatch);
 
         if (this.paginate) {
-            queryString = `$count=true&$top=${this.pageSize}&$skip=${skip}`;
+            queryString += `&$top=${this.pageSize}&$skip=${skip}`;
+        } else {
+            queryString += `&$top=100`
         }
 
         let filterString = filterBuilder.buildFilterString(this.searchTerm);
@@ -281,8 +347,62 @@ class StargateSearchContext extends ObjectSearchContext {
 
     getQueryString(skip = 0) {
         console.log("Dialing gate...")
-        return "$count=true"
+        
+        let queryString = '$count=true'
+        let eqMatch = ['localId', 'globalId']
+        const filterBuilder = new FilterBuilder('or').addEqMatch(eqMatch);
+
+        if (this.paginate) {
+            queryString += `&$top=${this.pageSize}&$skip=${skip}`;
+        }
+
+        let filterString = filterBuilder.buildFilterString(this.searchTerm);
+        if (filterString) {
+            queryString = `${queryString}&${filterString}`
+        }
+        return queryString;
     }
+
+    
+    // async executeSearch(skip = 0) {
+    //     let queryString = this.getQueryString();
+    //     if (skip) { queryString = this.getQueryString(skip); }
+    //     console.log(`Query string: ${this.apiPath.odata}?${queryString}`);
+
+    //     /*
+    //         The Stargate table is just a bridge table across many accounts. It's the 'identity' record
+    //         to the account's 'persona' records. In short, they're worthless to look at so should start
+    //         with a user account search then cross-walking through the Stargate records to resolve
+    //         associated accounts.
+    //     */
+
+    //     let userSearch = new UserSearchContext();
+    //     userSearch.searchTerm = this.searchTerm;
+    //     userSearch.pageSize = 100;
+    //     userSearch.paginate = false;
+    //     let userResults = await axios.get(`${userSearch.apiPath.odata}?${userSearch.getQueryString()}&$select=AadId,Upn`);
+
+    //     let userIds = userResults.data.value.map(x => { return x.AadId; });
+    //     let crosswalk = this.localToGlobalMap;
+    //     let globalIds = userIds.map((i) => { 
+    //         return crosswalk[i]; 
+    //     });
+
+    //     console.table(globalIds);
+
+    //     $.getJSON(`${this.apiPath.odata}?${queryString}`, null,
+    //         json => {
+    //             this.updateResultSet(json);
+    //         }
+    //     ).fail(e => {
+    //         var errorMessageObj = null;
+    //         if (e.responseText && (errorMessageObj = JSON.parse(e.responseText))) {
+    //             this.searchError = errorMessageObj;
+    //         }
+    //         else { this.searchError = e; }
+    //     });
+    // } 
+    
 }
 
 const { createApp } = Vue
@@ -294,6 +414,21 @@ const appDefinition = {
             currentUserSearch: new UserSearchContext(),
             currentIssueSearch: new IssueSearchContext(),
             stargateSearch: new StargateSearchContext(),
+            stargatePath: {
+                endpoints: [],
+                addEndpoint(endpoint) {
+                    this.endpoints.push(endpoint);
+                },
+                removeEndpoint(endpoint) {
+                    this.endpoints = this.endpoints.filter(function (value, index, arr) {
+                        return value.Id != endpoint.Id;
+                    });
+                },
+                clear() {
+                    this.endpoints = []
+                },
+            },
+            localToGlobalMap: {},
             includeResolved: false,
             issues: {
                 count() { return this.issueList.count },
@@ -347,8 +482,37 @@ const appDefinition = {
         },
         expandOnCase(input) {
             return input.replace(/([a-z])([A-Z])/g, '$1 $2')
-        }
-    }
+        },
+        async crosswalkGlobalIds (localIds) {
+            console.log("Run global crosswalk")
+    
+            let uri = "/odata/Stargate";
+    
+            let queryBuilder = new FilterBuilder('or').addEqMatch('localId');
+            
+            const chunkSize = 10;
+
+            for (let i = 0; i < localIds.length; i += chunkSize) {
+                const chunk = localIds.slice(i, i + chunkSize);
+                let filter = queryBuilder.buildFilterStringWithList(chunk);
+                filter = filter + "&$select=globalId,localId"
+                
+                let crosswalk = await axios.get(`${uri}?${filter}`);
+                if (crosswalk.status == 200) {
+                    for (let record of crosswalk.data.value) {
+                        this.localToGlobalMap[record.LocalId] = record.GlobalId;
+                    }
+                }
+            }
+        },
+    },
+    watch: {
+      'currentUserSearch.results'(latestResults, previousResults) {
+          let ids = []
+          ids = ids.concat(latestResults.map(x => { return x.AadId; }));
+          this.crosswalkGlobalIds(ids);
+      }  
+    },
 };
 
 const app = createApp(appDefinition);
