@@ -79,19 +79,14 @@ builder.Services.AddSwaggerGen(
 builder.Logging.AddConsole();
 
 
-if (builder.Environment.IsProduction()) {
-    // User Postgrsql
-    throw new NotImplementedException("Haven't done the Production db setup yet.");
-} 
-else {
-    var connString = builder.Configuration.GetConnectionString("Identity");
-    var conn = new Npgsql.NpgsqlConnection(connString);
-    builder.Services.AddDbContext<IdDbContext>(
-        options => { options.UseNpgsql(conn); });
 
-    //builder.Services.AddDbContext<IdDbContext>(
-    //    options => { options.UseSqlServer(connString); });
-}
+var connString = builder.Configuration.GetConnectionString("Identity");
+// var conn = new Npgsql.NpgsqlConnection(connString);
+// builder.Services.AddDbContext<IdDbContext>(
+//     options => { options.UseNpgsql(conn); });
+
+builder.Services.AddDbContext<IdDbContext>(
+    options => { options.UseSqlServer(connString); });
 
 
 
