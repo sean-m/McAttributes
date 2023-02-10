@@ -32,15 +32,21 @@ static IEdmModel GetEdmModel() {
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add and load configuration sources.
 builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
     config.Sources.Clear();
-    var env = hostingContext.HostingEnvironment;
 
+    var env = hostingContext.HostingEnvironment;
     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
           .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
     config.AddEnvironmentVariables();
 
+    // NOTE: set the connection string value in an environment variable or appsettings json file with key: AppConfigConnectionString
+    var configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
+    config.AddAzureAppConfiguration(configString);
+
+    // Add command line args last so they can override anything else.
     if (args != null) {
         config.AddCommandLine(args);
     }
@@ -89,7 +95,6 @@ builder.Services.AddDbContext<IdDbContext>(
     options => { options.UseSqlServer(connString); });
 
 
-
 var app = builder.Build();
 
 // Updating an entity bombs without this. Postgresql requires UTC timestamps and for whatever
@@ -115,6 +120,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
+app.UseAzureAppConfiguration();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
