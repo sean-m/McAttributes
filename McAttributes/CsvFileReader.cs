@@ -76,7 +76,7 @@ namespace McAttributes
                     foreach (var f in fields)
                     {
                         var val = f;
-                        var k = header.Skip(i)?.Take(1)?.First();
+                        var k = header?.Skip(i)?.Take(1)?.First();
                         if (EmtyStringsAsNull && String.IsNullOrEmpty(f))
                         {
                             val = null;

@@ -13,6 +13,7 @@ namespace McAttributes {
                 throw new Exception("Database connection is borkened. I need a working/opened one!");
             }
 
+            /*
             string userTableSchema = @"
 
 -- Make the User table
@@ -75,7 +76,6 @@ create table if not exists IssueLogEntry (
 ";
             
             
-            /*
             var userTableCmd = new SqliteCommand(userTableSchema, conn);
             userTableCmd.ExecuteNonQuery();
             */
@@ -90,7 +90,7 @@ create table if not exists IssueLogEntry (
             Type GetParamType(string name) {
                 if (types.ContainsKey(name)) return types[name];
 
-                var prop = azuser.GetProperties().FirstOrDefault(x => x.Name.ToString().Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                var prop = azuser?.GetProperties().FirstOrDefault(x => x.Name.ToString().Equals(name, StringComparison.CurrentCultureIgnoreCase));
                 if (prop == null) {
                     throw new Exception($"Cannot resolve property with name: {name} on class 'Models.User'");
                 }
@@ -136,7 +136,7 @@ create table if not exists IssueLogEntry (
 
             var types = new Dictionary<string, PropertyInfo>();
             var azuser = System.Reflection.TypeInfo.GetType("McAttributes.Models.User");
-
+            if (azuser == null) { throw new Exception("Can't get type info for McAttributes.Models.User, you got problems."); }
 
             Type GetPropType(string name) {
                 if (types.ContainsKey(name)) return types[name].PropertyType;
@@ -175,14 +175,14 @@ create table if not exists IssueLogEntry (
                     object value = GetAsType(row[col], type);
                     prop.SetValue(record, value);
                 }
-                context.Add(Convert.ChangeType(record, azuser));
+                if (record != null) context.Add(Convert.ChangeType(record, azuser));
             }
 
             context.SaveChanges();
         }
 
 
-        static object GetAsType(object source, Type desiredType) {
+        static object? GetAsType(object source, Type desiredType) {
             if (source == null) return source;
 
             string strSrc = source.ToString();
