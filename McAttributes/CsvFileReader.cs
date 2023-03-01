@@ -93,6 +93,7 @@ namespace McAttributes
     }
 
     public static class UglyDbInitHelper {
+
         public static void DbInit<T>(IdDbContext context, string CsvPath) {
             if (context == null) throw new ArgumentNullException("Gonna hand me a viable databse connection.");
             if (!File.Exists(CsvPath)) throw new ArgumentNullException($"CsvFile path not exists {CsvPath}, do better.");
@@ -129,7 +130,7 @@ namespace McAttributes
                 return prop;
             }
 
-            csvReader = new CsvFileReader(CsvPath;
+            csvReader = new CsvFileReader(CsvPath);
             var userType = typeof(Models.User);
 
             foreach (var row in csvReader.ReadFileValues()) {
