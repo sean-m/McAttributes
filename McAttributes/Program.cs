@@ -1,5 +1,6 @@
 
 using McAttributes;
+using System;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +45,8 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
 
     // NOTE: set the connection string value in an environment variable or appsettings json file with key: AppConfigConnectionString
     var configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
-    config.AddAzureAppConfiguration(configString);
+    if (!String.IsNullOrEmpty(configString)) { config.AddAzureAppConfiguration(configString); }
+    else { Console.WriteLine("Azure app config script not provided."); }
 
     // Add command line args last so they can override anything else.
     if (args != null) {
@@ -90,10 +92,12 @@ var connString = builder.Configuration.GetConnectionString("Identity");
 // var conn = new Npgsql.NpgsqlConnection(connString);
 // builder.Services.AddDbContext<IdDbContext>(
 //     options => { options.UseNpgsql(conn); });
-
+if (!String.IsNullOrEmpty(connString)) {
 builder.Services.AddDbContext<IdDbContext>(
     options => { options.UseSqlServer(connString); });
-
+} else {
+    throw new System.Exception("Connection string 'Identity' not defined in application config.");
+}
 
 var app = builder.Build();
 
@@ -103,14 +107,27 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
 {
-    var idDbContext = serviceScope.ServiceProvider.GetRequiredService<IdDbContext>();
-    if (idDbContext.Database.EnsureCreated()) {
-        if (!builder.Environment.IsProduction()) {
-            // Initialize the database with test data when running in 
-            // debug mode and having just created tables.
-            System.Diagnostics.Trace.WriteLine("Initialized database tables. Loading table data from test_values.csv.");
-            DebugInit.DbInit(idDbContext);
+    try {
+        var idDbContext = serviceScope.ServiceProvider.GetRequiredService<IdDbContext>();
+        if (idDbContext.Database.EnsureCreated()) {
+            if (!builder.Environment.IsProduction()) {
+                // Initialize the database with test data when running in 
+                // debug mode and having just created tables.
+                System.Diagnostics.Trace.WriteLine("Initialized database tables. Loading table data from test_values.csv.");
+                DebugInit.DbInit(idDbContext);
+            }
         }
+    } catch (Exception e) {
+        Console.Error.WriteLine("Failed while trying to ensure database creation!.\n{0}", e.Message);
+        var innerException = e.InnerException;
+        int count = 0;
+        while (innerException != null) {
+            count++;
+            Console.Error.WriteLine("Inner ex {0}: {1}", count, innerException?.Message);
+            Console.Error.WriteLine("Inner ex {0}: {1}", count, innerException?.StackTrace);
+            innerException = innerException.InnerException;
+        }
+        throw new Exception("Database init failed, dying...");
     }
 }
 
@@ -120,7 +137,11 @@ if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-app.UseAzureAppConfiguration();
+// Shouldn't crash if Azure App Config connection string isn't configured.
+if (!String.IsNullOrEmpty(builder.Configuration.GetValue<string>("AppConfigConnectionString"))) {
+    app.UseAzureAppConfiguration();
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
