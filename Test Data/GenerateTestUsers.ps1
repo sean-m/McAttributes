@@ -92,7 +92,7 @@ class TimeEstimator {
             $measurement = ($this.Timeline.Where({ $_ -ne 0 }) | Measure-Object -Minimum -Maximum)
             $span = [double]([decimal]($measurement.Maximum - $measurement.Minimum) / [timespan]::TicksPerSecond)
             $this.Rate = ([double]($measurement.Count) / $span)
-            Write-Host ("Measurement count: {0} timespan: {1}  tick min {2}  tick max {3}" -f $measurement.Count, $span, $measurement.Minimum, $measurement.Maximum)
+            #Write-Host ("Measurement count: {0} timespan: {1}  tick min {2}  tick max {3}" -f $measurement.Count, $span, $measurement.Minimum, $measurement.Maximum)
             <#
             $span = ([decimal]([datetime]::Now.Ticks - $this.LastComputeState[0]) / [timespan]::TicksPerSecond)
             if ($span -eq 0) { return }
@@ -210,7 +210,7 @@ $guestRate   = 0.8
 ################################################################################
 ##                                    Main                                    ##
 ################################################################################
-$recordCount = 1000 * 50
+$recordCount = 1000 * 10
 
 $estimator = [TimeEstimator]::new($recordCount, 100)
 1..$recordCount | foreach {
@@ -272,7 +272,7 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
     if (RndFloat -le $guestRate) {
         $tenant | where $account.Upn -NotLike "*$_" | foreach {
             $guest = $account.PSObject.Copy()
-            $upn = $guest.upn.Replace("@","_") + "%EXT%@" + $_
+            $upn = $guest.upn.Replace("@","_") + "#EXT#@" + $_
             $guest.upn = $upn
             $guest.creationType = 'Invitation'
             $guest.aadId = [Guid]::NewGuid()
