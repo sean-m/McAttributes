@@ -21,6 +21,12 @@ namespace McAttributes.Models
         public string? Description { get; set; }
         [Column("notes")]
         public string? Notes { get; set; }
+
+
+        // This is the conncurrency ID when using PostgresSQL or other databases
+        // that don't support concurrency same as the SQL Server client.
+        [Timestamp]
+        public uint Version { get; set; }
     }
 
     public enum LogLevel

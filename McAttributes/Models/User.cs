@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using IndexAttribute = Microsoft.EntityFrameworkCore.IndexAttribute;
 
 namespace McAttributes.Models {
     [Table("azusers")]
@@ -71,5 +72,11 @@ namespace McAttributes.Models {
         [Column("pronouns")]
         [StringLength(24)]
         public string? Pronouns { get; set; }
+
+
+        // This is the conncurrency ID when using PostgresSQL or other databases
+        // that don't support concurrency same as the SQL Server client.
+        [Timestamp]
+        public uint Version { get; set; }
     }
 }

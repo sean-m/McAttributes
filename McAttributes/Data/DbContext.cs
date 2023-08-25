@@ -3,10 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace McAttributes.Data
-{
-    public class IdDbContext : DbContext
-    {
+namespace McAttributes.Data {
+    public class IdDbContext : DbContext {
         public IdDbContext(DbContextOptions<IdDbContext> options)
             : base(options) { }
 
@@ -17,12 +15,13 @@ namespace McAttributes.Data
         public DbSet<Stargate>? Stargate { get; set; }
 
 
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
+        protected override void OnModelCreating(ModelBuilder builder) {
             builder.Entity<IssueLogEntry>(entity => {
                 entity.Property(p => p.Created).HasDefaultValue(DateTime.UtcNow)
                     .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             });
+
+            builder.Entity<EmployeeIdRecord>();
 
             // AadId should be unique
             builder.Entity<IssueLogEntry>()
@@ -35,10 +34,9 @@ namespace McAttributes.Data
                 .IsUnique();
 
             // Index Mail and EmployeeId
-            builder.Entity<User>()
-                .HasIndex(u => u.Mail);
-            builder.Entity<User>()
-                .HasIndex(u => u.EmployeeId);
+            var userBuilder = builder.Entity<User>();
+            userBuilder.HasIndex(u => u.Mail);
+            userBuilder.HasIndex(u => u.EmployeeId);
         }
     }
 }
