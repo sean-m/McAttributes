@@ -9,7 +9,7 @@ namespace McAttributes.Models {
     public class User {
         [Key]
         [Column("id")]
-        public int Id { get; set; }
+        public uint Id { get; set; }
         
         [Column("lastfetched")]
         public DateTime? LastFetched { get; set; } = null;

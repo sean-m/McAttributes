@@ -8,7 +8,7 @@ namespace McAttributes.Models
     {
         [Key]
         [Column("id")]
-        public int Id { get; set; }
+        public uint Id { get; set; }
         [Column("attrname")]
         public string? AttrName { get; set; }
         [Column("created")]

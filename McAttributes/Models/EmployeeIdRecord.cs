@@ -7,7 +7,7 @@ namespace McAttributes.Models
     public class EmployeeIdRecord
     {
         [Key]
-        public int Id { get; set; }
+        public uint Id { get; set; }
         public string CloudSourceAnchor { get; set; }
         public string UserPrincipalName { get; set; }
         public string? EmployeeId { get; set; }
