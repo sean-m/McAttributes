@@ -16,6 +16,7 @@ using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web.UI;
+using SMM.Helper;
 
 static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
@@ -33,6 +34,8 @@ static IEdmModel GetEdmModel() {
 var builder = WebApplication.CreateBuilder(args);
 
 // Add and load configuration sources.
+#pragma warning disable ASP0013 // Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
+bool didAzAppConfig = false;
 builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
     config.Sources.Clear();
 
@@ -44,13 +47,17 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
 
     // NOTE: set the connection string value in an environment variable or appsettings json file with key: AppConfigConnectionString
     var configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
-    config.AddAzureAppConfiguration(configString);
+    if (!String.IsNullOrEmpty(configString)) {
+        config.AddAzureAppConfiguration(configString);
+        didAzAppConfig = true;
+    }
 
     // Add command line args last so they can override anything else.
     if (args != null) {
         config.AddCommandLine(args);
     }
 });
+#pragma warning restore ASP0013 // Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
 
 
 builder.Services.AddAuthentication(options => {
@@ -66,10 +73,8 @@ builder.Services.AddAuthentication(options => {
 .AddCookie();
 
 
-
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI(); ;
-
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -77,6 +82,7 @@ builder.Services.AddControllers()
     .AddOData(
         options => options.AddRouteComponents("odata", GetEdmModel())
             .EnableQueryFeatures(maxTopValue: 500));
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -87,13 +93,19 @@ builder.Logging.AddConsole();
 
 
 var connString = builder.Configuration.GetConnectionString("Identity");
-// var conn = new Npgsql.NpgsqlConnection(connString);
-// builder.Services.AddDbContext<IdDbContext>(
-//     options => { options.UseNpgsql(conn); });
-
+var configuredDbType = builder.Configuration.GetValue<String>("DbType", "sqlite");
+if (configuredDbType.Like("npgsql")) {
+    var conn = new Npgsql.NpgsqlConnection(connString);
+    builder.Services.AddDbContext<IdDbContext>(
+        options => { options.UseNpgsql(conn); });
+}
+else if (configuredDbType.Like("sqlserver")) {
 builder.Services.AddDbContext<IdDbContext>(
     options => { options.UseSqlServer(connString); });
-
+}
+else if (configuredDbType.Like("sqlite")) {
+    // TODO create sqlite memory instance for testing
+}
 
 var app = builder.Build();
 
@@ -120,7 +132,10 @@ if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-app.UseAzureAppConfiguration();
+
+if (didAzAppConfig) app.UseAzureAppConfiguration();
+
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
