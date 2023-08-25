@@ -1,9 +1,8 @@
 ﻿using System.Reflection;
 using System.Text.RegularExpressions;
-using McAttributes.Data;
 using Microsoft.VisualBasic.FileIO;
 
-namespace McAttributes
+namespace SMM
 {
     public class CsvFileReader
     {
@@ -48,7 +47,6 @@ namespace McAttributes
 
         }
 
-
         public IEnumerable<Dictionary<string, string>> ReadFileValues()
         {
             using (var parser = new TextFieldParser(file_path))
@@ -90,13 +88,9 @@ namespace McAttributes
                 }
             }
         }
-    }
 
-    public static class UglyDbInitHelper {
-
-        public static void DbInit<T>(IdDbContext context, string CsvPath) {
-            if (context == null) throw new ArgumentNullException("Gonna hand me a viable databse connection.");
-            if (!File.Exists(CsvPath)) throw new ArgumentNullException($"CsvFile path not exists {CsvPath}, do better.");
+        public static IEnumerable<T> GetRecords<T>(string CsvPath) {
+            if (!File.Exists(CsvPath)) throw new ArgumentNullException($"CsvFile path not exists {CsvPath}, do better. CD: {System.Environment.CurrentDirectory}");
 
 
             var csvReader = new CsvFileReader(CsvPath, true);
@@ -131,7 +125,7 @@ namespace McAttributes
             }
 
             csvReader = new CsvFileReader(CsvPath);
-            var userType = typeof(Models.User);
+            var userType = typeof(T);
 
             foreach (var row in csvReader.ReadFileValues()) {
                 var columns = row.Keys.Where(k => !String.IsNullOrEmpty(row.GetValueOrDefault(k)));
@@ -143,14 +137,11 @@ namespace McAttributes
                     object value = GetAsType(row[col], type);
                     prop.SetValue(record, value);
                 }
-                if (record != null) context.Add(Convert.ChangeType(record, modelType));
+                yield return (T)record;
             }
-
-            context.SaveChanges();
         }
 
-
-        static object? GetAsType(object source, Type desiredType) {
+        internal static object? GetAsType(object source, Type desiredType) {
             if (source == null) return source;
 
             string strSrc = source.ToString();
@@ -162,10 +153,13 @@ namespace McAttributes
                 return Guid.Parse(source.ToString());
             } else if (desiredType == typeof(DateTime?)) {
                 return DateTime.Parse(source.ToString());
+            } else if (desiredType.IsEnum) {
+                dynamic result;
+                if (Enum.TryParse(desiredType, strSrc, true, out result)) return result;
+                else return null;
             }
 
             return Convert.ChangeType(source, desiredType);
         }
     }
-
 }

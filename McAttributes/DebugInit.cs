@@ -2,6 +2,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using Npgsql;
+using SMM;
 using System.Linq;
 using System.Reflection;
 
@@ -137,5 +138,21 @@ create table if not exists IssueLogEntry (
             UglyDbInitHelper.DbInit<T>(context, @"./test_values.csv");
         }
 
+        static object? GetAsType(object source, Type desiredType) {
+            if (source == null) return source;
+
+            string strSrc = source.ToString();
+            if (string.IsNullOrEmpty(strSrc)) {
+                return null;
+            }
+
+            if (desiredType == typeof(Guid)) {
+                return Guid.Parse(source.ToString());
+            } else if (desiredType == typeof(DateTime?)) {
+                return DateTime.Parse(source.ToString());
+            }
+
+            return Convert.ChangeType(source, desiredType);
+        }
     }
 }
