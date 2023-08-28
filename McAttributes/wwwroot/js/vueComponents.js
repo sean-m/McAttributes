@@ -56,4 +56,4 @@ const SearchTable = {
     `
 }
 
-export default SearchTable;
+export default { SearchTable, ObjectTable };

@@ -411,6 +411,8 @@ const appDefinition = {
     data() {
         return {
             currentTab: 'userForm',
+            currentTabStyleClass: 'tab-content flex-column overflow-scroll',
+            currentTabExpand: false,
             currentUserSearch: new UserSearchContext(),
             currentIssueSearch: new IssueSearchContext(),
             stargateSearch: new StargateSearchContext(),
@@ -440,14 +442,24 @@ const appDefinition = {
             },
             searchButton: {
                 class: "button"
-            }
+            },
+            selectedUser: null
         }
     },
     methods: {
+        resolveCurrentTabClass() {
+            this.currentTabStyleClass = this.selectedUser === null
+                ? 'tab-content flex-column overflow-auto'
+                : 'tab-content flex-column overflow-scroll w-25';
+        },
         // User search supporting methods
         searchForUsers() {
             this.currentUserSearch.clearResults();
             this.currentUserSearch.executeSearch();
+        },
+        selectUserRow(user) {
+            if (this.selectedUser == user) { this.selectedUser = null; }
+            else { this.selectedUser = user; }
         },
         loadMoreUserResults() {
             this.currentUserSearch.loadNextSet();
@@ -507,11 +519,14 @@ const appDefinition = {
         },
     },
     watch: {
-      'currentUserSearch.results'(latestResults, previousResults) {
+        'currentUserSearch.results'(latestResults, previousResults) {
           let ids = []
           ids = ids.concat(latestResults.map(x => { return x.AadId; }));
           this.crosswalkGlobalIds(ids);
-      }  
+        },
+        'selectedUser'() {
+            this.resolveCurrentTabClass();
+        }
     },
 };
 
