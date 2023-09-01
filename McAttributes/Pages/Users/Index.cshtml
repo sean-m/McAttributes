@@ -17,6 +17,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th></th>
             <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].LastFetched)
             </th>
@@ -34,9 +35,6 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].Tenant)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserSet[0].AadId)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].Upn)
@@ -57,9 +55,6 @@
                 @Html.DisplayNameFor(model => model.UserSet[0].HrEmployeeId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UserSet[0].Wid)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].CreationType)
             </th>
             <th>
@@ -71,12 +66,15 @@
             <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].PreferredSurname)
             </th>
-            <th></th>
+            
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.UserSet.Take(50)) {
         <tr>
+            <td>
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a>
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.LastFetched)
             </td>
@@ -94,9 +92,6 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Tenant)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AadId)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Upn)
@@ -117,9 +112,6 @@
                 @Html.DisplayFor(modelItem => item.HrEmployeeId)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Wid)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.CreationType)
             </td>
             <td>
@@ -132,11 +124,6 @@
                 @Html.DisplayFor(modelItem => item.PreferredSurname)
             </td>
 
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
         </tr>
 }
     </tbody>

@@ -9,6 +9,7 @@ using McAttributes.Data;
 using McAttributes.Models;
 using System.Linq.Expressions;
 using McRule;
+using Microsoft.Extensions.Azure;
 
 namespace McAttributes.Pages.Users
 {
@@ -35,22 +36,34 @@ namespace McAttributes.Pages.Users
 
         public IActionResult OnPost([FromForm] string SearchCriteria) {
             TempData[nameof(SearchCriteria)] = SearchCriteria;
+         
             return RedirectToPage("Index");
         }
 
         private Expression<Func<User,bool>> GetUserFilter () {
-            if (String.IsNullOrEmpty(SearchCriteria)) return McRule.PredicateBuilder.False<User>();
+            if (String.IsNullOrEmpty(SearchCriteria)) return PredicateBuilder.False<User>();
 
-            var filter = new McRule.ExpressionRuleCollection();
-            filter.RuleOperator = McRule.PredicateExpressionPolicyExtensions.RuleOperator.Or;
-            filter.Rules = new List<McRule.IExpressionRule>() {
-                new McRule.ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria)),
-                new McRule.ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria)),
-                new McRule.ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria)),
-                new McRule.ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria)),
-            };
+            var filter = new ExpressionRuleCollection();
+            filter.RuleOperator = PredicateExpressionPolicyExtensions.RuleOperator.Or;
+            filter.Rules = new List<IExpressionRule>();
+
+            // If the search criteria contains spaces, it's likely the intent is to match against display name,
+            // as it's the only property where users likely have spaces in the value.
+            if (SearchCriteria.Trim().Contains(' ')) {
+                ((List<IExpressionRule>)filter.Rules).Add(
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), $"*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
+                );
+            } else {
+                ((List<IExpressionRule>)filter.Rules).AddRange(new[] {
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria)),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria)),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria)),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria)),
+                });
+            }
             
-            return PredicateExpressionPolicyExtensions.GetEFPredicateExpression<User>(filter) ?? McRule.PredicateBuilder.False<User>();
+            return PredicateExpressionPolicyExtensions.GetEFPredicateExpression<User>(filter) 
+                ?? PredicateBuilder.False<User>();
         }
     }
 }
