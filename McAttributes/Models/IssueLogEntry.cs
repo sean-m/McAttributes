@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace McAttributes.Models
@@ -13,6 +14,8 @@ namespace McAttributes.Models
         public string? AttrName { get; set; }
         [Column("created")]
         public DateTime? Created { get; set; }
+        [Column("lastSeen")]
+        public DateTime? LastSeen { get; set; }
         [Column("alerthash")]
         public string? AlertHash { get; set; }
         [Column("status")]

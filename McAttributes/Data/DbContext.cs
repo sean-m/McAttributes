@@ -38,5 +38,8 @@ namespace McAttributes.Data {
             userBuilder.HasIndex(u => u.Mail);
             userBuilder.HasIndex(u => u.EmployeeId);
         }
+
+
+        public DbSet<McAttributes.Models.IssueLogEntry> IssueLogEntry { get; set; } = default!;
     }
 }
