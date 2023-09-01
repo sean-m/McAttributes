@@ -47,7 +47,7 @@
                     <label v-if="currentUserSearch.results">Results Fetched: {{currentUserSearch.results.length}}</label>
                 </div>
                 <div>
-                    <button v-if="currentUserSearch.resultCount > 0" class="btn btn-outline-warning" @@click="currentUserSearch.clearResults()">Clear Results</button>
+                    <button v-if="currentUserSearch.resultCount > 0" class="btn btn-outline-warning" @@click="clearResults()">Clear Results</button>
                 </div>
             
                 <!-- User search results -->

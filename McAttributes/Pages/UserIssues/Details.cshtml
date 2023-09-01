@@ -1,0 +1,61 @@
+﻿@page
+@model McAttributes.Pages.UserIssues.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>IssueLogEntry</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IssueLogEntry.AttrName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IssueLogEntry.AttrName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IssueLogEntry.Created)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IssueLogEntry.Created)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IssueLogEntry.AlertHash)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IssueLogEntry.AlertHash)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IssueLogEntry.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IssueLogEntry.Status)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IssueLogEntry.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IssueLogEntry.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IssueLogEntry.Notes)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IssueLogEntry.Notes)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IssueLogEntry.Version)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IssueLogEntry.Version)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.IssueLogEntry?.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

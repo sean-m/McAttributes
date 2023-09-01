@@ -210,7 +210,7 @@ $guestRate   = 0.8
 ################################################################################
 ##                                    Main                                    ##
 ################################################################################
-$recordCount = 1000 * 10
+$recordCount = 1000 * 50
 
 $estimator = [TimeEstimator]::new($recordCount, 100)
 1..$recordCount | foreach {
@@ -260,7 +260,7 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
         wid = ''
         creationType = ''
         company = '' 
-        displayName = ''
+        displayName = "$first $($last.ToUpper())"
         preferredGivenName = $first
         preferredSurname = $last
         articles = $article

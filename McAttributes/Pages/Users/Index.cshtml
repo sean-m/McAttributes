@@ -1,0 +1,139 @@
+﻿@page
+@model McAttributes.Pages.Users.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].LastFetched)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Merged)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Modified)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Created)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Enabled)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Tenant)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].AadId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Upn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Mail)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].DisplayName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].EmployeeId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].AdEmployeeId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].HrEmployeeId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Wid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].CreationType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Company)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].PreferredGivenName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].PreferredSurname)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.User.Take(50)) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastFetched)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Merged)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Modified)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Created)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Enabled)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Tenant)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AadId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Upn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Mail)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DisplayName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EmployeeId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AdEmployeeId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HrEmployeeId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Wid)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreationType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Company)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PreferredGivenName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PreferredSurname)
+            </td>
+
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

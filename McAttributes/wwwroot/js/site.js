@@ -411,7 +411,7 @@ const appDefinition = {
     data() {
         return {
             currentTab: 'userForm',
-            currentTabStyleClass: 'tab-content flex-column overflow-scroll',
+            currentTabStyleClass: 'tab-content flex-column',
             currentTabExpand: false,
             currentUserSearch: new UserSearchContext(),
             currentIssueSearch: new IssueSearchContext(),
@@ -447,11 +447,24 @@ const appDefinition = {
         }
     },
     methods: {
+        clearResults() {
+            switch (this.currentTab) {
+                case 'userForm':
+                    if (this.selectedUser) { this.selectedUser = null; }
+                    if (this.currentUserSearch) { this.currentUserSearch.clearResults(); }
+                    this.resolveCurrentTabClass();
+                    break;
+                case 'issueForm':
+                    if (this.currentIssueSearch && this.currentTab == 'issueForm') { this.currentIssueSearch.clearResults(); }
+                    break
+            }
+        },
         resolveCurrentTabClass() {
-            this.currentTabStyleClass = this.selectedUser === null
-                ? 'tab-content flex-column overflow-auto'
+            this.currentTabStyleClass = this.selectedUser === null && this.currentUserSearch.resultsCount != 0
+                ? 'tab-content flex-column'
                 : 'tab-content flex-column overflow-scroll w-25';
         },
+
         // User search supporting methods
         searchForUsers() {
             this.currentUserSearch.clearResults();
@@ -464,6 +477,7 @@ const appDefinition = {
         loadMoreUserResults() {
             this.currentUserSearch.loadNextSet();
         },
+
         // Issue handling support methods
         searchForIssues() {
             this.currentIssueSearch.clearResults();
@@ -520,9 +534,9 @@ const appDefinition = {
     },
     watch: {
         'currentUserSearch.results'(latestResults, previousResults) {
-          let ids = []
-          ids = ids.concat(latestResults.map(x => { return x.AadId; }));
-          this.crosswalkGlobalIds(ids);
+            let ids = []
+            ids = ids.concat(latestResults.map(x => { return x.AadId; }));
+            this.crosswalkGlobalIds(ids);
         },
         'selectedUser'() {
             this.resolveCurrentTabClass();
