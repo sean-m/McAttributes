@@ -7,71 +7,75 @@
 
 <h1>Index</h1>
 
-<p>
-    <a asp-page="Create">Create New</a>
-</p>
+<form method="post" asp-page="Index">
+    <div class="form-group">
+        <label asp-for="SearchCriteria">Search Criteria</label>
+        <input asp-for="SearchCriteria" class="form-control" placeholder="Search" autocomplete="on" />
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].LastFetched)
+                @Html.DisplayNameFor(model => model.UserSet[0].LastFetched)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Merged)
+                @Html.DisplayNameFor(model => model.UserSet[0].Merged)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Modified)
+                @Html.DisplayNameFor(model => model.UserSet[0].Modified)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Created)
+                @Html.DisplayNameFor(model => model.UserSet[0].Created)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Enabled)
+                @Html.DisplayNameFor(model => model.UserSet[0].Enabled)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Tenant)
+                @Html.DisplayNameFor(model => model.UserSet[0].Tenant)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].AadId)
+                @Html.DisplayNameFor(model => model.UserSet[0].AadId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Upn)
+                @Html.DisplayNameFor(model => model.UserSet[0].Upn)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Mail)
+                @Html.DisplayNameFor(model => model.UserSet[0].Mail)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].DisplayName)
+                @Html.DisplayNameFor(model => model.UserSet[0].DisplayName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].EmployeeId)
+                @Html.DisplayNameFor(model => model.UserSet[0].EmployeeId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].AdEmployeeId)
+                @Html.DisplayNameFor(model => model.UserSet[0].AdEmployeeId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].HrEmployeeId)
+                @Html.DisplayNameFor(model => model.UserSet[0].HrEmployeeId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Wid)
+                @Html.DisplayNameFor(model => model.UserSet[0].Wid)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].CreationType)
+                @Html.DisplayNameFor(model => model.UserSet[0].CreationType)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].Company)
+                @Html.DisplayNameFor(model => model.UserSet[0].Company)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].PreferredGivenName)
+                @Html.DisplayNameFor(model => model.UserSet[0].PreferredGivenName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User[0].PreferredSurname)
+                @Html.DisplayNameFor(model => model.UserSet[0].PreferredSurname)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.User.Take(50)) {
+        @foreach (var item in Model.UserSet.Take(50)) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.LastFetched)
