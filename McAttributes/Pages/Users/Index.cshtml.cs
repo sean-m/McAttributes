@@ -61,9 +61,9 @@ namespace McAttributes.Pages.Users
                     new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria)),
                 });
             }
-            
-            return PredicateExpressionPolicyExtensions.GetEFPredicateExpression<User>(filter) 
-                ?? PredicateBuilder.False<User>();
+
+            var efExpression = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
+            return filter.GetPredicateExpression<User>(efExpression) ?? PredicateBuilder.False<User>();
         }
     }
 }
