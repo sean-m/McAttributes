@@ -31,9 +31,6 @@
             <th>
                 @Html.DisplayNameFor(model => model.IssueLogEntry[0].Notes)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IssueLogEntry[0].Version)
-            </th>
             <th></th>
         </tr>
     </thead>
@@ -59,12 +56,8 @@
                 @Html.DisplayFor(modelItem => item.Notes)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Version)
-            </td>
-            <td>
                 <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a>
             </td>
         </tr>
 }
