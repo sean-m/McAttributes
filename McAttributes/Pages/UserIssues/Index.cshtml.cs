@@ -10,6 +10,8 @@ using McAttributes.Models;
 using Microsoft.Identity.Client;
 using SMM.Helper;
 using System.Globalization;
+using McRule;
+using System.Linq.Expressions;
 
 namespace McAttributes.Pages.UserIssues
 {
@@ -24,6 +26,9 @@ namespace McAttributes.Pages.UserIssues
 
         public IList<IssueLogEntry> IssueLogEntry { get;set; } = default!;
 
+        public string SearchCriteria => (string)TempData[nameof(SearchCriteria)] ?? String.Empty;
+
+
         public int IssueCountTotal { get; set; }
         public Dictionary<string, int> IssueCounts { get; set; } = new Dictionary<string, int>();
 
@@ -31,13 +36,34 @@ namespace McAttributes.Pages.UserIssues
         {
             if (_context.IssueLogEntry != null)
             {
-                IssueLogEntry = await _context.IssueLogEntry.Take(20).ToListAsync();
+                IssueLogEntry = await _context.IssueLogEntry.Where(GetUserFilter()).Take(20).ToListAsync();
                 var s = await _context.IssueLogEntry.OrderBy(x => x.Status).GroupBy(x => x.Status, (key,values) => new { type = key, count = values.Count() }).ToListAsync();
                 foreach (var record in s) {
                     IssueCounts.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(record.type), record.count);
                 }
                 IssueCountTotal = s.Sum(x => x.count);
             }
+        }
+
+
+        public IActionResult OnPost([FromForm] string SearchCriteria) {
+            TempData[nameof(SearchCriteria)] = SearchCriteria;
+
+            return RedirectToPage("Index");
+        }
+
+        private Expression<Func<IssueLogEntry, bool>> GetUserFilter() {
+            if (String.IsNullOrEmpty(SearchCriteria)) return PredicateBuilder.True<IssueLogEntry>();
+
+            var filter = new ExpressionRuleCollection();
+            filter.RuleOperator = PredicateExpressionPolicyExtensions.RuleOperator.Or;
+            filter.Rules = new List<IExpressionRule>() {
+                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.AttrName), $"employeeId:{SearchCriteria.Split().Take(1)}*")),
+                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Description), $"*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
+            };
+
+            var efExpression = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
+            return filter.GetPredicateExpression<IssueLogEntry>(efExpression) ?? PredicateBuilder.False<IssueLogEntry>();
         }
     }
 }
