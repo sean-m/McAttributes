@@ -2,13 +2,24 @@
 @model McAttributes.Pages.UserIssues.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Discovered Issues";
 }
 
-<h1>Index</h1>
+<h1>Discovered Issues</h1>
 
 <p>
-    <a asp-page="Create">Create New</a>
+
+    <table>
+        <thead>
+            <tr><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var i in Model.IssueCounts) {
+                <tr><td>@i.Key</td><td>@i.Value</td></tr>
+            }
+            <tr><td>Total</td><td>@Model.IssueCountTotal</td></tr>
+        </tbody>
+    </table>
 </p>
 <table class="table">
     <thead>

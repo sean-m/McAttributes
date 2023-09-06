@@ -5,8 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace McAttributes.Models
 {
     [Table("idalerts")]
-    public class IssueLogEntry
-    {
+    public class IssueLogEntry {
         [Key]
         [Column("id")]
         public uint Id { get; set; }
@@ -18,6 +17,9 @@ namespace McAttributes.Models
         public DateTime? LastSeen { get; set; }
         [Column("alerthash")]
         public string? AlertHash { get; set; }
+        
+        private const string statusErrMsg = "Allowed values: review, resolved, denied. Remove leading & trailing whitespace.";
+        [RegularExpression(@"^(review|resolved|denied)$", ErrorMessage = statusErrMsg, MatchTimeoutInMilliseconds = 500)]
         [Column("status")]
         public string? Status { get; set; }
         [Column("description")]

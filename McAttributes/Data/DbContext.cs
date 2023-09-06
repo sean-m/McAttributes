@@ -14,6 +14,7 @@ namespace McAttributes.Data {
 
         public DbSet<Stargate>? Stargate { get; set; }
 
+        public DbSet<IssueLogEntry> IssueLogEntry { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder) {
             builder.Entity<IssueLogEntry>(entity => {
@@ -38,8 +39,5 @@ namespace McAttributes.Data {
             userBuilder.HasIndex(u => u.Mail);
             userBuilder.HasIndex(u => u.EmployeeId);
         }
-
-
-        public DbSet<McAttributes.Models.IssueLogEntry> IssueLogEntry { get; set; } = default!;
     }
 }
