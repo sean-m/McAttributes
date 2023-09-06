@@ -9,6 +9,16 @@ using System.Net;
 namespace SMM.Helper {
     public static partial class Extensions
     {
+
+        public static void WaitAll(this Task[] tasks) {
+            Task.WaitAll(tasks);
+        }
+
+        public static void WaitAny(this Task[] tasks) {
+            Task.WaitAny(tasks);
+        }
+
+
         /// <summary>
         /// VisualBasic's string comparison with wildcard support.
         /// </summary>
