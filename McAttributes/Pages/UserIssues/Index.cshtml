@@ -28,10 +28,10 @@
                 @Html.DisplayNameFor(model => model.IssueLogEntry[0].AttrName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IssueLogEntry[0].Created)
+                @Html.DisplayNameFor(model => model.IssueLogEntry[0].Created) UTC
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IssueLogEntry[0].AlertHash)
+                @Html.DisplayNameFor(model => model.IssueLogEntry[0].LastSeen)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.IssueLogEntry[0].Status)
@@ -55,7 +55,7 @@
                 @Html.DisplayFor(modelItem => item.Created)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.AlertHash)
+                @Html.DisplayFor(modelItem => item.LastSeen)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Status)
