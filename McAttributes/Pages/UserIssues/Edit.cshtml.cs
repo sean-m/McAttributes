@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using McAttributes.Data;
 using McAttributes.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace McAttributes.Pages.UserIssues
 {
@@ -21,7 +22,7 @@ namespace McAttributes.Pages.UserIssues
         }
 
         [BindProperty]
-        public IssueLogEntry IssueLogEntry { get; set; } = default!;
+        public IssueLogEntry Entry { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(uint? id)
         {
@@ -35,7 +36,7 @@ namespace McAttributes.Pages.UserIssues
             {
                 return NotFound();
             }
-            IssueLogEntry = issuelogentry;
+            Entry = issuelogentry;
             return Page();
         }
 
@@ -43,33 +44,56 @@ namespace McAttributes.Pages.UserIssues
         // For more details, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
+            var allowUpdate = new HashSet<string> { "Status", "Notes" };
+            
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            _context.Attach(IssueLogEntry).State = EntityState.Modified;
+            if (Entry != null) {
+                var _entry = _context.IssueLogEntry.Attach(Entry);
+                _entry.State = EntityState.Unchanged;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!IssueLogEntryExists(IssueLogEntry.Id))
-                {
-                    return NotFound();
+                var _dbValues = await _entry.GetDatabaseValuesAsync();
+                
+                foreach (var propName in _entry.Properties.Select(x => x.Metadata.Name)) {
+                    var _member = _entry.Members.FirstOrDefault(x => x.Metadata.Name == propName);
+                    
+                    // We don't want to flag disallowed values as modified.
+                    if (!allowUpdate.Contains(propName)) { 
+                        _member.IsModified = false;
+                        continue;
+                    }
+
+                    dynamic dbVal;
+                    if (_dbValues?.TryGetValue<dynamic>(propName, out dbVal) ?? false) {
+                        if (!Equals(_member?.CurrentValue, dbVal)) {
+                            _member.IsModified = true;
+                        }
+                    }
                 }
-                else
-                {
-                    throw;
+                
+
+                try {
+                    if (_entry.State == EntityState.Modified) {
+                        var changes = _context.ChangeTracker;
+                        System.Diagnostics.Trace.WriteLine($">> {changes.ToDebugString()}");
+                        _context.SaveChanges();
+                    }
+                } catch (DbUpdateConcurrencyException) {
+                    if (!IssueLogEntryExists(Entry.Id)) {
+                        return NotFound();
+                    } else {
+                        throw;
+                    }
                 }
             }
 
             return RedirectToPage("./Index");
         }
 
-        private bool IssueLogEntryExists(uint id)
+        private bool IssueLogEntryExists(long id)
         {
           return (_context.IssueLogEntry?.Any(e => e.Id == id)).GetValueOrDefault();
         }

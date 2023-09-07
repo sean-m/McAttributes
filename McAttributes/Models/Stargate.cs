@@ -9,7 +9,7 @@ namespace McAttributes.Models {
     public class Stargate {
         [Key]
         [Column("id")]
-        public uint Id { get; set; }
+        public long Id { get; set; }
 
         [Column("recordtype", TypeName="integer")]
         public StargateType RecordType { get; set; }

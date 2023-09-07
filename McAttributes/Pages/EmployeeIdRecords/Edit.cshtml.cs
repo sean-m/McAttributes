@@ -69,7 +69,7 @@ namespace McAttributes.Pages.EmployeeIdRecords
             return RedirectToPage("./Index");
         }
 
-        private bool EmployeeIdRecordExists(uint id)
+        private bool EmployeeIdRecordExists(long id)
         {
           return (_context.EmployeeIds?.Any(e => e.Id == id)).GetValueOrDefault();
         }

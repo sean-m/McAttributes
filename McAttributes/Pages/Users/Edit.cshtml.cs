@@ -69,7 +69,7 @@ namespace McAttributes.Pages.Users
             return RedirectToPage("./Index");
         }
 
-        private bool UserExists(uint id)
+        private bool UserExists(long id)
         {
           return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }

@@ -50,7 +50,7 @@ namespace McAttributes.Controllers
 
         // POST api/<UserController>
         [HttpPost]
-        public async Task<uint> Post([FromBody] User value) {
+        public async Task<long> Post([FromBody] User value) {
             _ctx.Set<User>().Add(value);
             await _ctx.SaveChangesAsync();
             return value.Id;

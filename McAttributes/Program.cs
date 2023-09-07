@@ -107,9 +107,6 @@ else if (configuredDbType.Like("sqlserver")) {
 builder.Services.AddDbContext<IdDbContext>(
     options => { options.UseSqlServer(connString); });
 }
-else if (configuredDbType.Like("sqlite")) {
-    // TODO create sqlite memory instance for testing
-}
 
 var app = builder.Build();
 

@@ -29,10 +29,18 @@ namespace McAttributes.Data {
                 .HasIndex(u => u.AlertHash)
                 .IsUnique();
 
+            //builder.Entity<IssueLogEntry>()
+            //    .Property(p => p.Version)
+            //    .IsRowVersion();
+
             // AadId should be unique
             builder.Entity<User>()
                 .HasIndex(u => u.AadId)
                 .IsUnique();
+
+            builder.Entity<User>()
+                .Property(p => p.Version)
+                .IsRowVersion();
 
             // Index Mail and EmployeeId
             var userBuilder = builder.Entity<User>();

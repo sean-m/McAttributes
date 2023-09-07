@@ -13,36 +13,40 @@
     <div class="col-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="IssueLogEntry.Id" />
+            <input type="hidden" asp-for="Entry.Id" />
             <div class="form-group">
-                <label asp-for="IssueLogEntry.AttrName" class="control-label"></label>
-                <input asp-for="IssueLogEntry.AttrName" class="form-control" />
-                <span asp-validation-for="IssueLogEntry.AttrName" class="text-danger"></span>
+                <label asp-for="Entry.AttrName" class="control-label"></label>
+                <input asp-for="Entry.AttrName" class="form-control" />
+                <span asp-validation-for="Entry.AttrName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="IssueLogEntry.Created" class="control-label"></label>
-                <input asp-for="IssueLogEntry.Created" class="form-control" />
-                <span asp-validation-for="IssueLogEntry.Created" class="text-danger"></span>
+                <label asp-for="Entry.Created" class="control-label"></label>
+                <input asp-for="Entry.Created" class="form-control" />
+                <span asp-validation-for="Entry.Created" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="IssueLogEntry.AlertHash" class="control-label"></label>
-                <input asp-for="IssueLogEntry.AlertHash" class="form-control" />
-                <span asp-validation-for="IssueLogEntry.AlertHash" class="text-danger"></span>
+                <label asp-for="Entry.AlertHash" class="control-label"></label>
+                <input asp-for="Entry.AlertHash" class="form-control" />
+                <span asp-validation-for="Entry.AlertHash" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="IssueLogEntry.Status" class="control-label"></label>
-                <input asp-for="IssueLogEntry.Status" class="form-control" />
-                <span asp-validation-for="IssueLogEntry.Status" class="text-danger"></span>
+                <label asp-for="Entry.Status" class="control-label"></label>
+                <select asp-for="Entry.Status" class="form-select" >
+                    <option value="review">Needs Review</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="denied">Denied</option>
+                </select>
+                <span asp-validation-for="Entry.Status" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="IssueLogEntry.Description" class="control-label"></label>
-                <textarea asp-for="IssueLogEntry.Description" class="form-control" rows="5" readonly="true"></textarea>
-                <span asp-validation-for="IssueLogEntry.Description" class="text-danger"></span>
+                <label asp-for="Entry.Description" class="control-label"></label>
+                <textarea asp-for="Entry.Description" class="form-control" rows="5" readonly="true"></textarea>
+                <span asp-validation-for="Entry.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="IssueLogEntry.Notes" class="control-label"></label>
-                <textarea asp-for="IssueLogEntry.Notes" class="form-control" rows="5"></textarea>
-                <span asp-validation-for="IssueLogEntry.Notes" class="text-danger"></span>
+                <label asp-for="Entry.Notes" class="control-label"></label>
+                <textarea asp-for="Entry.Notes" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Entry.Notes" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

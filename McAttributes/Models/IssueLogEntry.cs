@@ -8,22 +8,28 @@ namespace McAttributes.Models
     public class IssueLogEntry {
         [Key]
         [Column("id")]
-        public uint Id { get; set; }
+        public long Id { get; set; }
+
         [Column("attrname")]
         public string? AttrName { get; set; }
+
         [Column("created")]
         public DateTime? Created { get; set; }
+
         [Column("lastSeen")]
         public DateTime? LastSeen { get; set; }
+
         [Column("alerthash")]
         public string? AlertHash { get; set; }
         
         private const string statusErrMsg = "Allowed values: review, resolved, denied. Remove leading & trailing whitespace.";
-        [RegularExpression(@"^(review|resolved|denied)$", ErrorMessage = statusErrMsg, MatchTimeoutInMilliseconds = 500)]
+        [RegularExpression(@"^(review|resolved|denied)$", ErrorMessage = statusErrMsg, MatchTimeoutInMilliseconds = 100)]
         [Column("status")]
         public string? Status { get; set; }
+        
         [Column("description")]
         public string? Description { get; set; }
+
         [Column("notes")]
         public string? Notes { get; set; }
 
@@ -31,6 +37,8 @@ namespace McAttributes.Models
         // This is the conncurrency ID when using PostgresSQL or other databases
         // that don't support concurrency same as the SQL Server client.
         [Timestamp]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column("xmin", TypeName = "xid")]
         public uint Version { get; set; }
     }
 
