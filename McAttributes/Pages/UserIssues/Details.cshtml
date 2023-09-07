@@ -59,3 +59,4 @@
     <a asp-page="./Edit" asp-route-id="@Model.IssueLogEntry?.Id">Edit</a> |
     <a asp-page="./Index">Back to List</a>
 </div>
+@await Html.PartialAsync("_AssociatedAccounts", Model.AssociatedAccountsModel)

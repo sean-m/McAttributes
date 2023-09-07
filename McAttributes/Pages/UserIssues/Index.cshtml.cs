@@ -17,9 +17,9 @@ namespace McAttributes.Pages.UserIssues
 {
     public class IndexModel : PageModel
     {
-        private readonly McAttributes.Data.IdDbContext _context;
+        private readonly IdDbContext _context;
 
-        public IndexModel(McAttributes.Data.IdDbContext context)
+        public IndexModel(IdDbContext context)
         {
             _context = context;
         }

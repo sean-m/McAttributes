@@ -7,19 +7,26 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using McAttributes.Data;
 using McAttributes.Models;
+using SMM.Helper;
+using McRule;
 
 namespace McAttributes.Pages.UserIssues
 {
     public class DetailsModel : PageModel
     {
-        private readonly McAttributes.Data.IdDbContext _context;
+        private readonly IdDbContext _context;
 
-        public DetailsModel(McAttributes.Data.IdDbContext context)
+        public DetailsModel(IdDbContext context)
         {
             _context = context;
+            AssociatedAccountsModel = new _AssociatedAccountsModel(context);
         }
 
-      public IssueLogEntry IssueLogEntry { get; set; } = default!; 
+
+        public IssueLogEntry IssueLogEntry { get; set; } = default!;
+
+        private List<string> accts = new List<string>();
+        public _AssociatedAccountsModel AssociatedAccountsModel { get; set; }
 
         public async Task<IActionResult> OnGetAsync(uint? id)
         {
@@ -37,6 +44,38 @@ namespace McAttributes.Pages.UserIssues
             {
                 IssueLogEntry = issuelogentry;
             }
+
+
+            bool startAdding = false;
+            foreach (var l in IssueLogEntry.Description?.Split(new char[] { '\n', '\r' })) {
+                if (!String.IsNullOrEmpty(l)) {
+                    var line = l.Trim();
+                    if (!startAdding && line.Like("The issue involved these accounts*")) {
+                        startAdding = true;
+                        continue;
+                    }
+                    if (startAdding && line.Like("*@*")) {
+                        accts.Add(line);
+                    }
+                }
+            }
+
+            if (accts.Count > 0) {
+
+                var filterCollection = new ExpressionRuleCollection();
+                filterCollection.RuleOperator = McRule.PredicateExpressionPolicyExtensions.RuleOperator.Or;
+                var rules = new List<ExpressionRule>();
+                foreach (var acct in accts) {
+                    rules.Add((nameof(Models.User), nameof(Models.User.Upn), acct).ToFilterRule());
+                }
+                filterCollection.Rules = rules;
+
+                var efGenerator = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
+                var filter = filterCollection.GetPredicateExpression<Models.User>(efGenerator) ?? PredicateBuilder.False<Models.User>();
+
+                AssociatedAccountsModel.AssociatedUsers.AddRange(_context.Users.OrderBy(x => x.Id).Where(filter));
+            }
+
             return Page();
         }
     }

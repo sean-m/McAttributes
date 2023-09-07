@@ -62,8 +62,8 @@ namespace McAttributes.Pages.Users
                 });
             }
 
-            var efExpression = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
-            return filter.GetPredicateExpression<User>(efExpression) ?? PredicateBuilder.False<User>();
+            var efGenerator = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
+            return filter.GetPredicateExpression<User>(efGenerator) ?? PredicateBuilder.False<User>();
         }
     }
 }
