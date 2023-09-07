@@ -5,5 +5,25 @@
 
 
 <div id="associatedPartial">
-    Associated users found: @Model.AssociatedUsers.Count;
+    
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th></th>
+            @foreach (var u in Model.AssociatedUsers) {
+                <th></th>
+            }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties().Where(x => x.Name != "Version")) {
+                <tr>
+                    <th>@p.Name</th>
+                    @foreach (var a in Model.AssociatedUsers.OrderBy(x => x.Tenant)) {
+                        <td>@p.GetValue(a)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
