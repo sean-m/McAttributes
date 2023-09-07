@@ -52,34 +52,27 @@ namespace McAttributes.Pages.UserIssues
             }
 
             if (Entry != null) {
-                var _entry = _context.IssueLogEntry.Attach(Entry);
-                _entry.State = EntityState.Unchanged;
+                var _entry = _context.IssueLogEntry.Find(Entry.Id);
 
-                var _dbValues = await _entry.GetDatabaseValuesAsync();
-                
-                foreach (var propName in _entry.Properties.Select(x => x.Metadata.Name)) {
-                    var _member = _entry.Members.FirstOrDefault(x => x.Metadata.Name == propName);
+                foreach (var prop in _entry?.GetType().GetProperties()) {
                     
                     // We don't want to flag disallowed values as modified.
-                    if (!allowUpdate.Contains(propName)) { 
-                        _member.IsModified = false;
+                    if (!allowUpdate.Contains(prop.Name)) {
                         continue;
                     }
 
-                    dynamic dbVal;
-                    if (_dbValues?.TryGetValue<dynamic>(propName, out dbVal) ?? false) {
-                        if (!Equals(_member?.CurrentValue, dbVal)) {
-                            _member.IsModified = true;
-                        }
+                    dynamic dbVal = prop.GetValue(_entry);
+                    dynamic modelValue = prop.GetValue(Entry);
+                    if (!Equals(dbVal, modelValue)) {
+                        prop.SetValue(_entry, modelValue);
                     }
                 }
                 
-
                 try {
-                    if (_entry.State == EntityState.Modified) {
+                    if (_context.Entry(_entry).State == EntityState.Modified) {
                         var changes = _context.ChangeTracker;
                         System.Diagnostics.Trace.WriteLine($">> {changes.ToDebugString()}");
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
                     }
                 } catch (DbUpdateConcurrencyException) {
                     if (!IssueLogEntryExists(Entry.Id)) {

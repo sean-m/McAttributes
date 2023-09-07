@@ -6,7 +6,7 @@ using IndexAttribute = Microsoft.EntityFrameworkCore.IndexAttribute;
 namespace McAttributes.Models {
     [Table("stargate")]
     [Index(nameof(LocalId), nameof(Partition))]
-    public class Stargate {
+    public class Stargate : RowVersionedModel {
         [Key]
         [Column("id")]
         public long Id { get; set; }
@@ -33,12 +33,6 @@ namespace McAttributes.Models {
         [Column("joinseed")]
         [StringLength(256)]
         public string? Joinseed { get; set; }
-
-
-        // This is the conncurrency ID when using PostgresSQL or other databases
-        // that don't support concurrency same as the SQL Server client.
-        [Timestamp]
-        public uint Version { get; set; }
     }
 
 

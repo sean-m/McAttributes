@@ -29,23 +29,24 @@ namespace McAttributes.Data {
                 .HasIndex(u => u.AlertHash)
                 .IsUnique();
 
-            //builder.Entity<IssueLogEntry>()
-            //    .Property(p => p.Version)
-            //    .IsRowVersion();
 
             // AadId should be unique
             builder.Entity<User>()
                 .HasIndex(u => u.AadId)
                 .IsUnique();
 
-            builder.Entity<User>()
-                .Property(p => p.Version)
-                .IsRowVersion();
-
             // Index Mail and EmployeeId
             var userBuilder = builder.Entity<User>();
             userBuilder.HasIndex(u => u.Mail);
             userBuilder.HasIndex(u => u.EmployeeId);
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
+            foreach (var entry in ChangeTracker.Entries<RowVersionedModel>()) {
+                var prop = entry.Property(nameof(RowVersionedModel.Version));
+                prop.OriginalValue = prop.CurrentValue;
+            }
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

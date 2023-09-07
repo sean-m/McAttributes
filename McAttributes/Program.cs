@@ -1,7 +1,6 @@
 
 using McAttributes;
 using Microsoft.AspNetCore.OData;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using McAttributes.Data;

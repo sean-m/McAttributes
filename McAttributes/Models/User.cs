@@ -6,7 +6,7 @@ using IndexAttribute = Microsoft.EntityFrameworkCore.IndexAttribute;
 namespace McAttributes.Models {
     [Table("azusers")]
     [Index(nameof(AadId), nameof(Mail), nameof(EmployeeId))]
-    public class User {
+    public class User : RowVersionedModel {
         [Key]
         [Column("id")]
         public long Id { get; set; }
@@ -72,11 +72,5 @@ namespace McAttributes.Models {
         [Column("pronouns")]
         [StringLength(24)]
         public string? Pronouns { get; set; }
-
-
-        // This is the conncurrency ID when using PostgresSQL or other databases
-        // that don't support concurrency same as the SQL Server client.
-        [Timestamp]
-        public uint Version { get; set; }
     }
 }

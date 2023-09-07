@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace McAttributes.Models
 {
     [Table("idalerts")]
-    public class IssueLogEntry {
+    public class IssueLogEntry : RowVersionedModel {
         [Key]
         [Column("id")]
         public long Id { get; set; }
@@ -32,14 +32,6 @@ namespace McAttributes.Models
 
         [Column("notes")]
         public string? Notes { get; set; }
-
-
-        // This is the conncurrency ID when using PostgresSQL or other databases
-        // that don't support concurrency same as the SQL Server client.
-        [Timestamp]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        [Column("xmin", TypeName = "xid")]
-        public uint Version { get; set; }
     }
 
     public enum LogLevel
