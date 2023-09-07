@@ -73,7 +73,11 @@ builder.Services.AddAuthentication(options => {
 .AddCookie();
 
 
-builder.Services.AddRazorPages()
+builder.Services.AddRazorPages(options => {
+    options.Conventions.AuthorizeFolder("/EmployeeIdRecords");
+    options.Conventions.AuthorizeFolder("/Users");
+    options.Conventions.AuthorizeFolder("/UserIssues");
+    })
     .AddMicrosoftIdentityUI(); ;
 
 // Add services to the container.
