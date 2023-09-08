@@ -24,7 +24,7 @@ namespace McAttributes.Pages.UserIssues {
             if (_acctNames.Count > 0) {
 
                 var filterCollection = new ExpressionRuleCollection();
-                filterCollection.RuleOperator = McRule.PredicateExpressionPolicyExtensions.RuleOperator.Or;
+                filterCollection.RuleOperator = RuleOperator.Or;
                 var rules = new List<McRule.ExpressionRule>();
                 foreach (var acct in _acctNames) {
                     rules.Add((nameof(Models.User), nameof(Models.User.Upn), acct).ToFilterRule());

@@ -44,8 +44,8 @@ namespace McAttributes.Pages.Users
             if (String.IsNullOrEmpty(SearchCriteria)) return PredicateBuilder.False<User>();
 
             var filter = new ExpressionRuleCollection();
-            filter.RuleOperator = PredicateExpressionPolicyExtensions.RuleOperator.Or;
-            filter.Rules = new List<IExpressionRule>();
+            filter.RuleOperator = RuleOperator.Or;
+            filter.Rules = new List<IExpressionPolicy>();
 
             // If the search criteria contains spaces, it's likely the intent is to match against display name,
             // as it's the only property where users likely have spaces in the value.
@@ -63,7 +63,7 @@ namespace McAttributes.Pages.Users
             }
 
             var efGenerator = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
-            return filter.GetPredicateExpression<User>(efGenerator) ?? PredicateBuilder.False<User>();
+            return efGenerator.GetPredicateExpression<User>(filter) ?? PredicateBuilder.False<User>();
         }
     }
 }

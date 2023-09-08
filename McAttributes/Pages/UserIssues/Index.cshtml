@@ -11,8 +11,18 @@
     <div class="form-group">
         <label asp-for="SearchCriteria">Search Criteria</label>
         <input asp-for="SearchCriteria" class="form-control" placeholder="Search" autocomplete="on" />
+
+        <input asp-for="ShowReview" />
+        <label asp-for="ShowReview">Needing Review</label>
+
+        <input asp-for="ShowDenied" />
+        <label asp-for="ShowDenied">Denied</label>
+
+        <input asp-for="ShowResolved" />
+        <label asp-for="ShowResolved">Resolved</label>
     </div>
     <button type="submit" class="btn btn-primary">Search</button>
+    
 </form>
 
 <table>

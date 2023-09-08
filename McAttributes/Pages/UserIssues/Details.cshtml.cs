@@ -63,7 +63,7 @@ namespace McAttributes.Pages.UserIssues
             if (accts.Count > 0) {
 
                 var filterCollection = new ExpressionRuleCollection();
-                filterCollection.RuleOperator = McRule.PredicateExpressionPolicyExtensions.RuleOperator.Or;
+                filterCollection.RuleOperator = McRule.RuleOperator.Or;
                 var rules = new List<ExpressionRule>();
                 foreach (var acct in accts) {
                     rules.Add((nameof(Models.User), nameof(Models.User.Upn), acct).ToFilterRule());
@@ -71,7 +71,7 @@ namespace McAttributes.Pages.UserIssues
                 filterCollection.Rules = rules;
 
                 var efGenerator = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
-                var filter = filterCollection.GetPredicateExpression<Models.User>(efGenerator) ?? PredicateBuilder.False<Models.User>();
+                var filter = efGenerator.GetPredicateExpression<Models.User>(filterCollection) ?? PredicateBuilder.False<Models.User>();
 
                 AssociatedAccountsModel.AssociatedUsers.AddRange(_context.Users.OrderBy(x => x.Id).Where(filter));
             }
