@@ -25,8 +25,13 @@ namespace McAttributes.Pages.UserIssues
 
         public IssueLogEntry IssueLogEntry { get; set; } = default!;
 
+
+        #region AssociatedAccountData
+
         private List<string> accts = new List<string>();
         public _AssociatedAccountsModel AssociatedAccountsModel { get; set; }
+
+        #endregion  AssociatedAccountData
 
         public async Task<IActionResult> OnGetAsync(uint? id)
         {
@@ -34,6 +39,7 @@ namespace McAttributes.Pages.UserIssues
             {
                 return NotFound();
             }
+
 
             var issuelogentry = await _context.IssueLogEntry.FirstOrDefaultAsync(m => m.Id == id);
             if (issuelogentry == null)
@@ -78,5 +84,13 @@ namespace McAttributes.Pages.UserIssues
 
             return Page();
         }
+
+
+        public IActionResult OnPost([FromForm] string foo) {
+
+
+            return RedirectToPage("Index");
+        }
+
     }
 }

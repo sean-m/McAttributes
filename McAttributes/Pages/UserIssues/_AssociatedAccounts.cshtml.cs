@@ -1,6 +1,7 @@
 using McAttributes.Data;
 using McAttributes.Models;
 using McRule;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SMM.Helper;
@@ -34,6 +35,7 @@ namespace McAttributes.Pages.UserIssues {
                 AssociatedUsers.AddRange(_context.Users.OrderBy(x => x.Id).Where(filter));
             }
         }
+
 
         public void SetIssue(IssueLogEntry issueLogEntry) {
             IssueLogEntry = issueLogEntry;

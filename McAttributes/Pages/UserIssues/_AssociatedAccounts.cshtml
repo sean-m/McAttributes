@@ -5,25 +5,25 @@
 
 
 <div id="associatedPartial">
-    
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th></th>
-            @foreach (var u in Model.AssociatedUsers) {
-                <th></th>
-            }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties().Where(x => x.Name != "Version")) {
-                <tr>
-                    <th>@p.Name</th>
-                    @foreach (var a in Model.AssociatedUsers.OrderBy(x => x.Tenant)) {
-                        <td>@p.GetValue(a)</td>
-                    }
-                </tr>
-            }
-        </tbody>
-    </table>
+
+    @if (Model.AssociatedUsers.Count() > 0) {
+        <table id="accountsTable" class="table table-bordered table-hover">
+            <tbody>
+                @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties().Where(x => x.Name != "Version")) {
+                    <tr>
+                        <th>@p.Name</th>
+                        @foreach (var a in Model.AssociatedUsers.OrderBy(x => x.Tenant)) {
+                            <td >@p.GetValue(a)</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else {
+        <p>No Associated Accounts Loaded.</p>
+        if (Model._acctNames.Count() > 0) {
+            <p>@Model._acctNames.Count() account names identified but fetching from database failed.</p>
+        }
+    }
 </div>
