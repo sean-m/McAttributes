@@ -210,7 +210,7 @@ $guestRate   = 0.8
 ################################################################################
 ##                                    Main                                    ##
 ################################################################################
-$recordCount = 1000 * 20
+$recordCount = 1000 * 2
 
 $estimator = [TimeEstimator]::new($recordCount, 100)
 1..$recordCount | foreach {
@@ -270,13 +270,13 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
     $account
 
     if (RndFloat -le $guestRate) {
-        $tenant | where $account.Upn -NotLike "*$_" | foreach {
+        $tenants.Where({$account.upn -notlike "*$_"}).ForEach({
             $guest = $account.PSObject.Copy()
             $upn = $guest.upn.Replace("@","_") + "#EXT#@" + $_
             $guest.upn = $upn
             $guest.creationType = 'Invitation'
             $guest.aadId = [Guid]::NewGuid()
             $guest
-        }
+        })
     }
 } | export-csv -NoTypeInformation .\test_azusers_1.csv
