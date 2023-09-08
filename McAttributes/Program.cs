@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web.UI;
 using SMM.Helper;
+using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore.Internal;
 
 static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
@@ -59,6 +61,7 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
 #pragma warning restore ASP0013 // Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
 
 
+// Azure AD Auth OIDC
 builder.Services.AddAuthentication(options => {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -82,17 +85,19 @@ builder.Services.AddRazorPages(options => {
 // Add services to the container.
 builder.Services.AddControllers()
     .AddNewtonsoftJson()
-    .AddOData(
-        options => options.AddRouteComponents("odata", GetEdmModel())
-            .EnableQueryFeatures(maxTopValue: 500));
+    .AddOData(options => {
+            options.AddRouteComponents("odata", GetEdmModel())
+                .EnableQueryFeatures(maxTopValue: 500);
+        });
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(
     opt => opt.ResolveConflictingActions(a => a.First()));
-builder.Logging.AddConsole();
 
+// Logging
+builder.Logging.AddConsole();
 
 
 var connString = builder.Configuration.GetConnectionString("Identity");
@@ -109,6 +114,9 @@ builder.Services.AddDbContext<IdDbContext>(
 
 var app = builder.Build();
 
+
+ILogger logger = app.Logger;
+
 // Updating an entity bombs without this. Postgresql requires UTC timestamps and for whatever
 // reason, the default DateTime behavior is to just try shoving in a value with out a timezone.
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -116,13 +124,18 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
 {
     var idDbContext = serviceScope.ServiceProvider.GetRequiredService<IdDbContext>();
-    if (idDbContext.Database.EnsureCreated()) {
-        if (!builder.Environment.IsProduction()) {
+    var shouldInitialize = builder.Configuration.GetValue<bool>("InitializeDatabaseWhenMissing");
+    if (shouldInitialize && idDbContext.Database.EnsureCreated()) {
+        logger.LogDebug("Initialized database tables.");
+        if (app.Environment.IsDevelopment()) {
             // Initialize the database with test data when running in 
-            // debug mode and having just created tables.
-            System.Diagnostics.Trace.WriteLine("Initialized database tables. Loading table data from test_values.csv.");
+            // Development mode and having just created tables.
+            logger.LogDebug("Loading test data from test_values.csv.");
             DebugInit.DbInit(idDbContext);
         }
+    } 
+    else {
+        logger.LogInformation($"Database not automatically initialized. Environment: {app.Environment.IsDevelopment()}, InitializeDatabaseWhenMissing config: {shouldInitialize}");
     }
 }
 
@@ -149,11 +162,10 @@ app.UseRouting();
 app.UseAuthorization();
 
 
-app.MapRazorPages();
-app.MapControllers();
-
 app.UseSwagger();
 //app.UseSwaggerUI();
 
+app.MapRazorPages();
+app.MapControllers();
 
 app.Run();
