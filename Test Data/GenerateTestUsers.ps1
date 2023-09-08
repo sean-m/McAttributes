@@ -273,6 +273,7 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
         $tenants.Where({$account.upn -notlike "*$_"}).ForEach({
             $guest = $account.PSObject.Copy()
             $upn = $guest.upn.Replace("@","_") + "#EXT#@" + $_
+            $guest.tenant = $_
             $guest.upn = $upn
             $guest.creationType = 'Invitation'
             $guest.aadId = [Guid]::NewGuid()
