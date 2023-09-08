@@ -7,5 +7,7 @@
 @if (User.Identity?.IsAuthenticated == true) {
     @await Html.PartialAsync("_VueApp")
 } else {
-    <a class="btn btn-warning" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in first!</a>
+    <div class="col text-center">
+        <a class="btn btn-warning" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in first!</a>
+    </div>
 }
