@@ -63,8 +63,8 @@ namespace McAttributes.Pages.Users
             }
             filter.Rules = _rules;
 
-            var efGenerator = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
-            return efGenerator.GetPredicateExpression<User>(filter) ?? PredicateBuilder.False<User>();
+            var efGenerator = new SMM.NpgsqlGenerator();
+            return efGenerator.GetPredicateExpression<User>((IExpressionRuleCollection)filter) ?? PredicateBuilder.False<User>();
         }
     }
 }
