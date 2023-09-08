@@ -26,7 +26,8 @@ namespace McAttributes.Models
         [RegularExpression(@"^(review|resolved|denied)$", ErrorMessage = statusErrMsg, MatchTimeoutInMilliseconds = 100)]
         [Column("status")]
         public string? Status { get; set; }
-        
+
+        [DisplayFormat(HtmlEncode = true)]
         [Column("description")]
         public string? Description { get; set; }
 
