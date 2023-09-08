@@ -45,22 +45,23 @@ namespace McAttributes.Pages.Users
 
             var filter = new ExpressionRuleCollection();
             filter.RuleOperator = RuleOperator.Or;
-            filter.Rules = new List<IExpressionPolicy>();
+            var _rules = new List<IExpressionPolicy>();
 
             // If the search criteria contains spaces, it's likely the intent is to match against display name,
             // as it's the only property where users likely have spaces in the value.
             if (SearchCriteria.Trim().Contains(' ')) {
-                ((List<IExpressionRule>)filter.Rules).Add(
+                _rules.Add(
                     new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), $"*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
                 );
             } else {
-                ((List<IExpressionRule>)filter.Rules).AddRange(new[] {
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria)),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria)),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria)),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria)),
+                _rules.AddRange(new[] {
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), $"{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), $"{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), $"{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), $"{SearchCriteria}*")),
                 });
             }
+            filter.Rules = _rules;
 
             var efGenerator = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
             return efGenerator.GetPredicateExpression<User>(filter) ?? PredicateBuilder.False<User>();
