@@ -21,24 +21,10 @@ namespace SMM
 			// Check that the property isn't null, otherwise we'd hit null object exceptions at runtime
 			var notNull = Expression.NotEqual(lambda.Body, Expression.Constant(null));
 
-			// Setup calls to: StartsWith, EndsWith, Contains, or Equals,
-			// conditionally using character case neutral comparision.
-			List<Expression> expressionArgs = new List<Expression>() { Expression.Constant(filter, typeof(string)) };
-			MethodInfo methodInfo;
-			Expression strPredicate;
-
+			// If a case insensitive comparision is requested, we resolve that against the 
+			// Npgsql ILike extension method. EF will translate that into the proper SQL before
+			// sending it to the database.
 			if (ignoreCase) {
-				var ilike = typeof(NpgsqlDbFunctionsExtensions).GetMethod("ILike",
-					BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
-					null,
-					new[] {
-						typeof(DbFunctions),
-						typeof(string),
-						typeof(string)
-					},
-					null
-					);
-
 				switch (filterType) {
 					case "StartsWith":
 						filter = $"{filter}%";
@@ -48,18 +34,26 @@ namespace SMM
 						break;
 				}
 
+				// ILike is a virtual static extension method so needs a statically typed
+				// null as the first parameter. Smart people made the type system so
+				// I hope this makes sense to them.
+                var nullExpr = Expression.Constant(null, typeof(DbFunctions));
 
-				var bodyLike = Expression.Call(ilike, Expression.Constant(null, typeof(DbFunctions)),
-					lambda.Body, Expression.Constant(filter, typeof(string)));
+                var method = typeof(NpgsqlDbFunctionsExtensions).GetMethods().Where(
+                    x => (x.Name?.Equals("ILike") ?? false)
+                    && x.GetParameters().Count() == 3); // There's two "ILike" versions, we want the one that takes 3 arguments.
 
-				return Expression.Lambda<Func<T, bool>>(bodyLike, Expression.Parameter(typeof(T)));
-			} else {
-				methodInfo = typeof(string).GetMethod(filterType, new[] { typeof(string) });
+                var likeCall = Expression.Call(method.FirstOrDefault(), nullExpr, lambda.Body, Expression.Constant(filter, typeof(string)));
 
-				strPredicate = Expression.Call(lambda.Body, methodInfo, expressionArgs);
-			}
-
-
+                return Expression.Lambda<Func<T, bool>>(
+                    likeCall,
+                    lambda.Parameters);
+            }
+			
+			// When case sensitive matches are fine, we can invoke the String extension methods,
+			// EF will do the case sensitive stuff like normal.
+			var strPredicate = Expression.Call(lambda.Body, filterType, null, new Expression[] { Expression.Constant(filter, typeof(string)) });
+            
 			Expression filterExpression = Expression.AndAlso(notNull, strPredicate);
 
 			return Expression.Lambda<Func<T, bool>>(
