@@ -71,9 +71,8 @@ namespace McAttributes.Pages.UserIssues
         }
 
         private Expression<Func<IssueLogEntry, bool>> GetUserFilter() {
-            
-            var efGenerator = PredicateExpressionPolicyExtensions.GetEfExpressionGenerator();
-            
+
+            var efGenerator = new SMM.NpgsqlGenerator();
 
             var toggleFilter = new ExpressionRuleCollection {
                 RuleOperator = RuleOperator.Or
@@ -84,11 +83,12 @@ namespace McAttributes.Pages.UserIssues
             if (ShowResolved) { _rules.Add(new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Status), "resolved"))); }
             toggleFilter.Rules = _rules;
 
+            // Empty search should just return available records based on the selected search options
             if (String.IsNullOrEmpty(SearchCriteria)) {
                 return efGenerator.GetPredicateExpressionOrFalse<IssueLogEntry>(toggleFilter);
             }
 
-            string firstSearchToken = SearchCriteria.Split().FirstOrDefault();
+            string firstSearchToken = SearchCriteria.Split()?.FirstOrDefault() ?? string.Empty;
             var searchFilter = new ExpressionRuleCollection();
             searchFilter.RuleOperator = RuleOperator.Or;
             searchFilter.Rules = new List<IExpressionPolicy>() {
