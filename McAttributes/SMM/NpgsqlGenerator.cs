@@ -8,8 +8,8 @@ namespace SMM
 {
 	public class NpgsqlGenerator : McRule.ExpressionGeneratorBase {
 		/// <summary> 
-		/// Builds expressions using string member functions StartsWith, EndsWith or Contains as the comparator.
-		/// Case insensitive matches produce an ILike expression for Npgsql.
+		/// Builds expressions using string member functions StartsWith, EndsWith or Contains as the comparator,
+		/// case-insensitive matches produce an ILike expression for Npgsql.
 		/// </summary> 
 		public override Expression<Func<T, bool>> AddStringPropertyExpression<T>(
 			Expression<Func<T, string>> lambda, string filter, string filterType, bool ignoreCase = false) {
