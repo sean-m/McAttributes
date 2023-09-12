@@ -18,10 +18,7 @@ namespace SMM
 				  filterType == "Equals")) {
 				throw new Exception($"filterType must equal StartsWith, EndsWith or Contains. Passed: {filterType}");
 			}
-#endif
-			// Check that the property isn't null, otherwise we'd hit null object exceptions at runtime
-			var notNull = Expression.NotEqual(lambda.Body, Expression.Constant(null));
-
+#endif	
 			// If a case insensitive comparision is requested, we resolve that against the 
 			// Npgsql ILike extension method. EF will translate that into the proper SQL before
 			// sending it to the database.
@@ -50,16 +47,17 @@ namespace SMM
                     likeCall,
                     lambda.Parameters);
             }
-			
-			// When case sensitive matches are fine, we can invoke the String extension methods,
-			// EF will do the case sensitive stuff like normal.
-			var strPredicate = Expression.Call(lambda.Body, filterType, null, new Expression[] { Expression.Constant(filter, typeof(string)) });
-            
-			Expression filterExpression = Expression.AndAlso(notNull, strPredicate);
 
-			return Expression.Lambda<Func<T, bool>>(
-				filterExpression,
-				lambda.Parameters);
+            // When case sensitive matches are fine, we can invoke the String extension methods,
+            // EF will do the case sensitive stuff like normal.
+            MethodInfo methodInfo = typeof(string).GetMethod(filterType, new[] { typeof(string) });
+            List<Expression> expressionArgs = new List<Expression>() { Expression.Constant(filter) };
+
+            var strPredicate = Expression.Call(lambda.Body, methodInfo, expressionArgs);
+
+            return Expression.Lambda<Func<T, bool>>(
+                strPredicate,
+                lambda.Parameters);
 		}
 	}
 }
