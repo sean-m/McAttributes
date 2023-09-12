@@ -51,7 +51,8 @@ namespace McAttributes.Pages.UserIssues
 
             if (_context.IssueLogEntry != null)
             {
-                IssueLogEntry = await _context.IssueLogEntry.OrderBy(x => x.Id).Where(GetUserFilter()).Take(20).ToListAsync();
+                var issueFilter = GetUserFilter();
+                IssueLogEntry = await _context.IssueLogEntry.OrderBy(x => x.Id).Where(issueFilter).Take(20).ToListAsync();
                 var s = await _context.IssueLogEntry.OrderBy(x => x.Status).GroupBy(x => x.Status, (key,values) => new { type = key, count = values.Count() }).ToListAsync();
                 foreach (var record in s) {
                     IssueCounts.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(record.type), record.count);
@@ -92,8 +93,8 @@ namespace McAttributes.Pages.UserIssues
             var searchFilter = new ExpressionRuleCollection();
             searchFilter.RuleOperator = RuleOperator.Or;
             searchFilter.Rules = new List<IExpressionPolicy>() {
-                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.AttrName), $"employeeId:{firstSearchToken}*")),
-                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Description), $"*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
+                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.AttrName), $"~employeeId:{firstSearchToken}*")),
+                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Description), $"~*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
             };
 
 

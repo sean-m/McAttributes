@@ -30,7 +30,7 @@ namespace McAttributes.Pages.Users
         {
             if (_context.Users != null)
             {
-                UserSet = await _context.Users.Where(GetUserFilter()).ToListAsync();
+                UserSet = await _context.Users.Where(GetUserFilter()).Take(40).ToListAsync();
             }
         }
 
@@ -51,14 +51,14 @@ namespace McAttributes.Pages.Users
             // as it's the only property where users likely have spaces in the value.
             if (SearchCriteria.Trim().Contains(' ')) {
                 _rules.Add(
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), $"*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), $"~*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
                 );
             } else {
                 _rules.AddRange(new[] {
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), $"{SearchCriteria}*")),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), $"{SearchCriteria}*")),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), $"{SearchCriteria}*")),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), $"{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), $"~{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), $"~{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), $"~{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), $"~{SearchCriteria}*")),
                 });
             }
             filter.Rules = _rules;
