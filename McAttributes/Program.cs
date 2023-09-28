@@ -37,6 +37,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add and load configuration sources.
 #pragma warning disable ASP0013 // Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
 bool didAzAppConfig = false;
+string configString = String.Empty;
 builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
     config.Sources.Clear();
 
@@ -51,7 +52,7 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
     }
 
     // NOTE: set the connection string value in an environment variable or appsettings json file with key: AppConfigConnectionString
-    var configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
+    configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
     if (!String.IsNullOrEmpty(configString)) {
         config.AddAzureAppConfiguration(options => {
             options.Connect(configString)
@@ -105,6 +106,10 @@ builder.Logging.AddConsole();
 var connString = builder.Configuration.GetConnectionString("Identity") ??
     builder.Configuration.GetValue<string>("ConnectionStrings:Identity"); // For whatever reason the ConnectionStrings section of app config doesn't translate directly to Az App Configuraiton key:value use.
 var configuredDbType = builder.Configuration.GetValue<String>("DbType", "sqlite");
+
+if (String.IsNullOrEmpty(connString)) {
+    throw new Exception($"You ain't getting there from here fam. No connection string, configuration isn't loaded.\n\t > configString: {configString}");
+}
 
 if (configuredDbType.Like("npgsql")) {
     var conn = new Npgsql.NpgsqlConnection(connString);
