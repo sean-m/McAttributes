@@ -134,14 +134,16 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
 {
     var idDbContext = serviceScope.ServiceProvider.GetRequiredService<IdDbContext>();
-    var shouldInitialize = builder.Configuration.GetValue<bool>("InitializeDatabaseWhenMissing");
-    if (shouldInitialize && idDbContext.Database.EnsureCreated()) {
-        logger.LogDebug("Initialized database tables.");
-        if (app.Environment.IsDevelopment()) {
-            // Initialize the database with test data when running in 
-            // Development mode and having just created tables.
-            logger.LogDebug("Loading test data from test_values.csv.");
-            DebugInit.DbInit(idDbContext);
+    var shouldInitialize = builder.Configuration.GetValue<bool?>("InitializeDatabaseWhenMissing") ?? false;
+    if (shouldInitialize) {
+        if (idDbContext.Database.EnsureCreated()) {
+            logger.LogDebug("Initialized database tables.");
+            if (app.Environment.IsDevelopment()) {
+                // Initialize the database with test data when running in 
+                // Development mode and having just created tables.
+                logger.LogDebug("Loading test data from test_values.csv.");
+                DebugInit.DbInit(idDbContext);
+            }
         }
     } 
     else {
