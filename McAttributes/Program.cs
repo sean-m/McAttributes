@@ -46,16 +46,18 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
 
     config.AddEnvironmentVariables();
 
+    if (args != null) {
+        config.AddCommandLine(args);
+    }
+
     // NOTE: set the connection string value in an environment variable or appsettings json file with key: AppConfigConnectionString
     var configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
     if (!String.IsNullOrEmpty(configString)) {
-        config.AddAzureAppConfiguration(configString);
+        config.AddAzureAppConfiguration(options => {
+            options.Connect(configString)
+                .Select("*","McAttributes");
+        });
         didAzAppConfig = true;
-    }
-
-    // Add command line args last so they can override anything else.
-    if (args != null) {
-        config.AddCommandLine(args);
     }
 });
 #pragma warning restore ASP0013 // Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
@@ -100,8 +102,10 @@ builder.Services.AddSwaggerGen(
 builder.Logging.AddConsole();
 
 
-var connString = builder.Configuration.GetConnectionString("Identity");
+var connString = builder.Configuration.GetConnectionString("Identity") ??
+    builder.Configuration.GetValue<string>("ConnectionStrings:Identity"); // For whatever reason the ConnectionStrings section of app config doesn't translate directly to Az App Configuraiton key:value use.
 var configuredDbType = builder.Configuration.GetValue<String>("DbType", "sqlite");
+
 if (configuredDbType.Like("npgsql")) {
     var conn = new Npgsql.NpgsqlConnection(connString);
     builder.Services.AddDbContext<IdDbContext>(
@@ -144,9 +148,6 @@ using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
-
-
-if (didAzAppConfig) app.UseAzureAppConfiguration();
 
 
 app.UseHttpsRedirection();
