@@ -111,11 +111,20 @@ if (String.IsNullOrEmpty(connString)) {
     throw new Exception($"You ain't getting there from here fam. No connection string, configuration isn't loaded.\n\t > configString: {configString}");
 }
 
+
+
 //if (configuredDbType.Like("npgsql")) {
 // Fine, we'll just use Postgres, don't like sqlserver much anyhow.
-    var conn = new Npgsql.NpgsqlConnection(connString);
-    builder.Services.AddDbContext<IdDbContext>(
-        options => { options.UseNpgsql(conn); });
+var conn = new Npgsql.NpgsqlConnection(connString);
+var sanitizedString = String.Join(';', conn.ConnectionString.Split(';').Select(x => {
+    if (x.TrimStart().StartsWith("Password=", StringComparison.CurrentCultureIgnoreCase)) {
+        return "Password=*******";
+    }
+    return x;
+}));
+
+builder.Services.AddDbContext<IdDbContext>(
+    options => { options.UseNpgsql(conn); });
 //}
 //else if (configuredDbType.Like("sqlserver")) {
 //builder.Services.AddDbContext<IdDbContext>(
@@ -126,6 +135,7 @@ var app = builder.Build();
 
 
 ILogger logger = app.Logger;
+logger.LogInformation($"ConnectionString: {sanitizedString}");
 
 // Updating an entity bombs without this. Postgresql requires UTC timestamps and for whatever
 // reason, the default DateTime behavior is to just try shoving in a value with out a timezone.
