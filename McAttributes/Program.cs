@@ -111,15 +111,16 @@ if (String.IsNullOrEmpty(connString)) {
     throw new Exception($"You ain't getting there from here fam. No connection string, configuration isn't loaded.\n\t > configString: {configString}");
 }
 
-if (configuredDbType.Like("npgsql")) {
+//if (configuredDbType.Like("npgsql")) {
+// Fine, we'll just use Postgres, don't like sqlserver much anyhow.
     var conn = new Npgsql.NpgsqlConnection(connString);
     builder.Services.AddDbContext<IdDbContext>(
         options => { options.UseNpgsql(conn); });
-}
-else if (configuredDbType.Like("sqlserver")) {
-builder.Services.AddDbContext<IdDbContext>(
-    options => { options.UseSqlServer(connString); });
-}
+//}
+//else if (configuredDbType.Like("sqlserver")) {
+//builder.Services.AddDbContext<IdDbContext>(
+//    options => { options.UseSqlServer(connString); });
+//}
 
 var app = builder.Build();
 
