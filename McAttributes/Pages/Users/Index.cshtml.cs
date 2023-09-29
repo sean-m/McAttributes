@@ -30,7 +30,7 @@ namespace McAttributes.Pages.Users
         {
             if (_context.Users != null)
             {
-                UserSet = await _context.Users.Where(GetUserFilter()).Take(40).ToListAsync();
+                UserSet = await _context.Users.Where(GetUserFilter()).OrderBy(x => x.LastFetched).Take(40).ToListAsync();
             }
         }
 

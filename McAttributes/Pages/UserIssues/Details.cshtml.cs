@@ -58,9 +58,8 @@ namespace McAttributes.Pages.UserIssues
                     var line = l.Trim();
                     if (!startAdding && line.Like("The issue involved these accounts*")) {
                         startAdding = true;
-                        continue;
                     }
-                    if (startAdding && line.Like("*@*")) {
+                    if (startAdding && line.Contains("@")) {
                         accts.Add(line);
                     }
                 }
