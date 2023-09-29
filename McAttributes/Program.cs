@@ -78,8 +78,9 @@ builder.Services.AddAuthentication(options => {
 })
 .AddCookie();
 
+// Use forwarded headers for hosting behind a proxy
 builder.Services.Configure<ForwardedHeadersOptions>(options => { 
-        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; 
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; 
     });
 
 
@@ -173,6 +174,8 @@ if (app.Environment.IsDevelopment()) {
 }
 
 app.UseForwardedHeaders();
+app.UseHttpLogging();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
