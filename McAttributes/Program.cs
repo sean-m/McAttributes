@@ -18,6 +18,7 @@ using Microsoft.Identity.Web.UI;
 using SMM.Helper;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.AspNetCore.HttpOverrides;
 
 static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
@@ -76,6 +77,10 @@ builder.Services.AddAuthentication(options => {
     builder.Configuration.Bind("AzureAD", options);
 })
 .AddCookie();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options => { 
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; 
+    });
 
 
 builder.Services.AddRazorPages(options => {
@@ -167,7 +172,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
