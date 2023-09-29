@@ -58,7 +58,10 @@ namespace McAttributes.Models {
         
         [Column("company")]
         public string? Company { get; set; }
-        
+
+        [Column("title")]
+        public string? Title { get; set; }
+
         [Column("preferredgivenname")]
         public string? PreferredGivenName { get; set; }
         
