@@ -1,4 +1,6 @@
-﻿
+﻿@using Newtonsoft.Json;
+@using Newtonsoft.Json.Serialization;
+
 @model McAttributes.Pages.UserIssues._AssociatedAccountsModel
 @{
 }
@@ -6,13 +8,16 @@
 
 <div id="associatedPartial" style="margin-top: 1em">
 
+   
+
     @if (Model.AssociatedUsers.Count() > 0) {
         <p>
-            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#associatedAccountTable" aria-expanded="false" aria-controls="associatedAccountTable">
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#associatedAccountTable"
+            aria-expanded="false" aria-controls="associatedAccountTable">
                 Show/Hide Accounts Table
             </button>
         </p>
-        <div class="collapse show" id="associatedAccountTable">
+        <div class="collapse" id="associatedAccountTable">
             <table id="accountsTable" class="table table-bordered table-hover">
                 <tbody>
                     @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties().Where(x => x.Name != "Version")) {
@@ -36,48 +41,91 @@
 
     <div id="app" class="container-fluid">
         <div class="row">
+            <button @@click="autoBucket()">Auto Bucket</button>
+            <button @@click="bucketIndex++">More Buckets!!!! {{bucketIndex}}</button>
             <div class="col-sm-6 card-block">
                 Accounts
-                <div :id="'acct-' + a.AadId" class="card flex-sm-row dragCardHeader" v-for="a of accounts">
-                    <div class="card-header dragCard">{{ a.DisplayName }}</div>
-                    <div class="card-body dragCard">{{ a.CreationType == null ? 'Native' : 'B2B' }}</div>
-                    <div class="card-body align-content-sm-end dragCard">{{ a.Tenant }}</div>
-                </div>
-            </div>
-            <div class="col-sm-6">
-                Buckets
-                <div class="card" v-for="b of buckets">
-                    {{ b }}
+                <div :id="'acct-' + a.aadId" :key="a.aadId" class="card flex-med-row drag-el" v-for="a of bucket.accounts">
+                    
+                    <div class="card-header">{{ a.displayName }}</div>
+                    <div class="card-body row-cols-3">{{ a.creationType == null ? 'Native' : 'B2B' }}</div>
+                    <div class="card-body row-cols-3">{{ a.tenant }}</div>
+                    <div class="card-body row row-cols-3">
+                        <div class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
+                            <input type="radio" :name="'bucket' + a.aadId + b" value="bucket" :checked="a.bucket == b" />
+                            <label for="'bucket' + a.aadId + b">{{ b + 1 }}</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <style type="text/css">
-    .dragCardHeader {
-        z-index: 15;
-        background-color: #f1f1f1;
-        border: 1px solid #d3d3d3;
+    .drag-el {
+        margin-bottom: 1em;
     }
-
-    .dragCard {
-        z-index: 9;
-        background-color: #f1f1f1;
-        border: 1px solid #d3d3d3;
+    .drop-zone {
+        padding: 1em;
     }
 </style>
 <script type="text/javascript">
 
+    class AccountBucket {
+        constructor(accounts) {
+            this.accounts = accounts
+            this.accounts.forEach(a => a['bucket'] = 0)
+        }
+    }
+
     const bucketAppDefinition = {
         data() {
             return {
-                status: "Loaded",
-                accounts: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AssociatedUsers)),
-                buckets: ['foo', 'bar']
+                buckets: [],
+                bucketIndex: 0,
+                bucket: new AccountBucket(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AssociatedUsers,new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() }})))
             }
         },
         methods: {
+            autoBucket () {
+                let nativeAccounts = this.bucket.accounts.filter(a => 
+                    !(a.creationType != null && a.creationType != undefined)
+                        && !(a.upn.startsWith("pa_")) && !(a.upn.startsWith("ta_")) && !(a.upn.startsWith("ra_")) )
+
+                if (nativeAccounts) {
+                    this.bucketIndex = nativeAccounts.length
+                }
+
+                var boffset = 0;
+                for (a of nativeAccounts) {
+                    for (b of this.bucket.accounts) {
+                        if (b.id === a.id) {
+                            b.bucket = boffset
+                            continue
+                        }
+                        
+                        if (b.mail == a.mail) {
+                            b.bucket = boffset
+                        }
+                    }
+                    boffset++;
+                }
+            },
+            startDrag(evt, item) {
+                console.log("Dragging " + item.DisplayName)
+                evt.dataTransfer.dropEffect = 'move'
+                evt.dataTransfer.effectAllowed = 'move'
+                evt.dataTransfer.setData('itemID', item.Id)
+            },
+            onDrop(evt, list) {
+                const itemID = evt.dataTransfer.getData('itemID')
+                if (list.name && list.name.startsWith("Bucket")) {
+
+                    console.log(list)
+                }
+            },
         },
         watch: {
         },
@@ -86,60 +134,4 @@
     const bucketApp = createApp(bucketAppDefinition);
     bucketApp.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
     bucketApp.mount('#app');
-
-
-    const draggableAcct = document.querySelectorAll('div.dragCard');
-    draggableAcct.forEach(d => dragElement(d));
-
-    function dragElement(elmnt) {
-        let nomY = 0, nomX = 0, originY = 0, originX = 0, originZ = 0;
-        let positionPre = elmnt.style.position;
-        let dragging = elmnt;
-
-        if (elmnt.parentNode && elmnt.parentNode.classList.contains('dragCardHeader')) {
-            dragging = elmnt.parentNode;
-        }
-        dragging.onmousedown = dragMouseDown;
-
-        function dragMouseDown(e) {           
-            e = e || window.event;
-            e.preventDefault();
-
-            // Grab original position info
-            dragging.style.position = 'aboslute';
-            originY = dragging.style.top;
-            originX = dragging.style.left;
-            originZ = dragging.style['z-index'];
-            dragging.style['z-index'] = 100;
-            
-            // Associate event handlers
-            document.onmouseup = closeDragElement;
-            document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-            e = e || window.event;
-            e.preventDefault();
-
-            // Update nominal shift from cursor movement
-            nomY += e.movementY;
-            nomX += e.movementX;
-            dragging.style.top = nomY + "px";
-            dragging.style.left = nomX + "px";
-        }
-
-        function closeDragElement() {
-            // Restore original values and disassociate handlers
-            nomY = 0;
-            nomX = 0;
-            dragging.style.position = positionPre;
-            dragging.style.left = originX;
-            dragging.style.top = originY;
-            dragging.style['z-index'] = originZ;
-            
-            document.onmouseup = null;
-            document.onmousemove = null;
-        }
-    }
-
 </script>
