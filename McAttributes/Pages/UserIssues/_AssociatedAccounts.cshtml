@@ -5,7 +5,7 @@
 
 
 <div id="associatedPartial">
-
+@*
     @if (Model.AssociatedUsers.Count() > 0) {
         <table id="accountsTable" class="table table-bordered table-hover">
             <tbody>
@@ -25,5 +25,42 @@
         if (Model._acctNames.Count() > 0) {
             <p>@Model._acctNames.Count() account names identified but fetching from database failed.</p>
         }
-    }
+    }*@
 </div>
+<div id="app" class="container-fluid">
+    <div class="row">
+        <div class="col-sm-6">
+
+            <div class="card" draggable="true" v-for="a of accounts">
+                {{ a.DisplayName }} {{ a.Tenant }}
+            </div>
+        </div>
+        <div class="col-sm-6">
+            buckets
+            <div class="card" v-for="b of buckets">
+                {{ b }}
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    const bucketAppDefinition = {
+        data() {
+            return {
+                status: "Loaded",
+                accounts: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AssociatedUsers)),
+                buckets: [ 'foo', 'bar' ]
+            }
+        },
+        methods: {
+            
+        },
+        watch: {
+        },
+    };
+
+    const bucketApp = createApp(bucketAppDefinition);
+    bucketApp.config.compilerOptions.isCustomElement = (tag) => tag.includes('-')
+    bucketApp.mount('#app');
+</script>
