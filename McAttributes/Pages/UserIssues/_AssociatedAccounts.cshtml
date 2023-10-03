@@ -4,45 +4,69 @@
 }
 
 
-<div id="associatedPartial">
-@*
+<div id="associatedPartial" style="margin-top: 1em">
+
     @if (Model.AssociatedUsers.Count() > 0) {
-        <table id="accountsTable" class="table table-bordered table-hover">
-            <tbody>
-                @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties().Where(x => x.Name != "Version")) {
-                    <tr>
-                        <th>@p.Name</th>
-                        @foreach (var a in Model.AssociatedUsers.OrderBy(x => x.Tenant)) {
-                            <td >@p.GetValue(a)</td>
-                        }
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <p>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#associatedAccountTable" aria-expanded="false" aria-controls="associatedAccountTable">
+                Show/Hide Accounts Table
+            </button>
+        </p>
+        <div class="collapse show" id="associatedAccountTable">
+            <table id="accountsTable" class="table table-bordered table-hover">
+                <tbody>
+                    @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties().Where(x => x.Name != "Version")) {
+                        <tr>
+                            <th>@p.Name</th>
+                            @foreach (var a in Model.AssociatedUsers.OrderBy(x => x.Tenant)) {
+                                <td>@p.GetValue(a)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
     else {
         <p>No Associated Accounts Loaded.</p>
         if (Model._acctNames.Count() > 0) {
             <p>@Model._acctNames.Count() account names identified but fetching from database failed.</p>
         }
-    }*@
-</div>
-<div id="app" class="container-fluid">
-    <div class="row">
-        <div class="col-sm-6">
+    }
 
-            <div class="card" draggable="true" v-for="a of accounts">
-                {{ a.DisplayName }} {{ a.Tenant }}
+    <div id="app" class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6 card-block">
+                Accounts
+                <div :id="'acct-' + a.AadId" class="card flex-sm-row dragCardHeader" v-for="a of accounts">
+                    <div class="card-header dragCard">{{ a.DisplayName }}</div>
+                    <div class="card-body dragCard">{{ a.CreationType == null ? 'Native' : 'B2B' }}</div>
+                    <div class="card-body align-content-sm-end dragCard">{{ a.Tenant }}</div>
+                </div>
             </div>
-        </div>
-        <div class="col-sm-6">
-            buckets
-            <div class="card" v-for="b of buckets">
-                {{ b }}
+            <div class="col-sm-6">
+                Buckets
+                <div class="card" v-for="b of buckets">
+                    {{ b }}
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style type="text/css">
+    .dragCardHeader {
+        z-index: 15;
+        background-color: #f1f1f1;
+        border: 1px solid #d3d3d3;
+    }
+
+    .dragCard {
+        z-index: 9;
+        background-color: #f1f1f1;
+        border: 1px solid #d3d3d3;
+    }
+</style>
 <script type="text/javascript">
 
     const bucketAppDefinition = {
@@ -50,17 +74,72 @@
             return {
                 status: "Loaded",
                 accounts: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AssociatedUsers)),
-                buckets: [ 'foo', 'bar' ]
+                buckets: ['foo', 'bar']
             }
         },
         methods: {
-            
         },
         watch: {
         },
     };
 
     const bucketApp = createApp(bucketAppDefinition);
-    bucketApp.config.compilerOptions.isCustomElement = (tag) => tag.includes('-')
+    bucketApp.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
     bucketApp.mount('#app');
+
+
+    const draggableAcct = document.querySelectorAll('div.dragCard');
+    draggableAcct.forEach(d => dragElement(d));
+
+    function dragElement(elmnt) {
+        let nomY = 0, nomX = 0, originY = 0, originX = 0, originZ = 0
+        let positionPre = elmnt.style.position;
+        let dragging = elmnt
+
+        if (elmnt.parentNode && elmnt.parentNode.classList.contains('dragCardHeader')) {
+            // if present, the header is where you move the DIV from:
+            dragging = elmnt.parentNode;
+        }
+        dragging.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+           
+            e = e || window.event;
+            e.preventDefault();
+
+            dragging.style.position = 'aboslute'
+            originY = dragging.style.top
+            originX = dragging.style.left
+            originZ = dragging.style['z-index']
+            dragging.style['z-index'] = 100;
+            
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+
+            // set the element's new position:
+            nomY += e.movementY;
+            nomX += e.movementX;
+            dragging.style.top = nomY + "px";
+            dragging.style.left = nomX + "px";
+        }
+
+        function closeDragElement() {
+            // stop moving when mouse button is released:
+            dragging.style.position = positionPre;
+            dragging.style.left = originX;
+            dragging.style.top = originY;
+            dragging.style['z-index'] = originZ;
+            nomY = 0
+            nomX = 0
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
 </script>
