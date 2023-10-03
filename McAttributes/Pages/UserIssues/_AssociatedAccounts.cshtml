@@ -92,29 +92,28 @@
     draggableAcct.forEach(d => dragElement(d));
 
     function dragElement(elmnt) {
-        let nomY = 0, nomX = 0, originY = 0, originX = 0, originZ = 0
+        let nomY = 0, nomX = 0, originY = 0, originX = 0, originZ = 0;
         let positionPre = elmnt.style.position;
-        let dragging = elmnt
+        let dragging = elmnt;
 
         if (elmnt.parentNode && elmnt.parentNode.classList.contains('dragCardHeader')) {
-            // if present, the header is where you move the DIV from:
             dragging = elmnt.parentNode;
         }
         dragging.onmousedown = dragMouseDown;
 
-        function dragMouseDown(e) {
-           
+        function dragMouseDown(e) {           
             e = e || window.event;
             e.preventDefault();
 
-            dragging.style.position = 'aboslute'
-            originY = dragging.style.top
-            originX = dragging.style.left
-            originZ = dragging.style['z-index']
+            // Grab original position info
+            dragging.style.position = 'aboslute';
+            originY = dragging.style.top;
+            originX = dragging.style.left;
+            originZ = dragging.style['z-index'];
             dragging.style['z-index'] = 100;
             
+            // Associate event handlers
             document.onmouseup = closeDragElement;
-            // call a function whenever the cursor moves:
             document.onmousemove = elementDrag;
         }
 
@@ -122,7 +121,7 @@
             e = e || window.event;
             e.preventDefault();
 
-            // set the element's new position:
+            // Update nominal shift from cursor movement
             nomY += e.movementY;
             nomX += e.movementX;
             dragging.style.top = nomY + "px";
@@ -130,13 +129,14 @@
         }
 
         function closeDragElement() {
-            // stop moving when mouse button is released:
+            // Restore original values and disassociate handlers
+            nomY = 0;
+            nomX = 0;
             dragging.style.position = positionPre;
             dragging.style.left = originX;
             dragging.style.top = originY;
             dragging.style['z-index'] = originZ;
-            nomY = 0
-            nomX = 0
+            
             document.onmouseup = null;
             document.onmousemove = null;
         }
