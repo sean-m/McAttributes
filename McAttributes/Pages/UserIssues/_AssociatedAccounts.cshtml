@@ -46,21 +46,23 @@
             <div class="col-sm-6 card-block">
                 Accounts
                 <div :id="'acct-' + a.aadId" :key="a.aadId" class="card flex-med-row drag-el" v-for="a of bucket.accounts">
-                    
-                    <div class="card-header">{{ a.displayName }}</div>
-                    <div class="card-body row-cols-3">{{ a.creationType == null ? 'Native' : 'B2B' }}</div>
-                    <div class="card-body row-cols-3">{{ a.tenant }}</div>
-                    <div class="card-body row row-cols-3">
-                        <div class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
-                            <input type="radio" :name="'bucket' + a.aadId + b" value="bucket" :checked="a.bucket == b" />
-                            <label for="'bucket' + a.aadId + b">{{ b + 1 }}</label>
+                    <div class="card-header">{{ a.displayName + " || " + a.mail }}</div>
+                    <div class="row card-body">
+                        <div class="col">{{ a.creationType == null ? 'Native' : 'B2B' }}</div>
+                        <div class="col">{{ a.tenant }}</div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
+                                <input type="radio" :name="'bucket' + a.aadId + b" :value="b" v-model="a.bucket" />
+                                <label for="'bucket' + a.aadId + b">{{ b + 1 }}</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 
 <style type="text/css">
