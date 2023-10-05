@@ -40,26 +40,38 @@
     }
 
     <div id="app" class="container-fluid">
+        <h2>Accounts</h2>
         <div class="row">
-            <button @@click="autoBucket()">Auto Bucket</button>
-            <button @@click="bucketIndex++">More Buckets!!!! {{bucketIndex}}</button>
+            <div class="col">
+                <button @@click="autoBucket()">Auto Bucket</button>
+                <button @@click="bucketIndex++">Add Bucket : {{bucketIndex}}</button>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-sm-6 card-block">
-                Accounts
-                <div :id="'acct-' + a.aadId" :key="a.aadId" class="card flex-med-row drag-el" v-for="a of bucket.accounts">
-                    <div class="card-header">{{ a.displayName + " || " + a.mail }}</div>
-                    <div class="row card-body">
-                        <div class="col">{{ a.creationType == null ? 'Native' : 'B2B' }}</div>
-                        <div class="col">{{ a.tenant }}</div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="row">
-                            <div class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
-                                <input type="radio" :name="'bucket' + a.aadId + b" :value="b" v-model="a.bucket" />
-                                <label for="'bucket' + a.aadId + b">{{ b + 1 }}</label>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th v-for="c of columns">{{ c }}</th>
+                            <th style="padding-left:1em; padding-right:3em; ">bucket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="a of bucket.accounts">
+                            <td v-for="c of columns" style="white-space:nowrap">{{ a[c] }}</td>
+                        <td>
+                            <div class="row">
+                                <ul style="list-style: none;">
+                                    <li class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
+                                        <input type="radio" :id="'bucket' + a.aadId + b" :name="'bucket' + a.aadId + b" :value="b" v-model="a.bucket" style="margin-right:0.5em;" />
+                                        <label :for="'bucket' + a.aadId + b" :style="(a.bucket == b) ? { 'font-weight':'bold' } : {}">Bucket {{ b + 1 }}</label>
+                                    </li>
+                                </ul>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -87,6 +99,7 @@
             return {
                 buckets: [],
                 bucketIndex: 0,
+                columns: ['displayName','tenant','preferredGivenName', 'preferredSurname', 'mail', 'creationType','created'],
                 bucket: new AccountBucket(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AssociatedUsers,new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() }})))
             }
         },
