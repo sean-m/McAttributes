@@ -52,7 +52,7 @@ namespace SMM {
                 foreach (var col in columns) {
                     var prop = GetPropInfo(col);
                     var type = GetPropType(col);
-                    object value = CsvFileReader.GetAsType(row[col], type);
+                    object value = CsvFileReader.GetValueAsType(row[col], type);
                     prop.SetValue(record, value);
                 }
                 if (record != null) context.Add(Convert.ChangeType(record, modelType));

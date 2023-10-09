@@ -134,14 +134,14 @@ namespace SMM
                 foreach (var col in columns) {
                     var prop = GetPropInfo(col);
                     var type = GetPropType(col);
-                    object value = GetAsType(row[col], type);
+                    object value = GetValueAsType(row[col], type);
                     prop.SetValue(record, value);
                 }
                 yield return (T)record;
             }
         }
 
-        internal static object? GetAsType(object source, Type desiredType) {
+        internal static object? GetValueAsType(object source, Type desiredType) {
             if (source == null) return source;
 
             string strSrc = source.ToString();
