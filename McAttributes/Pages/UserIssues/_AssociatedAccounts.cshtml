@@ -41,10 +41,13 @@
 
     <div id="app" class="container-fluid">
         <h2>Accounts</h2>
-        <div class="row">
-            <div class="col">
-                <button @@click="autoBucket()">Auto Bucket</button>
-                <button @@click="bucketIndex++">Add Bucket : {{bucketIndex}}</button>
+        <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button class="btn btn-primary" @@click="autoBucket()">Auto Bucket</button>
+                <button class="btn btn-secondary" @@click="bucketIndex++">Add Bucket{{ bucketIndex >= 1 ? ' : ' + bucketIndex : '' }}</button>
+            </div>
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button class="btn btn-success" @@click="saveBucketAsCohort()">Save Buckets</button>
             </div>
         </div>
         <div class="row">
@@ -53,7 +56,7 @@
                     <thead>
                         <tr>
                             <th v-for="c of columns">{{ c }}</th>
-                            <th style="padding-left:1em; padding-right:3em; ">bucket</th>
+                            <th style="padding-left:1em; padding-right:5em; ">bucket</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,7 +67,7 @@
                                 <ul style="list-style: none;">
                                     <li class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
                                         <input type="radio" :id="'bucket' + a.aadId + b" :name="'bucket' + a.aadId + b" :value="b" v-model="a.bucket" style="margin-right:0.5em;" />
-                                        <label :for="'bucket' + a.aadId + b" :style="(a.bucket == b) ? { 'font-weight':'bold' } : {}">Bucket {{ b + 1 }}</label>
+                                            <label :for="'bucket' + a.aadId + b" :style="(a.bucket == b) ? { 'font-weight':'bold' } : {}">{{ b == 0 ? 'None' : 'Bucket ' + b }}</label>
                                     </li>
                                 </ul>
                             </div>
@@ -87,12 +90,46 @@
 </style>
 <script type="text/javascript">
 
+    class CohortDescription {
+        constructor() {
+            this.id = null;
+            this.status = 'pending';
+            this.associateCohorts = false;
+            this.cohortMembers = [];
+            this.description = null;
+        }
+    }
+
+    class CohortMember {
+        constructor() {
+            this.memberId = '';
+            this.cohortBucket = -1;
+        }
+    }
+
     class AccountBucket {
         constructor(accounts) {
             this.accounts = accounts
             this.accounts.forEach(a => a['bucket'] = 0)
+            this.associateCohorts = false;
+        }
+
+        asCohort() {
+            var cohort = new CohortDescription();
+            cohort.associateCohorts = this.associateCohorts;
+
+            this.accounts.forEach(m => {
+                var member = new CohortMember();
+                member.memberId = m.aadId;
+                member.cohortBucket = m.bucket;
+                cohort.cohortMembers.push(member);
+            });
+
+            return cohort;
         }
     }
+
+    const apiCohort = '/api/cohort'
 
     const bucketAppDefinition = {
         data() {
@@ -105,15 +142,16 @@
         },
         methods: {
             autoBucket () {
+                
                 let nativeAccounts = this.bucket.accounts.filter(a => 
                     !(a.creationType != null && a.creationType != undefined)
                         && !(a.upn.startsWith("pa_")) && !(a.upn.startsWith("ta_")) && !(a.upn.startsWith("ra_")) )
 
                 if (nativeAccounts) {
-                    this.bucketIndex = nativeAccounts.length
+                    this.bucketIndex = nativeAccounts.length + 1
                 }
 
-                var boffset = 0;
+                var boffset = 1;
                 for (a of nativeAccounts) {
                     for (b of this.bucket.accounts) {
                         if (b.id === a.id) {
@@ -128,17 +166,55 @@
                     boffset++;
                 }
             },
+            saveBucketAsCohort() {
+                
+                var cohort = this.bucket.asCohort();
+                if (! cohort) {
+                    console.log("asCohort function does't return a value. Can't post this to the server.");
+                } else {
+                    console.log(cohort);
+                    
+                    $.ajax({
+                        url: apiCohort,
+                        type: "POST",
+                        data: JSON.stringify(cohort),
+                        contentType: "application/json",
+                        accepts: "application/json",
+                        dataType: "json",
+                        success: r => console.log(r),
+                        error: e => console.log(e)
+                    });
+                }
+            },
+            getBucketsFromCohort() {
+                var memberIds = this.bucket.asCohort().cohortMembers.map(m => m.memberId);
+                var cohorts = []
+                for (m of memberIds) {
+                    let apiUrl = `${apiCohort}/${m}`;
+                    console.log(apiUrl)
+                    $.ajax({
+                        url: apiUrl,
+                        type: "GET",
+                        contentType: "application/json",
+                        accepts: "application/json",
+                        dataType: "json",
+                        success: r => console.log(r),
+                        error: e => console.log(e)
+                    });
+                    break;
+                }
+            },
             startDrag(evt, item) {
-                console.log("Dragging " + item.DisplayName)
-                evt.dataTransfer.dropEffect = 'move'
-                evt.dataTransfer.effectAllowed = 'move'
-                evt.dataTransfer.setData('itemID', item.Id)
+                console.log("Dragging " + item.DisplayName);
+                evt.dataTransfer.dropEffect = 'move';
+                evt.dataTransfer.effectAllowed = 'move';
+                evt.dataTransfer.setData('itemID', item.Id);
             },
             onDrop(evt, list) {
-                const itemID = evt.dataTransfer.getData('itemID')
+                const itemID = evt.dataTransfer.getData('itemID');
                 if (list.name && list.name.startsWith("Bucket")) {
 
-                    console.log(list)
+                    console.log(list);
                 }
             },
         },

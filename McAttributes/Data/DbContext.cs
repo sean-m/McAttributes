@@ -16,6 +16,10 @@ namespace McAttributes.Data {
 
         public DbSet<IssueLogEntry> IssueLogEntry { get; set; } = default!;
 
+        public DbSet<CohortDescription> CohortDescriptions { get; set; } = default!;
+        
+        public DbSet<CohortMember> CohortMember { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder builder) {
             builder.Entity<IssueLogEntry>(entity => {
                 entity.Property(p => p.Created).HasDefaultValue(DateTime.UtcNow)
@@ -48,5 +52,7 @@ namespace McAttributes.Data {
             }
             return base.SaveChangesAsync(cancellationToken);
         }
+
+        
     }
 }
