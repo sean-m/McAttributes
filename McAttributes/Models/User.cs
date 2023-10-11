@@ -75,5 +75,8 @@ namespace McAttributes.Models {
         [Column("pronouns")]
         [StringLength(24)]
         public string? Pronouns { get; set; }
+
+        [Column("onPremiseDn")]
+        public string? OnPremiseDn { get; set; }
     }
 }
