@@ -14,6 +14,9 @@ using McRule;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Azure;
 using System.Transactions;
+using SMM;
+
+using static SMM.FilterPatternHelpers;
 
 namespace McAttributes.Pages.UserIssues
 {
@@ -93,8 +96,8 @@ namespace McAttributes.Pages.UserIssues
             var searchFilter = new ExpressionRuleCollection();
             searchFilter.RuleOperator = RuleOperator.Or;
             searchFilter.Rules = new List<IExpressionPolicy>() {
-                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.AttrName), $"~employeeId:{firstSearchToken}*")),
-                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Description), $"~*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
+                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.AttrName), $"employeeId:{firstSearchToken}".AddFilterOptionsIfNotSpecified(FilterOptions.IgnoreCase | FilterOptions.StartsWith))),
+                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Description), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.Contains | FilterOptions.IgnoreCase)))
             };
 
 

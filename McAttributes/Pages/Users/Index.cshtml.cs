@@ -10,6 +10,10 @@ using McAttributes.Models;
 using System.Linq.Expressions;
 using McRule;
 using Microsoft.Extensions.Azure;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Text.RegularExpressions;
+
+using static SMM.FilterPatternHelpers;
 
 namespace McAttributes.Pages.Users
 {
@@ -51,14 +55,14 @@ namespace McAttributes.Pages.Users
             // as it's the only property where users likely have spaces in the value.
             if (SearchCriteria.Trim().Contains(' ')) {
                 _rules.Add(
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), $"~*{SearchCriteria.Trim(new[] { '*', ' ' })}*"))
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.Contains | FilterOptions.IgnoreCase)))
                 );
             } else {
                 _rules.AddRange(new[] {
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), $"~{SearchCriteria}*")),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), $"~{SearchCriteria}*")),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), $"~{SearchCriteria}*")),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), $"~{SearchCriteria}*")),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
                 });
             }
             filter.Rules = _rules;
@@ -66,5 +70,6 @@ namespace McAttributes.Pages.Users
             var efGenerator = new SMM.NpgsqlGenerator();
             return efGenerator.GetPredicateExpression<User>((IExpressionRuleCollection)filter) ?? PredicateBuilder.False<User>();
         }
+
     }
 }
