@@ -1,5 +1,7 @@
 ﻿@using Newtonsoft.Json;
 @using Newtonsoft.Json.Serialization;
+@using SMM.Helper;
+@using System.Reflection;
 
 @model McAttributes.Pages.UserIssues._AssociatedAccountsModel
 @{
@@ -17,14 +19,115 @@
                 Show/Hide Accounts Table
             </button>
         </p>
-        <div class="collapse" id="associatedAccountTable">
+        <div class="show" id="associatedAccountTable">
+            @*  
+                Make horizontal tables for each set of users. Tables start with a native user at the left most cell
+                and associated invited users coming after that.
+             *@
+            @foreach (var n in Model.AssociatedUsers.OrderByDescending(x => x.Tenant)
+               .Where(x => string.IsNullOrEmpty(x.CreationType))  // Native users
+               .GroupBy(x => x.Tenant)
+               .SelectMany(x => x)) {
+                   <h2>@n.Upn  -  @n.Tenant</h2>
+                   <table id="accountsTable" class="table table-bordered table-hover">
+                    <tbody>
+                        @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties()
+                       .Where(x => x.Name != "Version")
+                       .OrderGroupAtFirstOccurance<PropertyInfo>(
+                       new[] { typeof(Models.User).GetProperty("Deleted"), typeof(Models.User).GetProperty("Enabled"), typeof(Models.User).GetProperty("CreationType") })) {
+                            <tr>
+                                <td>@p.Name</td>
+                                @foreach (var a in Enumerable.Concat(new[] { n },
+                                Model.AssociatedUsers.OrderByDescending(x => x.Tenant)
+                                   .Where(x => !string.IsNullOrEmpty(x.CreationType))  // Invited users
+                                   .Where(x => x.Upn.Split("#EXT#").FirstOrDefault().Like($"*{n.Tenant}"))
+                                   .GroupBy(x => x.Tenant)
+                                   .SelectMany(x => x))
+                                .Where(x => x != null))  // Skip nulls just in case n is null for whatever reason
+                                {
+                                    if (string.IsNullOrEmpty(a.CreationType)) {
+                                        @switch (p.Name) {
+                                            case ("Enabled"):
+                                                if ((bool)(p.GetValue(a))) {
+                                                    <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                } else {
+                                                    <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                }
+                                                break;
+                                            case ("Deleted"):
+                                                if ((bool)(p.GetValue(a))) {
+                                                    <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                } else {
+                                                    <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                }
+                                                break;
+                                            default:
+                                                <td>@p.GetValue(a)</td>
+                                                break;
+                                        }
+                                    } else {
+                                        <td>@p.GetValue(a)</td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+
+        <p>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#wideAssociatedAccountTable"
+                    aria-expanded="false" aria-controls="wideAssociatedAccountTable">
+                Show/Hide Wide Accounts Table
+            </button>
+        </p>
+        <div class="collapse" id="wideAssociatedAccountTable">
             <table id="accountsTable" class="table table-bordered table-hover">
                 <tbody>
-                    @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties().Where(x => x.Name != "Version")) {
+                    @* Loop over properties, when you hit: Deleted, Enabled, or CreationType show those properties in that order. *@
+                    @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties()
+                    .Where(x => x.Name != "Version")
+                    .OrderGroupAtFirstOccurance<PropertyInfo>(
+                    new[] { typeof(Models.User).GetProperty("Deleted"), typeof(Models.User).GetProperty("Enabled"), typeof(Models.User).GetProperty("CreationType") })) {
                         <tr>
-                            <th>@p.Name</th>
-                            @foreach (var a in Model.AssociatedUsers.OrderBy(x => x.Tenant)) {
-                                <td>@p.GetValue(a)</td>
+                            <td>@p.Name</td>
+                            @foreach (var a in Enumerable.Concat(
+                                Model.AssociatedUsers.OrderByDescending(x => x.Tenant)
+                                    .Where(x => string.IsNullOrEmpty(x.CreationType)),  // Native users
+                                Model.AssociatedUsers.OrderByDescending(x => x.Tenant)
+                                    .Where(x => !string.IsNullOrEmpty(x.CreationType))  // Invited users
+                                    .OrderBy(x => x.Upn)     // Order by name
+                                    .GroupBy(x => x.Tenant)  // then group by tenant
+                                    .SelectMany(x => x)))    // turn those groups into a single collection
+                            {
+                                if (string.IsNullOrEmpty(a.CreationType)) {
+                                    @* For native users, do conditional formatting based on contentds of the Enabled or Deleted properties,
+                                       makes identifying delted or disabled users at a glance much easier.
+                                    *@
+                                    @switch (p.Name) {
+                                        case ("Enabled"):
+                                            if ((bool)(p.GetValue(a))) {
+                                                <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            } else {
+                                                <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            }
+                                            break;
+                                        case ("Deleted"):
+                                            if ((bool)(p.GetValue(a))) {
+                                                <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            } else {
+                                                <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            }
+                                            break;
+                                        default:
+                                            <td>@p.GetValue(a)</td>
+                                            break;
+                                    }
+                                } else {
+                                    <td>@p.GetValue(a)</td>
+                                }
                             }
                         </tr>
                     }
