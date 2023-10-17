@@ -19,7 +19,7 @@ namespace SMM.Helper {
         }
 
 
-        public static IEnumerable<T> OrderGroupAtFirstOccurance<T>(this IEnumerable<T> primaryCollection, IEnumerable<T> group) {
+        public static IEnumerable<T> OrderedGroupAtFirstOccurance<T>(this IEnumerable<T> primaryCollection, IEnumerable<T> group) {
             bool groupEnumerated = false;
             foreach (var i in primaryCollection) {
                 if (group.Contains(i)) {

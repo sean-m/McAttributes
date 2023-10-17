@@ -33,8 +33,12 @@
                     <tbody>
                         @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties()
                        .Where(x => x.Name != "Version")
-                       .OrderGroupAtFirstOccurance<PropertyInfo>(
-                       new[] { typeof(Models.User).GetProperty("Deleted"), typeof(Models.User).GetProperty("Enabled"), typeof(Models.User).GetProperty("CreationType") })) {
+                       .OrderedGroupAtFirstOccurance<PropertyInfo>(
+                       new[] { 
+                           typeof(Models.User).GetProperty("Deleted"), 
+                           typeof(Models.User).GetProperty("Enabled"), 
+                           typeof(Models.User).GetProperty("CreationType") 
+                       })) {
                             <tr>
                                 <td>@p.Name</td>
                                 @foreach (var a in Enumerable.Concat(new[] { n },
@@ -92,7 +96,7 @@
                     @* Loop over properties, when you hit: Deleted, Enabled, or CreationType show those properties in that order. *@
                     @foreach (var p in Model.AssociatedUsers.First().GetType().GetProperties()
                     .Where(x => x.Name != "Version")
-                    .OrderGroupAtFirstOccurance<PropertyInfo>(
+                    .OrderedGroupAtFirstOccurance<PropertyInfo>(
                     new[] { typeof(Models.User).GetProperty("Deleted"), typeof(Models.User).GetProperty("Enabled"), typeof(Models.User).GetProperty("CreationType") })) {
                         <tr>
                             <td>@p.Name</td>
