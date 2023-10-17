@@ -39,8 +39,11 @@
                                 <td>@p.Name</td>
                                 @foreach (var a in Enumerable.Concat(new[] { n },
                                 Model.AssociatedUsers.OrderByDescending(x => x.Tenant)
-                                   .Where(x => !string.IsNullOrEmpty(x.CreationType))  // Invited users
-                                   .Where(x => x.Upn.Split("#EXT#").FirstOrDefault().Like($"*{n.Tenant}"))
+                                    .Where(x => !string.IsNullOrEmpty(x.CreationType))  // Invited users
+                                    .Where(x => {
+                                        var upnSuffix = n.Upn.Split('@').Last();
+                                        return (bool)(x.Upn.Split("#EXT#").FirstOrDefault()?.Like($"*{upnSuffix}")) || (bool)(x.Upn.Split("#EXT#").FirstOrDefault()?.Like($"*{n.Tenant}"));
+                                    })
                                    .GroupBy(x => x.Tenant)
                                    .SelectMany(x => x))
                                 .Where(x => x != null))  // Skip nulls just in case n is null for whatever reason
