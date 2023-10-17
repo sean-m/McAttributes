@@ -31,7 +31,7 @@ process {
         #>
 
     $sqlQueryCreateDB = @"
-CREATE DATABASE identity
+CREATE DATABASE IF NOT EXISTS identity
     WITH
     OWNER = pguser
     ENCODING = 'UTF8'
