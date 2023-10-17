@@ -19,6 +19,23 @@ namespace SMM.Helper {
         }
 
 
+        public static IEnumerable<T> OrderGroupAtFirstOccurance<T>(this IEnumerable<T> primaryCollection, IEnumerable<T> group) {
+            bool groupEnumerated = false;
+            foreach (var i in primaryCollection) {
+                if (group.Contains(i)) {
+                    if (!groupEnumerated) {
+                        foreach (var t in group) {
+                            yield return t;
+                        }
+                        groupEnumerated = true;
+                    }
+                } else {
+                    yield return i;
+                }
+            }
+        }
+        
+
         /// <summary>
         /// VisualBasic's string comparison with wildcard support.
         /// </summary>
