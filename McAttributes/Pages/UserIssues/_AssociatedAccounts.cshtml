@@ -24,7 +24,7 @@
                 Make horizontal tables for each set of users. Tables start with a native user at the left most cell
                 and associated invited users coming after that.
              *@
-            @foreach (var n in Model.AssociatedUsers.OrderByDescending(x => x.Tenant)
+            @foreach (var n in Model.AssociatedUsers.OrderByDescending(x => x.Created)
                .Where(x => string.IsNullOrEmpty(x.CreationType))  // Native users
                .GroupBy(x => x.Tenant)
                .SelectMany(x => x)) {
