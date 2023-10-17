@@ -25,7 +25,10 @@ namespace McAttributes.Models {
         
         [Column("enabled")]
         public bool Enabled { get; set; }
-        
+
+        [Column("deleted")]
+        public bool Deleted { get; set; }
+
         [Column("tenant")]
         public string? Tenant { get; set; }
         
