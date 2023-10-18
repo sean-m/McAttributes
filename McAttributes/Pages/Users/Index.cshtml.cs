@@ -26,21 +26,31 @@ namespace McAttributes.Pages.Users
             _context = context;
         }
 
+        [BindProperty]
         public string SearchCriteria => (string)TempData[nameof(SearchCriteria)] ?? String.Empty;
 
         public IList<User> UserSet { get;set; } = default!;
+
+        int pageSize = 50;
+        [BindProperty]
+        public int? Page => int.Parse((string)TempData[nameof(Page)] ?? "1");
+
+        public int Count { get; set; }
 
         public async Task OnGetAsync()
         {
             if (_context.Users != null)
             {
-                UserSet = await _context.Users.Where(GetUserFilter()).OrderBy(x => x.LastFetched).Take(40).ToListAsync();
+                var searchFilter = GetUserFilter();
+                UserSet = await _context.Users.Where(searchFilter).Skip(Math.Max(0, (Page ?? 1) - 1) * pageSize).OrderBy(x => x.LastFetched).Take(pageSize).ToListAsync();
+                if (!string.IsNullOrEmpty(SearchCriteria)) { Count = _context.Users.Count(GetUserFilter()); }
             }
         }
 
-        public IActionResult OnPost([FromForm] string SearchCriteria) {
+        public IActionResult OnPost([FromForm] string SearchCriteria, int Page) {
             TempData[nameof(SearchCriteria)] = SearchCriteria;
-         
+            TempData[nameof(Page)] = Page.ToString();
+
             return RedirectToPage("Index");
         }
 

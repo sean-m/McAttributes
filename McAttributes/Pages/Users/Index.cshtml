@@ -11,6 +11,12 @@
     <div class="form-group">
         <label asp-for="SearchCriteria">Search Criteria</label>
         <input asp-for="SearchCriteria" class="form-control" placeholder="Search" autocomplete="on" />
+        <div>
+        @Html.DisplayNameFor(model => model.Count)
+        @Html.DisplayFor(model => model.Count)
+        </div>
+        <input asp-for="Page" />
+        <label asp-for="Page">Page</label>
     </div>
     <button type="submit" class="btn btn-primary">Search</button>
 </form>

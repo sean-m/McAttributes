@@ -46,6 +46,11 @@ namespace McAttributes.Pages.UserIssues
         [BindProperty]
         public bool ShowResolved => bool.Parse((string)TempData[nameof(ShowResolved)] ?? "false");
 
+        [BindProperty]
+        public int? Page => int.Parse((string)TempData[nameof(Page)] ?? "1");
+
+        private int pageSize = 50;
+
         public async Task OnGetAsync()
         {
             if (new[] { ShowReview, ShowDenied, ShowResolved }.All(x => !x)) {
@@ -55,7 +60,7 @@ namespace McAttributes.Pages.UserIssues
             if (_context.IssueLogEntry != null)
             {
                 var issueFilter = GetUserFilter();
-                IssueLogEntry = await _context.IssueLogEntry.OrderBy(x => x.Id).Where(issueFilter).Take(20).ToListAsync();
+                IssueLogEntry = await _context.IssueLogEntry.OrderBy(x => x.Id).Where(issueFilter).Skip(Math.Max(0,(Page ?? 1) - 1) * pageSize).Take(pageSize).ToListAsync();
                 var s = await _context.IssueLogEntry.OrderBy(x => x.Status).GroupBy(x => x.Status, (key,values) => new { type = key, count = values.Count() }).ToListAsync();
                 foreach (var record in s) {
                     IssueCounts.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(record.type), record.count);
@@ -64,13 +69,13 @@ namespace McAttributes.Pages.UserIssues
         }
 
 
-        public IActionResult OnPost([FromForm] string SearchCriteria, bool ShowReview, bool ShowDenied, bool ShowResolved) {
+        public IActionResult OnPost([FromForm] string SearchCriteria, bool ShowReview, bool ShowDenied, bool ShowResolved, int Page) {
             
             TempData[nameof(SearchCriteria)] = SearchCriteria;
             TempData[nameof(ShowReview)] = ShowReview.ToString();
             TempData[nameof(ShowDenied)] = ShowDenied.ToString();
             TempData[nameof(ShowResolved)] = ShowResolved.ToString();
-
+            TempData[nameof(Page)] = Page.ToString();
             return RedirectToPage("Index");
         }
 
