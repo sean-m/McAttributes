@@ -18,7 +18,16 @@ namespace SMM.Helper {
             Task.WaitAny(tasks);
         }
 
-
+        /// <summary>
+        /// Let's say you have a collection of things with an indeterminate ordering but when you
+        /// enumerate the things, you'd like a subset to be grouped together. That's what this
+        /// can do but there's no guarantee elements in the group parameter exist in the primaryCollection.
+        /// That can be seen as a bug or a feature, it's up to you.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="primaryCollection"></param>
+        /// <param name="group"></param>
+        /// <returns></returns>
         public static IEnumerable<T> OrderedGroupAtFirstOccurance<T>(this IEnumerable<T> primaryCollection, IEnumerable<T> group) {
             bool groupEnumerated = false;
             foreach (var i in primaryCollection) {
