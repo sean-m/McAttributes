@@ -25,15 +25,15 @@ namespace McAttributes.Controllers
         // GET: api/IssueLogEntries
         [HttpGet]
         [EnableQuery(PageSize = 100)]
-        public IQueryable<IssueLogEntry> Get()
+        public IQueryable<AlertLogEntry> Get()
         {
-            return _ctx.Set<IssueLogEntry>();
+            return _ctx.Set<AlertLogEntry>();
         }
 
         // PUT: api/IssueLogEntries/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, IssueLogEntry issueLogEntry)
+        public async Task<IActionResult> Put(int id, AlertLogEntry issueLogEntry)
         {
             if (id != issueLogEntry.Id)
             {
@@ -66,12 +66,12 @@ namespace McAttributes.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Patch(int id, Dictionary<string,object> value) {
 
-            var entry = _ctx.Set<IssueLogEntry>().First(x => x.Id == id);
+            var entry = _ctx.Set<AlertLogEntry>().First(x => x.Id == id);
             if (entry == null) return NotFound();
 
             // Loop through properties on the model and update them if
             // they exist in the patch value and differ from the database entry.
-            var properties = typeof(IssueLogEntry).GetProperties();
+            var properties = typeof(AlertLogEntry).GetProperties();
             foreach (var property in properties) {
                 // Cannot update the id, created or alertHash value of the model.
                 if (property.Name.Equals("Id", StringComparison.CurrentCultureIgnoreCase)) continue;
@@ -102,13 +102,13 @@ namespace McAttributes.Controllers
         // POST: api/IssueLogEntries
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<IssueLogEntry>> PostIssueLogEntry(IssueLogEntry issueLogEntry)
+        public async Task<ActionResult<AlertLogEntry>> PostIssueLogEntry(AlertLogEntry issueLogEntry)
         {
-            if (_ctx.Set<IssueLogEntry>() == null)
+            if (_ctx.Set<AlertLogEntry>() == null)
             {
                 return Problem("Entity set 'IssueLogContext.IssueLogEntry'  is null.");
             }
-            _ctx.Set<IssueLogEntry>().Add(issueLogEntry);
+            _ctx.Set<AlertLogEntry>().Add(issueLogEntry);
             await _ctx.SaveChangesAsync();
 
             return CreatedAtAction("GetIssueLogEntry", new { id = issueLogEntry.Id }, issueLogEntry);
@@ -118,17 +118,17 @@ namespace McAttributes.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteIssueLogEntry(int id)
         {
-            if (_ctx.Set<IssueLogEntry>() == null)
+            if (_ctx.Set<AlertLogEntry>() == null)
             {
                 return NotFound();
             }
-            var entry = await _ctx.Set<IssueLogEntry>().FindAsync(id);
+            var entry = await _ctx.Set<AlertLogEntry>().FindAsync(id);
             if (entry == null)
             {
                 return NotFound();
             }
 
-            _ctx.Set<IssueLogEntry>().Remove(entry);
+            _ctx.Set<AlertLogEntry>().Remove(entry);
             await _ctx.SaveChangesAsync();
 
             return NoContent();
@@ -136,7 +136,7 @@ namespace McAttributes.Controllers
 
         private bool IssueLogEntryExists(int id)
         {
-            return (_ctx.Set<IssueLogEntry>()?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_ctx.Set<AlertLogEntry>()?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

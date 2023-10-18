@@ -29,7 +29,7 @@ namespace McAttributes.Pages.UserIssues
             _context = context;
         }
 
-        public IList<IssueLogEntry> IssueLogEntry { get;set; } = default!;
+        public IList<AlertLogEntry> IssueLogEntry { get;set; } = default!;
 
         [BindProperty]
         public string SearchCriteria => (string)TempData[nameof(SearchCriteria)] ?? String.Empty;
@@ -74,7 +74,7 @@ namespace McAttributes.Pages.UserIssues
             return RedirectToPage("Index");
         }
 
-        private Expression<Func<IssueLogEntry, bool>> GetUserFilter() {
+        private Expression<Func<AlertLogEntry, bool>> GetUserFilter() {
 
             var efGenerator = new SMM.NpgsqlGenerator();
 
@@ -82,28 +82,28 @@ namespace McAttributes.Pages.UserIssues
                 RuleOperator = RuleOperator.Or
             };
             var _rules = new List<IExpressionPolicy> ();
-            if (ShowReview) { _rules.Add(new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Status), "review"))); }
-            if (ShowDenied) { _rules.Add(new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Status), "denied"))); }
-            if (ShowResolved) { _rules.Add(new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Status), "resolved"))); }
+            if (ShowReview) { _rules.Add(new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Status), "review"))); }
+            if (ShowDenied) { _rules.Add(new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Status), "denied"))); }
+            if (ShowResolved) { _rules.Add(new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Status), "resolved"))); }
             toggleFilter.Rules = _rules;
 
             // Empty search should just return available records based on the selected search options
             if (String.IsNullOrEmpty(SearchCriteria)) {
-                return efGenerator.GetPredicateExpressionOrFalse<IssueLogEntry>(toggleFilter);
+                return efGenerator.GetPredicateExpressionOrFalse<AlertLogEntry>(toggleFilter);
             }
 
             string firstSearchToken = SearchCriteria.Split()?.FirstOrDefault() ?? string.Empty;
             var searchFilter = new ExpressionRuleCollection();
             searchFilter.RuleOperator = RuleOperator.Or;
             searchFilter.Rules = new List<IExpressionPolicy>() {
-                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.AttrName), $"employeeId:{firstSearchToken}".AddFilterOptionsIfNotSpecified(FilterOptions.IgnoreCase | FilterOptions.StartsWith))),
-                new ExpressionRule((nameof(Models.IssueLogEntry), nameof(Models.IssueLogEntry.Description), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.Contains | FilterOptions.IgnoreCase)))
+                new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.AttrName), $"employeeId:{firstSearchToken}".AddFilterOptionsIfNotSpecified(FilterOptions.IgnoreCase | FilterOptions.StartsWith))),
+                new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Description), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.Contains | FilterOptions.IgnoreCase)))
             };
 
 
             var filterExpression = PredicateBuilder.And(
-                efGenerator.GetPredicateExpressionOrFalse<IssueLogEntry>(toggleFilter), 
-                efGenerator.GetPredicateExpressionOrFalse<IssueLogEntry>(searchFilter));
+                efGenerator.GetPredicateExpressionOrFalse<AlertLogEntry>(toggleFilter), 
+                efGenerator.GetPredicateExpressionOrFalse<AlertLogEntry>(searchFilter));
             return filterExpression;
         }
     }

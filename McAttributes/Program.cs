@@ -25,7 +25,7 @@ static IEdmModel GetEdmModel() {
     var users = edmBuilder.EntitySet<User>("User");
     users.EntityType.Ignore(u => u.Pronouns);
 
-    edmBuilder.EntitySet<IssueLogEntry>("IssueLogEntry");
+    edmBuilder.EntitySet<AlertLogEntry>("IssueLogEntry");
     
     edmBuilder.EntitySet<Stargate>("Stargate");
     
@@ -87,7 +87,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options => {
 builder.Services.AddRazorPages(options => {
     options.Conventions.AuthorizeFolder("/EmployeeIdRecords");
     options.Conventions.AuthorizeFolder("/Users");
-    options.Conventions.AuthorizeFolder("/UserIssues");
+    options.Conventions.AuthorizeFolder("/UserAlerts");
     })
     .AddMicrosoftIdentityUI(); ;
 

@@ -25,7 +25,7 @@ namespace McAttributes.Pages.UserIssues
         }
 
         [BindProperty]
-        public IssueLogEntry IssueLogEntry { get; set; } = default!;
+        public AlertLogEntry IssueLogEntry { get; set; } = default!;
         
 
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD

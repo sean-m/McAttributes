@@ -14,14 +14,14 @@ namespace McAttributes.Data {
 
         public DbSet<Stargate>? Stargate { get; set; }
 
-        public DbSet<IssueLogEntry> IssueLogEntry { get; set; } = default!;
+        public DbSet<AlertLogEntry> IssueLogEntry { get; set; } = default!;
 
         public DbSet<CohortDescription> CohortDescriptions { get; set; } = default!;
         
         public DbSet<CohortMember> CohortMember { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder) {
-            builder.Entity<IssueLogEntry>(entity => {
+            builder.Entity<AlertLogEntry>(entity => {
                 entity.Property(p => p.Created).HasDefaultValue(DateTime.UtcNow)
                     .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             });
@@ -29,7 +29,7 @@ namespace McAttributes.Data {
             builder.Entity<EmployeeIdRecord>();
 
             // AadId should be unique
-            builder.Entity<IssueLogEntry>()
+            builder.Entity<AlertLogEntry>()
                 .HasIndex(u => u.AlertHash)
                 .IsUnique();
 

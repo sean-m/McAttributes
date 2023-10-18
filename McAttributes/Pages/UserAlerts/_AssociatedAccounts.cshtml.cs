@@ -37,7 +37,7 @@ namespace McAttributes.Pages.UserIssues {
         }
 
 
-        public void SetIssue(IssueLogEntry issueLogEntry) {
+        public void SetIssue(AlertLogEntry issueLogEntry) {
             IssueLogEntry = issueLogEntry;
 
             bool startAdding = false;
@@ -55,6 +55,6 @@ namespace McAttributes.Pages.UserIssues {
             }
         }
 
-        public IssueLogEntry IssueLogEntry { get; set; } = default!;
+        public AlertLogEntry IssueLogEntry { get; set; } = default!;
     }
 }

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace McAttributes.Models
 {
     [Table("idalerts")]
-    public class IssueLogEntry : RowVersionedModel {
+    public class AlertLogEntry : RowVersionedModel {
         [Key]
         [Column("id")]
         public long Id { get; set; }

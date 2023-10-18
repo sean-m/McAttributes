@@ -23,7 +23,7 @@ namespace McAttributes.Pages.UserIssues
         }
 
 
-        public IssueLogEntry IssueLogEntry { get; set; } = default!;
+        public AlertLogEntry IssueLogEntry { get; set; } = default!;
 
 
         #region AssociatedAccountData

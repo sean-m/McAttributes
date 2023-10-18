@@ -22,7 +22,7 @@ namespace McAttributes.Pages.UserIssues
         }
 
         [BindProperty]
-        public IssueLogEntry Entry { get; set; } = default!;
+        public AlertLogEntry Entry { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(uint? id)
         {
