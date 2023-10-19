@@ -6,9 +6,6 @@ namespace McAttributes.Models
 {
     [Table("idalerts")]
     public class AlertLogEntry : RowVersionedModel {
-        [Key]
-        [Column("id")]
-        public long Id { get; set; }
 
         [Column("attrname")]
         public string? AttrName { get; set; }

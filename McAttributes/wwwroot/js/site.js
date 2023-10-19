@@ -544,7 +544,7 @@ const appDefinition = {
     },
 };
 
-const app = createApp(appDefinition);
-app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-')
-app.component('SearchTable', SearchTable);
-app.mount('#app');
+//const app = createApp(appDefinition);
+//app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-')
+//app.component('SearchTable', SearchTable);
+//app.mount('#app');

@@ -26,12 +26,12 @@ namespace McAttributes.Pages.UserIssues
 
         public async Task<IActionResult> OnGetAsync(uint? id)
         {
-            if (id == null || _context.IssueLogEntry == null)
+            if (id == null || _context.AlertLogEntry == null)
             {
                 return NotFound();
             }
 
-            var issuelogentry =  await _context.IssueLogEntry.FirstOrDefaultAsync(m => m.Id == id);
+            var issuelogentry =  await _context.AlertLogEntry.FirstOrDefaultAsync(m => m.Id == id);
             if (issuelogentry == null)
             {
                 return NotFound();
@@ -52,7 +52,7 @@ namespace McAttributes.Pages.UserIssues
             }
 
             if (Entry != null) {
-                var _entry = _context.IssueLogEntry.Find(Entry.Id);
+                var _entry = _context.AlertLogEntry.Find(Entry.Id);
 
                 foreach (var prop in _entry?.GetType().GetProperties()) {
                     
@@ -88,7 +88,7 @@ namespace McAttributes.Pages.UserIssues
 
         private bool IssueLogEntryExists(long id)
         {
-          return (_context.IssueLogEntry?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.AlertLogEntry?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

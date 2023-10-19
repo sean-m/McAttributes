@@ -14,11 +14,13 @@ namespace McAttributes.Data {
 
         public DbSet<Stargate>? Stargate { get; set; }
 
-        public DbSet<AlertLogEntry> IssueLogEntry { get; set; } = default!;
+        public DbSet<AlertLogEntry> AlertLogEntry { get; set; } = default!;
+
+        public DbSet<AlertApproval> AlertApprovals { get; set; } = default!;
 
         public DbSet<CohortDescription> CohortDescriptions { get; set; } = default!;
         
-        public DbSet<CohortMember> CohortMember { get; set; } = default!;
+        public DbSet<CohortDescriptionMember> CohortMember { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder) {
             builder.Entity<AlertLogEntry>(entity => {

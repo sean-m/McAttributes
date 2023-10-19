@@ -5,11 +5,9 @@ namespace McAttributes.Models {
     
     [Table("cohorts")]
     public class CohortDescription : RowVersionedModel {
-        [Key]
-        public long? Id { get; set; } = null;
         public ResolutionStatus Status { get; set; } = ResolutionStatus.pending;
         public bool AssociateCohorts { get; set; } = false;
-        public IEnumerable<CohortMember> CohortMembers { get; set; } = Enumerable.Empty<CohortMember>();
+        public IEnumerable<CohortDescriptionMember> CohortMembers { get; set; } = Enumerable.Empty<CohortDescriptionMember>();
         public string? Description { get; set; }
         public CohortValidation Validate() {
 
@@ -43,9 +41,9 @@ namespace McAttributes.Models {
     }
 
     [Table("cohortmembers")]
-    public class CohortMember : RowVersionedModel {
+    public class CohortDescriptionMember : RowVersionedModel {
         [Key]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [ForeignKey(nameof(CohortDescription.Id))]
         public long CohortBucket { get; set; }

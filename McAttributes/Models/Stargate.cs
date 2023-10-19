@@ -7,9 +7,6 @@ namespace McAttributes.Models {
     [Table("stargate")]
     [Index(nameof(LocalId), nameof(Partition))]
     public class Stargate : RowVersionedModel {
-        [Key]
-        [Column("id")]
-        public long Id { get; set; }
 
         [Column("recordtype", TypeName="integer")]
         public StargateType RecordType { get; set; }

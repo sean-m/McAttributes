@@ -31,12 +31,12 @@ namespace McAttributes.Pages.UserIssues
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
         {
-          if (!ModelState.IsValid || _context.IssueLogEntry == null || IssueLogEntry == null)
+          if (!ModelState.IsValid || _context.AlertLogEntry == null || IssueLogEntry == null)
             {
                 return Page();
             }
 
-            _context.IssueLogEntry.Add(IssueLogEntry);
+            _context.AlertLogEntry.Add(IssueLogEntry);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");

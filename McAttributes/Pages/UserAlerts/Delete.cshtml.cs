@@ -24,12 +24,12 @@ namespace McAttributes.Pages.UserIssues
 
         public async Task<IActionResult> OnGetAsync(uint? id)
         {
-            if (id == null || _context.IssueLogEntry == null)
+            if (id == null || _context.AlertLogEntry == null)
             {
                 return NotFound();
             }
 
-            var issuelogentry = await _context.IssueLogEntry.FirstOrDefaultAsync(m => m.Id == id);
+            var issuelogentry = await _context.AlertLogEntry.FirstOrDefaultAsync(m => m.Id == id);
 
             if (issuelogentry == null)
             {
@@ -44,16 +44,16 @@ namespace McAttributes.Pages.UserIssues
 
         public async Task<IActionResult> OnPostAsync(uint? id)
         {
-            if (id == null || _context.IssueLogEntry == null)
+            if (id == null || _context.AlertLogEntry == null)
             {
                 return NotFound();
             }
-            var issuelogentry = await _context.IssueLogEntry.FindAsync(id);
+            var issuelogentry = await _context.AlertLogEntry.FindAsync(id);
 
             if (issuelogentry != null)
             {
                 IssueLogEntry = issuelogentry;
-                _context.IssueLogEntry.Remove(IssueLogEntry);
+                _context.AlertLogEntry.Remove(IssueLogEntry);
                 await _context.SaveChangesAsync();
             }
 

@@ -57,11 +57,11 @@ namespace McAttributes.Pages.UserIssues
                 TempData[nameof(ShowReview)] = true.ToString();
             }
 
-            if (_context.IssueLogEntry != null)
+            if (_context.AlertLogEntry != null)
             {
                 var issueFilter = GetUserFilter();
-                IssueLogEntry = await _context.IssueLogEntry.OrderBy(x => x.Id).Where(issueFilter).Skip(Math.Max(0,(Page ?? 1) - 1) * pageSize).Take(pageSize).ToListAsync();
-                var s = await _context.IssueLogEntry.OrderBy(x => x.Status).GroupBy(x => x.Status, (key,values) => new { type = key, count = values.Count() }).ToListAsync();
+                IssueLogEntry = await _context.AlertLogEntry.OrderBy(x => x.Id).Where(issueFilter).Skip(Math.Max(0,(Page ?? 1) - 1) * pageSize).Take(pageSize).ToListAsync();
+                var s = await _context.AlertLogEntry.OrderBy(x => x.Status).GroupBy(x => x.Status, (key,values) => new { type = key, count = values.Count() }).ToListAsync();
                 foreach (var record in s) {
                     IssueCounts.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(record.type), record.count);
                 }

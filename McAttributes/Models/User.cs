@@ -7,9 +7,6 @@ namespace McAttributes.Models {
     [Table("azusers")]
     [Index(nameof(AadId), nameof(Mail), nameof(EmployeeId))]
     public class User : RowVersionedModel {
-        [Key]
-        [Column("id")]
-        public long Id { get; set; }
         
         [Column("lastfetched")]
         public DateTime? LastFetched { get; set; } = null;

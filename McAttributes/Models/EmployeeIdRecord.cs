@@ -6,8 +6,6 @@ namespace McAttributes.Models
     [Table("employeeidrecord")]
     public class EmployeeIdRecord : RowVersionedModel
     {
-        [Key]
-        public long Id { get; set; }
         public string CloudSourceAnchor { get; set; }
         public string UserPrincipalName { get; set; }
         public string? EmployeeId { get; set; }

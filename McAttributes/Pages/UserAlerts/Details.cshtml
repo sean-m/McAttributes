@@ -1,4 +1,9 @@
 ﻿@page
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Serialization;
+@using SMM.Helper;
+@using System.Reflection;
+@using McAttributes;
 @model McAttributes.Pages.UserIssues.DetailsModel
 
 @{
@@ -59,4 +64,223 @@
     <a asp-page="./Edit" asp-route-id="@Model.IssueLogEntry?.Id">Edit</a> |
     <a asp-page="./Index">Back to List</a>
 </div>
-@await Html.PartialAsync("_AssociatedAccounts", Model.AssociatedAccountsModel)
+
+
+<div id="associatedPartial" style="margin-top: 1em">
+    @if (Model.AssociatedAccountsModel.AssociatedUsers.Count() > 0) {
+        <p>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#associatedAccountTable"
+                    aria-expanded="false" aria-controls="associatedAccountTable">
+                Show/Hide Accounts Table
+            </button>
+        </p>
+        <div class="show" id="associatedAccountTable">
+            @*
+        Make horizontal tables for each set of users. Tables start with a native user at the left most cell
+        and associated invited users coming after that.
+        *@
+            @foreach (var n in Model.AssociatedAccountsModel.AssociatedUsers.OrderByDescending(x => x.Created)
+           .Where(x => string.IsNullOrEmpty(x.CreationType))  // Native users
+           .GroupBy(x => x.Tenant)
+           .SelectMany(x => x)) {
+                <h2>@n.Upn  -  @n.Tenant</h2>
+                <table id="accountsTable" class="table table-bordered table-hover">
+                    <tbody>
+                        @foreach (var p in Model.AssociatedAccountsModel.AssociatedUsers.First().GetType().GetProperties()
+                        .Where(x => x.Name != "Version")
+                        .OrderedGroupAtFirstOccurance<PropertyInfo>(
+                        new PropertyInfo[] {
+                            typeof(Models.User).GetProperty("Deleted"),
+                            typeof(Models.User).GetProperty("Enabled"),
+                            typeof(Models.User).GetProperty("CreationType")
+                        })) {
+                            <tr>
+                                <td>@p.Name</td>
+                                @foreach (var a in Enumerable.Concat(new[] { n },
+                               Model.AssociatedAccountsModel.AssociatedUsers.OrderByDescending(x => x.Tenant)
+                               .Where(x => !string.IsNullOrEmpty(x.CreationType))  // Invited users
+                               .Where(x => {
+                                   var upnSuffix = n.Upn.Split('@').Last();
+                                   return (bool)(x.Upn.Split("#EXT#").FirstOrDefault()?.Like($"*{upnSuffix}")) 
+                                       || (bool)(x.Upn.Split("#EXT#").FirstOrDefault()?.Like($"*{n.Tenant}"));
+                               })
+                               .GroupBy(x => x.Tenant)
+                               .SelectMany(x => x))
+                               .Where(x => x != null))  // Skip nulls just in case n is null for whatever reason
+                               {
+                                    if (string.IsNullOrEmpty(a.CreationType)) {
+                                        @switch (p.Name) {
+                                            case ("Enabled"):
+                                                if ((bool)(p.GetValue(a))) {
+                                                    <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                } else {
+                                                    <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                }
+                                                break;
+                                            case ("Deleted"):
+                                                if ((bool)(p.GetValue(a))) {
+                                                    <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                } else {
+                                                    <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                                }
+                                                break;
+                                            default:
+                                                <td>@p.GetValue(a)</td>
+                                                break;
+                                        }
+                                    } else {
+                                        <td>@p.GetValue(a)</td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+
+        <p>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#wideAssociatedAccountTable"
+                    aria-expanded="false" aria-controls="wideAssociatedAccountTable">
+                Show/Hide Wide Accounts Table
+            </button>
+        </p>
+        <div class="collapse" id="wideAssociatedAccountTable">
+            <table id="accountsTable" class="table table-bordered table-hover">
+                <tbody>
+                    @* Loop over properties, when you hit: Deleted, Enabled, or CreationType show those properties in that order. *@
+                    @foreach (var p in Model.AssociatedAccountsModel.AssociatedUsers.First().GetType().GetProperties()
+                   .Where(x => x.Name != "Version")
+                   .OrderedGroupAtFirstOccurance<PropertyInfo>(
+                   new[] { typeof(Models.User).GetProperty("Deleted"), typeof(Models.User).GetProperty("Enabled"), typeof(Models.User).GetProperty("CreationType") })) {
+                        <tr>
+                            <td>@p.Name</td>
+                            @foreach (var a in Enumerable.Concat(
+                           Model.AssociatedAccountsModel.AssociatedUsers.OrderByDescending(x => x.Tenant)
+                           .Where(x => string.IsNullOrEmpty(x.CreationType)),  // Native users
+                           Model.AssociatedAccountsModel.AssociatedUsers.OrderByDescending(x => x.Tenant)
+                           .Where(x => !string.IsNullOrEmpty(x.CreationType))  // Invited users
+                           .OrderBy(x => x.Upn)     // Order by name
+                           .GroupBy(x => x.Tenant)  // then group by tenant
+                           .SelectMany(x => x)))    // turn those groups into a single collection
+                           {
+                                if (string.IsNullOrEmpty(a.CreationType)) {
+                                    @* For native users, do conditional formatting based on contentds of the Enabled or Deleted properties,
+                    makes identifying delted or disabled users at a glance much easier.
+                    *@
+                                    @switch (p.Name) {
+                                        case ("Enabled"):
+                                            if ((bool)(p.GetValue(a))) {
+                                                <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            } else {
+                                                <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            }
+                                            break;
+                                        case ("Deleted"):
+                                            if ((bool)(p.GetValue(a))) {
+                                                <td class="bg-danger" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            } else {
+                                                <td class="bg-success" style="color:white; font-weight:bold;">@p.GetValue(a)</td>
+                                            }
+                                            break;
+                                        default:
+                                            <td>@p.GetValue(a)</td>
+                                            break;
+                                    }
+                                } else {
+                                    <td>@p.GetValue(a)</td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    } else {
+        <p>No Associated Accounts Loaded.</p>
+        if (Model.AssociatedAccountsModel._acctNames.Count() > 0) {
+            <p>@Model.accts.Count() account names identified but fetching from database failed.</p>
+        }
+    }
+
+    <div id="app" class="container-fluid">
+        <h2>Accounts</h2>
+        <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button class="btn btn-primary" @@click="autoBucket()">Auto Bucket</button>
+                <button class="btn btn-secondary" @@click="bucketIndex++">Add Bucket{{ bucketIndex >= 1 ? ' : ' + bucketIndex : '' }}</button>
+            
+                <div v-if="bucketIndex > 0" v-for="i of Array(bucketIndex).fill().map((element, index) => index)">
+                    <button v-if="i > 0" class="btn btn-warning" @@click="setBucketGroup(i, 'Approved')">Approve Bucket {{ i }}</button>
+                    <button v-if="i > 0" class="btn btn-secondary" @@click="setBucketGroup(i, null)">Clear Bucket {{ i }}</button>
+                    <button v-if="i > 0" class="btn btn-danger" @@click="setBucketGroup(i, 'Denied')">Deny Bucket {{ i }}</button>
+                </div>
+            </div>
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button class="btn btn-success" @@click="saveBucketAsCohort()">Save Buckets</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6 card-block">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th v-for="c of columns">{{ c }}</th>
+                            <th style="padding-left:1em; padding-right:5em; ">bucket</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="a of bucket.accounts">
+                            <td v-for="c of columns" style="white-space:nowrap">{{ a[c] }}</td>
+                            <td>
+                                <div class="row">
+                                    <ul style="list-style: none;">
+                                        <li class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
+                                            <input type="radio" :id="'bucket' + a.aadId + b" :name="'bucket' + a.aadId + b" :value="b" v-model="a.bucket" style="margin-right:0.5em;" />
+                                            <label :for="'bucket' + a.aadId + b" :style="(a.bucket == b) ? { 'font-weight':'bold' } : {}">{{ b == 0 ? 'None' : 'Bucket ' + b }}</label>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td>
+                                <select :id="'approvalStatus-' + a.id" v-model="a.approvalStatus">
+                                    <option></option>
+                                    <option>Approved</option>
+                                    <option>Denied</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style type="text/css">
+    .drag-el {
+        margin-bottom: 1em;
+    }
+
+    .drop-zone {
+        padding: 1em;
+    }
+</style>
+<script type="text/javascript">
+    var accountsJson = @Html.Raw(
+        Newtonsoft.Json.JsonConvert.SerializeObject(Model.AssociatedAccountsModel.AssociatedUsers,
+        new JsonSerializerSettings {
+            ContractResolver = new DefaultContractResolver {
+            NamingStrategy = new CamelCaseNamingStrategy()
+        }}));
+
+    var issueAlert = @Html.Raw(
+        Newtonsoft.Json.JsonConvert.SerializeObject(Model.IssueLogEntry,
+        new JsonSerializerSettings {
+            ContractResolver = new DefaultContractResolver {
+            NamingStrategy = new CamelCaseNamingStrategy()
+        }}));
+</script>
+<script type="text/javascript" src="~/js/cohort.js"></script>
