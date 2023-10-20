@@ -5,12 +5,12 @@ namespace McAttributes.Models {
     [Table("alertapproval")]
     public class AlertApproval : AlertApprovalBase {
 
-        [Column("userId")]
+        [Column("userid")]
         [ForeignKey(nameof(Principal))]
         public new long UserId { get; set; }
         public virtual User Principal { get; set; }
 
-        [Column("alertId")]
+        [Column("alertid")]
         [ForeignKey(nameof(Alert))]
         public new long AlertId { get; set; }
         public virtual AlertLogEntry Alert { get; set; }
