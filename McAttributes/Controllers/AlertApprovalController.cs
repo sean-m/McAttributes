@@ -2,11 +2,12 @@
 using McAttributes.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Newtonsoft.Json.Linq;
 using Polly;
 using SMM.Helper;
-using System.Data.Entity;
 using System.Runtime.CompilerServices;
 
 namespace McAttributes.Controllers {
@@ -16,21 +17,21 @@ namespace McAttributes.Controllers {
 
 
         ILogger _logger;
-        readonly IdDbContext _ctx;
+        readonly dynamic _ctxFactory;
 
         Random jitterer { get; set; } = new Random();
 
         Policy retry { get; init; }
 
-        public AlertApprovalController(ILogger <AlertApprovalController> logger, IdDbContext dbContext) {
+        public AlertApprovalController(ILogger<AlertApprovalController> logger, IDbContextFactory<IdDbContext> factory) {
             _logger = logger;
-            _ctx = dbContext;
+            _ctxFactory = factory;
 
             retry = Policy
                 .Handle<Npgsql.NpgsqlOperationInProgressException>()
-                .WaitAndRetry(4, retryAttempt =>
-                TimeSpan.FromSeconds((double)(Math.Pow(2, retryAttempt)) / 9)
-                + TimeSpan.FromMilliseconds(jitterer.Next(0, 500)));
+                .WaitAndRetry(6, retryAttempt =>
+                TimeSpan.FromMilliseconds(200)
+                + TimeSpan.FromMilliseconds(jitterer.Next(0, 1000)));
         }
 
         public class ResolveAlertApproval {
@@ -40,59 +41,70 @@ namespace McAttributes.Controllers {
 
         [HttpGet]
         public IActionResult Get([FromQuery] ResolveAlertApproval approval) {
+            IActionResult innerResult = NoContent();
 
             if (approval.alertId != 0 && approval.alertId != null) {
-                var alertResult = retry.ExecuteAndCapture(() => _ctx.AlertApprovals.Where(x => x.AlertId == approval.alertId).ToList());
-                return Ok(alertResult.Result);
-            }
+                using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
+                    var list = ctx.AlertApprovals.Where(x => x.AlertId == approval.alertId).ToList();
+                    innerResult = Ok(list);
+                }
+            } else {
+                using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
+                    if (approval.id == null) {
+                        innerResult = BadRequest("Must pass an object looking like this { id:0, alertId:0 } with one of the properties populated with a non-zero number.");
+                    }
 
-            if (approval.id == null) {
-                return BadRequest("Must pass an object looking like this { id:0, alertId:0 } with one of the properties populated with a non-zero number.");
+                    var result = retry.ExecuteAndCapture(() => ctx.AlertApprovals.Find(approval.id));
+                    innerResult = Ok(result.Result);
+                }
             }
-
-            var result = retry.ExecuteAndCapture(() => _ctx.AlertApprovals.Find(approval.id));
-            return Ok(result.Result);
+            
+            return innerResult;
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody] AlertApproval approval) {
-            if (!RecordExists<AlertApproval>(approval.Id)) {
-                return Post(approval);
+        public async Task<IActionResult> Patch([FromBody] AlertApproval[] approvals) {
+            IActionResult innerResult = NoContent();
+            
+            using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
+                Console.WriteLine($"\n\n\ncontext hash: {ctx.GetHashCode()}\n\n\n");
+                foreach (var approval in approvals) {
+                    var entity = await ctx.AlertApprovals.FirstOrDefaultAsync(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
+                    if (entity == null) {
+                        ctx.AlertApprovals.Add(approval);
+                    } else {
+                        if (entity.Status != approval.Status) {
+                            entity.Status = approval.Status;
+                            ctx.AlertApprovals.Entry(entity).State = EntityState.Modified;
+
+                        }
+
+                    }
+                }
+                await ctx.SaveChangesAsync();
             }
-
-            var entity = _ctx.AlertApprovals.Entry(approval);
-            PatchObject<AlertApproval>(approval, entity);
-
-            return NoContent();
+        
+            return innerResult;
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] AlertApproval approval) {
-            if (RecordExists<AlertApproval>(approval.Id)) {
-                return BadRequest($"Approval with id {approval.Id} already exists. Try PATCH method instead.");
-            }
+        public IActionResult Post([FromBody] AlertApproval[] approvals) {
+            
+            using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
+                Console.WriteLine($"\n\n\ncontext hash: {ctx.GetHashCode()}\n\n\n");
+                foreach (var approval in approvals) {
+                    var entity = ctx.AlertApprovals.FirstOrDefault(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
+                    if (entity != null) {
+                        return BadRequest($"Approval with id {approval.Id} already exists. Try PATCH method instead.");
 
-            _ctx.AlertApprovals.Add(approval);
-            retry.ExecuteAndCapture(() => _ctx.SaveChanges());
+                    }
 
-            return Ok();
-        }
-
-        private void PatchObject<T>(T source, EntityEntry target) {
-            // Loop through properties on the model and update them if
-            // they exist in the patch value and differ from the database entry.
-            var properties = typeof(User).GetProperties();
-            foreach (var property in properties) {
-                if (property.Name.Like("Id")) continue;
-                if (property.GetValue(target) != property.GetValue(source)) {
-                    property.SetValue(target, property.GetValue(source));
+                    System.Diagnostics.Trace.WriteLine($"context hash: {ctx.GetHashCode()}");
+                    ctx.AlertApprovals.Add(approval);
                 }
-            }
-        }
 
-        private bool RecordExists<T>(long id) where T : RowVersionedModel
-        {
-            return (_ctx.Set<T>()?.Any(x => x.Id == id)).GetValueOrDefault();
+                return Ok(ctx.SaveChanges());
+            }
         }
     }
 }

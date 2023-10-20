@@ -28,7 +28,7 @@ namespace McAttributes.Controllers {
 
             retry = Policy
               .Handle<Npgsql.NpgsqlOperationInProgressException>()
-              .WaitAndRetry(4, retryAttempt =>
+              .WaitAndRetry(6, retryAttempt =>
                 TimeSpan.FromSeconds((double)(Math.Pow(2, retryAttempt)) / 9)
                 + TimeSpan.FromMilliseconds(jitterer.Next(0, 500)));
         }

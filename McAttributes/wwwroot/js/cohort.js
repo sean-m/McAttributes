@@ -55,7 +55,7 @@ class AccountBucket {
         if (approvals != null && approvals != undefined) {
             if (Array.isArray(approvals)) {
                 for (var ap of approvals) {
-                    for (var act of accounts) {
+                    for (var act of this.accounts) {
                         if (act.id == ap.userId) {
                             act.approvalStatus = ap.status;
                         }
@@ -88,6 +88,7 @@ const bucketAppDefinition = {
             bucket: new AccountBucket(window.accountsJson),
             cohorts: [],
             issueAlert: window.issueAlert,
+            errorLog:[],
         }
     },
     methods: {
@@ -117,25 +118,28 @@ const bucketAppDefinition = {
                 boffset++;
             }
         },
-        saveBucketAsCohort() {
+        saveBucketApprovals() {
 
-            var cohort = this.bucket.asApprovalSet(this.issueAlert.id);
-            if (!cohort) {
-                console.log("asCohort function does't return a value. Can't post this to the server.");
+            let approvals = this.bucket.asApprovalSet(this.issueAlert.id);
+            if (!approvals) {
+                console.log("asApprovalSet function does't return a value. Can't post this to the server.");
+                return;
             } else {
-                console.log(cohort);
-                for (a of cohort) {
-                    $.ajax({
-                        url: apiApproval,
-                        type: "PATCH",
-                        data: JSON.stringify(a),
-                        contentType: "application/json",
-                        accepts: "application/json",
-                        dataType: "json",
-                        success: r => console.log(r),
-                        error: e => console.log(e)
-                    });
-                }
+                console.log(approvals);
+                var approvalsListString = JSON.stringify(approvals);
+                $.ajax({
+                    url: apiApproval,
+                    type: "PATCH",
+                    data: approvalsListString,
+                    contentType: "application/json",
+                    accepts: "application/json",
+                    dataType: "json",
+                    success: r => console.log(r),
+                    error: e => {
+                        console.log(`error: ${e}`);
+                        this.errorLog.push(e);
+                    }
+                });
             }
         },
         getBucketsFromCohort() {
@@ -150,7 +154,10 @@ const bucketAppDefinition = {
                 success: r => {
                     this.bucket.setApprovals(r);
                 },
-                error: e => console.log(`error: ${e}`)
+                error: e => {
+                    console.log(`error: ${e}`);
+                    this.errorLog.push(e);
+                }
             });
 
             

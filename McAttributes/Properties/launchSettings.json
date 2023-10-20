@@ -3,7 +3,7 @@
     "McAttributes": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": "UserAlerts",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

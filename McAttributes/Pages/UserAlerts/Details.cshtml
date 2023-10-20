@@ -218,9 +218,10 @@
                 </div>
             </div>
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button class="btn btn-success" @@click="saveBucketAsCohort()">Save Buckets</button>
+                <button class="btn btn-success" @@click="saveBucketApprovals()">Save Buckets</button>
             </div>
         </div>
+
         <div class="row">
             <div class="col-sm-6 card-block">
                 <table class="table table-bordered table-hover">
@@ -257,13 +258,19 @@
             </div>
         </div>
     </div>
+
+    <div v-if="errorList.length > 0">
+        <h3>Errors:</h3>
+        <ul id="errorLogList" v-for="e of errorLog.slice().reverse()">
+            <li>{{ e }}</li>
+        </ul>
+    </div>
 </div>
 
 <style type="text/css">
     .drag-el {
         margin-bottom: 1em;
     }
-
     .drop-zone {
         padding: 1em;
     }

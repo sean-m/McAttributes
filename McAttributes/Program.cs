@@ -129,8 +129,12 @@ var sanitizedString = String.Join(';', conn.ConnectionString.Split(';').Select(x
     return x;
 }));
 
-builder.Services.AddDbContext<IdDbContext>(
-    options => { options.UseNpgsql(conn); });
+builder.Services.AddDbContextFactory<IdDbContext>(
+    options => { 
+        options.UseNpgsql(conn, npgoptions => {
+            npgoptions.EnableRetryOnFailure(4);
+        });
+    });
 //}
 //else if (configuredDbType.Like("sqlserver")) {
 //builder.Services.AddDbContext<IdDbContext>(
