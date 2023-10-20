@@ -94,6 +94,7 @@ namespace McAttributes.Pages.UserIssues
             var _rules = new List<IExpressionPolicy> ();
             if (ShowReview) { _rules.Add(new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Status), "review"))); }
             if (ShowDenied) { _rules.Add(new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Status), "denied"))); }
+            if (ShowItsFine) { _rules.Add(new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Status), "itsfine"))); }
             if (ShowResolved) { _rules.Add(new ExpressionRule((nameof(Models.AlertLogEntry), nameof(Models.AlertLogEntry.Status), "resolved"))); }
             toggleFilter.Rules = _rules;
 
