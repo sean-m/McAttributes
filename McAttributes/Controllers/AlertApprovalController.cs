@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Newtonsoft.Json.Linq;
 using Polly;
 using SMM.Helper;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 
 namespace McAttributes.Controllers {
@@ -62,8 +63,9 @@ namespace McAttributes.Controllers {
             return innerResult;
         }
 
+
         [HttpPatch]
-        public async Task<IActionResult> Patch([FromBody] AlertApproval[] approvals) {
+        public async Task<IActionResult> Patch([FromBody] AlertApprovalBase[] approvals) {
             IActionResult innerResult = NoContent();
             
             using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
@@ -71,14 +73,14 @@ namespace McAttributes.Controllers {
                 foreach (var approval in approvals) {
                     var entity = await ctx.AlertApprovals.FirstOrDefaultAsync(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
                     if (entity == null) {
-                        ctx.AlertApprovals.Add(approval);
+                        // That's missing so add it
+                        ctx.AlertApprovals.Add(approval.ToAlertApproval());
                     } else {
+                        // Update the thing we already have if neccessary
                         if (entity.Status != approval.Status) {
                             entity.Status = approval.Status;
                             ctx.AlertApprovals.Entry(entity).State = EntityState.Modified;
-
                         }
-
                     }
                 }
                 await ctx.SaveChangesAsync();
@@ -88,7 +90,7 @@ namespace McAttributes.Controllers {
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] AlertApproval[] approvals) {
+        public IActionResult Post([FromBody] AlertApprovalBase[] approvals) {
             
             using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
                 Console.WriteLine($"\n\n\ncontext hash: {ctx.GetHashCode()}\n\n\n");
@@ -96,11 +98,10 @@ namespace McAttributes.Controllers {
                     var entity = ctx.AlertApprovals.FirstOrDefault(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
                     if (entity != null) {
                         return BadRequest($"Approval with id {approval.Id} already exists. Try PATCH method instead.");
-
                     }
 
                     System.Diagnostics.Trace.WriteLine($"context hash: {ctx.GetHashCode()}");
-                    ctx.AlertApprovals.Add(approval);
+                    ctx.AlertApprovals.Add(approval.ToAlertApproval());
                 }
 
                 return Ok(ctx.SaveChanges());

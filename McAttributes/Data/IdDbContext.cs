@@ -35,7 +35,6 @@ namespace McAttributes.Data {
                 .HasIndex(u => u.AlertHash)
                 .IsUnique();
 
-
             // AadId should be unique
             builder.Entity<User>()
                 .HasIndex(u => u.AadId)
