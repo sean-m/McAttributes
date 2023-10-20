@@ -204,7 +204,7 @@ $employeeIds = @()
 
 $pronounRate = 0.01
 $articleRate = 0.001
-$spoofRate   = 0.04
+$spoofRate   = 0.10
 $guestRate   = 0.8
 
 ################################################################################
