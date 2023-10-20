@@ -250,7 +250,7 @@
                                     <option>Denied</option>
                                 </select>
                             </td>
-                            <td>
+                            <td style="white-space:nowrap">
                                 <div class="row">
                                     <div class="btn-group-sm" role="group" v-if="(a.creationType == null || a.creationType == undefined) && bucketIndex > 0">
                                         <button type="button" class="btn btn-success" @@click="setBucketGroup(a.bucket, 'Approved')">Approve</button>
@@ -280,6 +280,12 @@
     }
     .drop-zone {
         padding: 1em;
+    }
+    .delete-cell {
+
+    }
+    .enable-cell {
+
     }
 </style>
 <script type="text/javascript">

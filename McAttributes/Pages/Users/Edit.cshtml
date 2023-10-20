@@ -39,6 +39,11 @@
                     <input class="form-check-input" asp-for="User.Enabled" /> @Html.DisplayNameFor(model => model.User.Enabled)
                 </label>
             </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="User.Deleted" /> @Html.DisplayNameFor(model => model.User.Deleted)
+                </label>
+            </div>
             <div class="form-group">
                 <label asp-for="User.Tenant" class="control-label"></label>
                 <input asp-for="User.Tenant" class="form-control" />

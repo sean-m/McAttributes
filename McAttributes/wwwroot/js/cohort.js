@@ -84,7 +84,7 @@ const bucketAppDefinition = {
         return {
             buckets: [],
             bucketIndex: 0,
-            columns: ['displayName', 'tenant', 'preferredGivenName', 'preferredSurname', 'mail', 'creationType', 'created'],
+            columns: ['displayName', 'tenant', 'enabled', 'deleted', 'preferredGivenName', 'preferredSurname', 'mail', 'creationType', 'created'],
             bucket: new AccountBucket(window.accountsJson),
             cohorts: [],
             issueAlert: window.issueAlert,
@@ -118,6 +118,7 @@ const bucketAppDefinition = {
                 }
                 boffset++;
             }
+            this.colorizeTableCells();
         },
         saveBucketApprovals() {
 
@@ -169,8 +170,6 @@ const bucketAppDefinition = {
                     this.errorLog.push(e);
                 }
             });
-
-            
         },
         setBucketGroup(bucket, value) {
             console.log(`Approve bucket ${bucket}`)
