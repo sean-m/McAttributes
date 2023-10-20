@@ -65,10 +65,12 @@
 
     function appendDefaultReviewText() {
         var notes = document.getElementById('notesArea');
-        var notesText = notes.innerText;
-        notesText += "\n";
-        notesText += defaultReviewText;
-        notes.innerText = notesText;
+        var notesText = notes.value;
+        if (notesText.length > 0) {
+            notesText = notesText + "\n";
+        }
+        notesText = notesText + defaultReviewText;
+        notes.value = notesText;
     }
 </script>
 
