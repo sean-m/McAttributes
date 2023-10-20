@@ -45,19 +45,32 @@
             </div>
             <div class="form-group">
                 <label asp-for="Entry.Notes" class="control-label"></label>
-                <textarea asp-for="Entry.Notes" class="form-control" rows="5"></textarea>
+                <textarea id="notesArea" asp-for="Entry.Notes" class="form-control" rows="5"></textarea>
                 <span asp-validation-for="Entry.Notes" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
+
+        <button class="btn btn-outline-primary" onclick="appendDefaultReviewText()">Add Default Review Text</button>
     </div>
 </div>
 
 <div>
     <a asp-page="./Index">Back to List</a>
 </div>
+<script type="text/javascript">
+    let defaultReviewText = '@Html.Raw(Model.DefaultReviewNote)';
+
+    function appendDefaultReviewText() {
+        var notes = document.getElementById('notesArea');
+        var notesText = notes.innerText;
+        notesText += "\n";
+        notesText += defaultReviewText;
+        notes.innerText = notesText;
+    }
+</script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

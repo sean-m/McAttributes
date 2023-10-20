@@ -44,7 +44,11 @@ namespace McAttributes.Pages.UserIssues
         public bool ShowDenied => bool.Parse((string)TempData[nameof(ShowDenied)] ?? "false");
 
         [BindProperty]
+        public bool ShowItsFine => bool.Parse((string)TempData[nameof(ShowItsFine)] ?? "false");
+
+        [BindProperty]
         public bool ShowResolved => bool.Parse((string)TempData[nameof(ShowResolved)] ?? "false");
+
 
         [BindProperty]
         public int? Page => int.Parse((string)TempData[nameof(Page)] ?? "1");
@@ -69,11 +73,12 @@ namespace McAttributes.Pages.UserIssues
         }
 
 
-        public IActionResult OnPost([FromForm] string SearchCriteria, bool ShowReview, bool ShowDenied, bool ShowResolved, int Page) {
+        public IActionResult OnPost([FromForm] string SearchCriteria, bool ShowReview, bool ShowDenied, bool ShowItsFine, bool ShowResolved, int Page) {
             
             TempData[nameof(SearchCriteria)] = SearchCriteria;
             TempData[nameof(ShowReview)] = ShowReview.ToString();
             TempData[nameof(ShowDenied)] = ShowDenied.ToString();
+            TempData[nameof(ShowItsFine)] = ShowItsFine.ToString();
             TempData[nameof(ShowResolved)] = ShowResolved.ToString();
             TempData[nameof(Page)] = Page.ToString();
             return RedirectToPage("Index");

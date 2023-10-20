@@ -21,6 +21,9 @@ namespace McAttributes.Pages.UserIssues
             _context = context;
         }
 
+        public string DefaultReviewNote => $"Reviewed by {User.Identity.Name} on {DateTime.Now.ToLongDateString()} {DateTime.Now.ToShortTimeString()}";
+        
+
         [BindProperty]
         public AlertLogEntry Entry { get; set; } = default!;
 
