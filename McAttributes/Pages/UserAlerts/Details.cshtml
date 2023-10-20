@@ -236,14 +236,11 @@
                         <tr v-for="a of bucket.accounts">
                             <td v-for="c of columns" style="white-space:nowrap">{{ a[c] }}</td>
                             <td>
-                                <div class="row">
-                                    <ul style="list-style: none;">
-                                        <li class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)">
-                                            <input type="radio" :id="'bucket' + a.aadId + b" :name="'bucket' + a.aadId + b" :value="b" v-model="a.bucket" style="margin-right:0.5em;" />
-                                            <label :for="'bucket' + a.aadId + b" :style="(a.bucket == b) ? { 'font-weight':'bold' } : {}">{{ b == 0 ? 'None' : 'Bucket ' + b }}</label>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <label style="margin-right:0.5em;">Bucket: </label>
+                                <select style="list-style: none;" v-model="a.bucket">
+                                    <option disabled v-if="b == 0" value="">None</option>
+                                    <option class="col" v-for="b of Array(bucketIndex).fill().map((element, index) => index)" >{{ b }}</option>
+                                </select>
                             </td>
                             <td>
                                 <select :id="'approvalStatus-' + a.id" v-model="a.approvalStatus">
