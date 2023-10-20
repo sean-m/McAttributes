@@ -88,7 +88,8 @@ const bucketAppDefinition = {
             bucket: new AccountBucket(window.accountsJson),
             cohorts: [],
             issueAlert: window.issueAlert,
-            errorLog:[],
+            errorLog: [],
+            saveButtonText: "Save Bucket",
         }
     },
     methods: {
@@ -126,6 +127,9 @@ const bucketAppDefinition = {
                 return;
             } else {
                 console.log(approvals);
+                // API expects the body fo the request to be a collection,
+                // approvals needs to be stringified here or jquery will helpfully
+                // dispatch a request per element.
                 var approvalsListString = JSON.stringify(approvals);
                 $.ajax({
                     url: apiApproval,
@@ -134,7 +138,13 @@ const bucketAppDefinition = {
                     contentType: "application/json",
                     accepts: "application/json",
                     dataType: "json",
-                    success: r => console.log(r),
+                    success: r => {
+                        console.log(r)
+                        this.saveButtonText = "Save Bucket Complete!"
+                        window.setTimeout(() => {
+                            this.saveButtonText = "Save Bucket";
+                        }, 5000);
+                    },
                     error: e => {
                         console.log(`error: ${e}`);
                         this.errorLog.push(e);
@@ -179,7 +189,6 @@ const bucketAppDefinition = {
         onDrop(evt, list) {
             const itemID = evt.dataTransfer.getData('itemID');
             if (list.name && list.name.startsWith("Bucket")) {
-
                 console.log(list);
             }
         },

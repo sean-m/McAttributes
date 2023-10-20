@@ -218,7 +218,7 @@
                 </div>
             </div>
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button class="btn btn-success" @@click="saveBucketApprovals()">Save Buckets</button>
+                <button class="btn btn-success" @@click="saveBucketApprovals()">{{ saveButtonText }}</button>
             </div>
         </div>
 
@@ -259,7 +259,7 @@
         </div>
     </div>
 
-    <div v-if="errorList.length > 0">
+    <div v-if="errorList && errorList.length > 0">
         <h3>Errors:</h3>
         <ul id="errorLogList" v-for="e of errorLog.slice().reverse()">
             <li>{{ e }}</li>
