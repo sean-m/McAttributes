@@ -66,45 +66,57 @@ namespace McAttributes.Controllers {
 
         [HttpPatch]
         public async Task<IActionResult> Patch([FromBody] AlertApprovalBase[] approvals) {
-            IActionResult innerResult = NoContent();
-            
-            using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
-                Console.WriteLine($"\n\n\ncontext hash: {ctx.GetHashCode()}\n\n\n");
-                foreach (var approval in approvals) {
-                    var entity = await ctx.AlertApprovals.FirstOrDefaultAsync(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
-                    if (entity == null) {
-                        // That's missing so add it
-                        ctx.AlertApprovals.Add(approval.ToAlertApproval());
-                    } else {
-                        // Update the thing we already have if neccessary
-                        if (entity.Status != approval.Status) {
-                            entity.Status = approval.Status;
-                            ctx.AlertApprovals.Entry(entity).State = EntityState.Modified;
+            var requestId = jitterer.NextInt64();
+            try {
+                using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
+                    Console.WriteLine($"\n\n\ncontext hash: {ctx.GetHashCode()}\n\n\n");
+                    foreach (var approval in approvals) {
+                        var entity = await ctx.AlertApprovals.FirstOrDefaultAsync(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
+                        if (entity == null) {
+                            // That's missing so add it
+                            ctx.AlertApprovals.Add(approval.ToAlertApproval());
+                            _logger.LogInformation($"Request ID {requestId}  User: {User.Identity?.Name} added alert approval for alert: {approval.AlertId} for user {approval.UserId} to {approval.Status}");
+                        } else {
+                            // Update the thing we already have if neccessary
+                            if (entity.Status != approval.Status) {
+                                entity.Status = approval.Status;
+                                ctx.AlertApprovals.Entry(entity).State = EntityState.Modified;
+                                _logger.LogInformation($"Request ID {requestId}  User: {User.Identity?.Name} set alert approval for alert: {approval.AlertId} for user {approval.UserId} to {approval.Status}");
+                            }
                         }
                     }
+                    await ctx.SaveChangesAsync();
                 }
-                await ctx.SaveChangesAsync();
+            } catch (Exception ex) {
+                _logger.LogCritical($"Request ID {requestId} Failed. {ex.Message}. Rethrowing.");
+                throw;
             }
-        
-            return innerResult;
+            
+            return NoContent();
         }
 
         [HttpPost]
         public IActionResult Post([FromBody] AlertApprovalBase[] approvals) {
-            
-            using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
-                Console.WriteLine($"\n\n\ncontext hash: {ctx.GetHashCode()}\n\n\n");
-                foreach (var approval in approvals) {
-                    var entity = ctx.AlertApprovals.FirstOrDefault(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
-                    if (entity != null) {
-                        return BadRequest($"Approval with id {approval.Id} already exists. Try PATCH method instead.");
+            var requestId = jitterer.NextInt64();
+            try {
+                using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
+                    Console.WriteLine($"\n\n\ncontext hash: {ctx.GetHashCode()}\n\n\n");
+                    foreach (var approval in approvals) {
+                        var entity = ctx.AlertApprovals.FirstOrDefault(a => a.UserId == approval.UserId && a.AlertId == approval.AlertId);
+                        if (entity != null) {
+                            return BadRequest($"Approval with id {approval.Id} already exists. Try PATCH method instead.");
+                        }
+
+                        System.Diagnostics.Trace.WriteLine($"context hash: {ctx.GetHashCode()}");
+                        ctx.AlertApprovals.Add(approval.ToAlertApproval());
+                        _logger.LogInformation($"Request ID {requestId}  User: {User.Identity?.Name} added alert approval for alert: {approval.AlertId} for user {approval.UserId} to {approval.Status}");
                     }
 
-                    System.Diagnostics.Trace.WriteLine($"context hash: {ctx.GetHashCode()}");
-                    ctx.AlertApprovals.Add(approval.ToAlertApproval());
+                    return Ok(ctx.SaveChanges());
                 }
-
-                return Ok(ctx.SaveChanges());
+            } catch (Exception ex) {
+                _logger.LogCritical($"Request ID {requestId} Failed. {ex.Message}. Rethrowing.");
+                throw;
             }
         }
     }
