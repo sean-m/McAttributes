@@ -212,7 +212,7 @@
                 <button class="btn btn-secondary" @@click="bucketIndex++">Add Bucket{{ bucketIndex >= 1 ? ' : ' + bucketIndex : '' }}</button>
             
                 <div v-if="bucketIndex > 0" v-for="i of Array(bucketIndex).fill().map((element, index) => index)">
-                    <button v-if="i > 0" class="btn btn-warning" @@click="setBucketGroup(i, 'Approved')">Approve Bucket {{ i }}</button>
+                    <button v-if="i > 0" class="btn btn-success" @@click="setBucketGroup(i, 'Approved')">Approve Bucket {{ i }}</button>
                     <button v-if="i > 0" class="btn btn-secondary" @@click="setBucketGroup(i, null)">Clear Bucket {{ i }}</button>
                     <button v-if="i > 0" class="btn btn-danger" @@click="setBucketGroup(i, 'Denied')">Deny Bucket {{ i }}</button>
                 </div>
@@ -228,8 +228,9 @@
                     <thead>
                         <tr>
                             <th v-for="c of columns">{{ c }}</th>
-                            <th style="padding-left:1em; padding-right:5em; ">bucket</th>
+                            <th style="padding-left:1em; padding-right:4em;">bucket</th>
                             <th></th>
+                            <th style="padding-left:1em; padding-right:14em;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -248,6 +249,15 @@
                                     <option>Approved</option>
                                     <option>Denied</option>
                                 </select>
+                            </td>
+                            <td>
+                                <div class="row">
+                                    <div class="btn-group-sm" role="group" v-if="(a.creationType == null || a.creationType == undefined) && bucketIndex > 0">
+                                        <button type="button" class="btn btn-success" @@click="setBucketGroup(a.bucket, 'Approved')">Approve</button>
+                                        <button type="button" class="btn btn-secondary" @@click="setBucketGroup(a.bucket, null)">Clear</button>
+                                        <button type="button" class="btn btn-danger" @@click="setBucketGroup(a.bucket, 'Denied')">Deny</button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
