@@ -178,6 +178,24 @@ A Dime a Dozen
 
 $firstNames = gc .\firstNames.txt | where { $_ } | foreach { $_.Trim() }
 $lastNames = gc .\lastNames.txt | where { $_ } | foreach { $_.Trim() }
+$comanyNames = Import-Csv .\comanyNames.csv
+
+$companyInTenant = @{}
+$tenants | foreach {
+    $companyInTenant.Add($_, $())
+}
+$index=0
+$comanyNames | foreach {
+    $companyName = $_
+    $t = $tenants[$index % ($tenants.Count)]
+    $companies = @($companyInTenant[$t])
+    $companies += $companyName
+    $companyInTenant[$t] = $companies
+    $index++
+}
+$tenants | foreach {
+    $companyInTenant[$_] = $companyInTenant[$_].Where({$_})
+}
 
 $articles = @(
 "Dr",
@@ -201,16 +219,95 @@ $pronouns = @(
 
 
 $employeeIds = @()
+$alternatePrimaryRate = 0.4
+$disabledAlternateRate = 0.5
+$useCompanyName = 0.9
+$disableddRate = 0.005
+$pronounRate   = 0.01
+$articleRate   = 0.001
+$spoofRate     = 0.04
+$guestRate     = 0.8
 
-$pronounRate = 0.01
-$articleRate = 0.001
-$spoofRate   = 0.10
-$guestRate   = 0.8
+function GetUpn {
+    param (
+        $first,
+        $last,
+        $domain,
+        [switch]
+        $DoFirstInitial
+    )
+    if ($DoFirstInitial) {
+        return "$($first.Trim()[0])$last@$domain"
+    }
+
+    "$first`.$last@$domain"
+}
+
+function StandardAccount {
+    param (
+        $enabled,
+        $first,
+        $last,
+        $employeeId,
+        $tenant,
+        $comany,
+        $article,
+        $pronoun,
+        $upn
+    )
+
+    $_company = $comany.Acronym
+    if ((RndFloat) -ge $useCompanyAcronym) {
+        $_company = $comany.CompanyName
+    }
+
+    $account = New-Object PSObject -Property @{
+        merged = $fetched.AddSeconds((Get-Random -Min 300 -Max 6555))
+        modified = (Get-Date).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
+        lastFetched = $fetched
+        created = (Get-Date).Addyears(- (Get-Random -Minimum 0 -Maximum 4)).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
+        enabled = $enabled
+        tenant = $tenant
+        aadId = [Guid]::NewGuid()
+        upn = $upn
+        mail = "$first`.$last@$($tenant.Replace('.onthecloud',''))"
+        employeeId = $employeeId
+        adEmployeeId = $employeeId
+        hrEmployeeId = ''
+        wid = ''
+        creationType = ''
+        company = $_company 
+        displayName = "$first $($last.ToUpper())"
+        preferredGivenName = $first
+        preferredSurname = $last
+        articles = $article
+        pronouns = $pronoun
+    }
+
+    $account
+
+    if (RndFloat -le $guestRate) {
+        $tenants.Where({$account.upn -notlike "*$_"}).ForEach({
+            $guest = $account.PSObject.Copy()
+            $upn = $guest.upn.Replace("@","_") + "#EXT#@" + $_
+            $guest.tenant = $_
+            $guest.upn = $upn
+            $guest.company = $_company
+            $guest.creationType = 'Invitation'
+            $guest.aadId = [Guid]::NewGuid()
+            $guest
+        })
+    }
+}
 
 ################################################################################
 ##                                    Main                                    ##
 ################################################################################
 $recordCount = 1000 * 2
+
+$firstInitialUpnTenants = @(
+    $tenants[5]
+)
 
 $estimator = [TimeEstimator]::new($recordCount, 100)
 1..$recordCount | foreach {
@@ -243,41 +340,27 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
     $employeeIds += $employeeId
 
     $fetched = (Get-Date).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
+    $employeeId = if (RndFloat -le $spoofRate) { $i = Get-Random -Minimum 0 -Maximum $employeeIds.Count; $employeeIds[$i] } else { $employeeId }  # randomly select from previous employeeIds that have been issued consistent with the spoofing rate
+
+    $doFirstInitial = ($firstInitialUpnTenants -contains $tenant)
     
-    $account = New-Object PSObject -Property @{
-        merged = $fetched.AddSeconds((Get-Random -Min 300 -Max 6555))
-        modified = (Get-Date).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
-        lastFetched = $fetched
-        created = (Get-Date).Addyears(- (Get-Random -Minimum 0 -Maximum 4)).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
-        enabled = if ((RndFloat) -le 0.005) { $false } else { $true }
-        tenant = $tenant
-        aadId = [Guid]::NewGuid()
-        upn = "$first`.$last@$tenant"
-        mail = "$first`.$last@$($tenant.Replace('.onthecloud',''))"
-        employeeId = $employeeId
-        adEmployeeId = if (RndFloat -le $spoofRate) { $i = Get-Random -Minimum 0 -Maximum $employeeIds.Count; $employeeIds[$i] } else { $employeeId }  # randomly select from previous employeeIds that have been issued consistent with the spoofing rate
-        hrEmployeeId = ''
-        wid = ''
-        creationType = ''
-        company = '' 
-        displayName = "$first $($last.ToUpper())"
-        preferredGivenName = $first
-        preferredSurname = $last
-        articles = $article
-        pronouns = $pronoun
-    }
+    $upn = GetUpn -first $first -last $last -domain $tenant -DoFirstInitial:$doFirstInitial
 
-    $account
+    $company = Get-Random -InputObject ($companyInTenant[$tenant])
+    $enabled = if ((RndFloat) -le $disabledRate) { $false } else { $true }
+    StandardAccount -enabled $enabled -first $first -last $last -employeeId $employeeId -tenant $tenant `
+        -article $article -pronoun $pronoun -upn $upn -comany $company
+    
+    if (RndFloat -le $alternatePrimaryRate) {
+        # People may leave one company for another, that may be in another tenant or the same one
+        # sometimes their old account is disabled, as it should be, sometimes it isn't.
 
-    if (RndFloat -le $guestRate) {
-        $tenants.Where({$account.upn -notlike "*$_"}).ForEach({
-            $guest = $account.PSObject.Copy()
-            $upn = $guest.upn.Replace("@","_") + "#EXT#@" + $_
-            $guest.tenant = $_
-            $guest.upn = $upn
-            $guest.creationType = 'Invitation'
-            $guest.aadId = [Guid]::NewGuid()
-            $guest
-        })
+        $enabled = ((RndFloat) -le $disabledAlternateRate)
+        $tenant = Get-Random -InputObject $tenants
+        $doFirstInitial = ($firstInitialUpnTenants -contains $tenant)
+        $upn = GetUpn -first $first -last $last -domain $tenant -DoFirstInitial:$doFirstInitial
+        $company = Get-Random -InputObject ($companyInTenant[$tenant])
+        StandardAccount -enabled $enabled -first $first -last $last -employeeId $employeeId -tenant $tenant `
+            -article $article -pronoun $pronoun -upn $upn -comany $company
     }
 } | export-csv -NoTypeInformation .\test_azusers_1.csv
