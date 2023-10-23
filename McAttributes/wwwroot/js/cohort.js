@@ -84,7 +84,7 @@ const bucketAppDefinition = {
         return {
             buckets: [],
             bucketIndex: 0,
-            columns: ['displayName', 'tenant', 'enabled', 'deleted', 'preferredGivenName', 'preferredSurname', 'mail', 'creationType', 'created'],
+            columns: ['displayName', 'tenant', 'enabled', 'deleted', 'preferredGivenName', 'preferredSurname', 'creationType', 'mail', 'created'],
             bucket: new AccountBucket(window.accountsJson),
             cohorts: [],
             issueAlert: window.issueAlert,
@@ -101,19 +101,22 @@ const bucketAppDefinition = {
                 && !(a.upn.startsWith("pa_")) && !(a.upn.startsWith("ta_")) && !(a.upn.startsWith("ra_")))
 
             if (nativeAccounts) {
-                this.bucketIndex = nativeAccounts.length + 1
+                this.bucketIndex = nativeAccounts.length + 1;
             }
 
             var boffset = 1;
             for (a of nativeAccounts) {
                 for (b of this.bucket.accounts) {
                     if (b.id === a.id) {
-                        b.bucket = boffset
-                        continue
+                        b.bucket = boffset;
+                        continue;
                     }
 
                     if (b.mail == a.mail) {
-                        b.bucket = boffset
+                        b.bucket = boffset;
+                    }
+                    if (b.bucket != boffset && b.mail == a.upn) {
+                        b.bucket = boffset;
                     }
                 }
                 boffset++;
