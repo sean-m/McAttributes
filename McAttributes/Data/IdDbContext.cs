@@ -10,8 +10,6 @@ namespace McAttributes.Data {
 
         public DbSet<User>? Users { get; set; }
 
-        public DbSet<EmployeeIdRecord>? EmployeeIds { get; set; }
-
         public DbSet<Stargate>? Stargate { get; set; }
 
         public DbSet<AlertLogEntry> AlertLogEntry { get; set; } = default!;
@@ -19,7 +17,7 @@ namespace McAttributes.Data {
         public DbSet<AlertApproval> AlertApprovals { get; set; } = default!;
 
         public DbSet<CohortDescription> CohortDescriptions { get; set; } = default!;
-        
+
         public DbSet<CohortDescriptionMember> CohortMember { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder) {
@@ -27,8 +25,6 @@ namespace McAttributes.Data {
                 entity.Property(p => p.Created).HasDefaultValue(DateTime.UtcNow)
                     .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Throw);
             });
-
-            builder.Entity<EmployeeIdRecord>();
 
             // AadId should be unique
             builder.Entity<AlertLogEntry>()
@@ -54,6 +50,6 @@ namespace McAttributes.Data {
             return base.SaveChangesAsync(cancellationToken);
         }
 
-        
+
     }
 }
