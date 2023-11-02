@@ -101,7 +101,7 @@
                                .Where(x => !string.IsNullOrEmpty(x.CreationType))  // Invited users
                                .Where(x => {
                                    var upnSuffix = n.Upn.Split('@').Last();
-                                   return (bool)(x.Upn.Split("#EXT#").FirstOrDefault()?.Like($"*{upnSuffix}")) 
+                                   return (bool)(x.Upn.Split("#EXT#").FirstOrDefault()?.Like($"*{upnSuffix}"))
                                        || (bool)(x.Upn.Split("#EXT#").FirstOrDefault()?.Like($"*{n.Tenant}"));
                                })
                                .GroupBy(x => x.Tenant)
@@ -151,9 +151,13 @@
                 <tbody>
                     @* Loop over properties, when you hit: Deleted, Enabled, or CreationType show those properties in that order. *@
                     @foreach (var p in Model.AssociatedAccountsModel.AssociatedUsers.First().GetType().GetProperties()
-                   .Where(x => x.Name != "Version")
-                   .OrderedGroupAtFirstOccurance<PropertyInfo>(
-                   new[] { typeof(Models.User).GetProperty("Deleted"), typeof(Models.User).GetProperty("Enabled"), typeof(Models.User).GetProperty("CreationType") })) {
+                    .Where(x => x.Name != "Version")
+                    .OrderedGroupAtFirstOccurance<PropertyInfo>(
+                    new[] {
+                            typeof(Models.User).GetProperty("Deleted"),
+                            typeof(Models.User).GetProperty("Enabled"),
+                            typeof(Models.User).GetProperty("CreationType")
+                    })) {
                         <tr>
                             <td>@p.Name</td>
                             @foreach (var a in Enumerable.Concat(
@@ -210,7 +214,7 @@
             <div class="btn-group mr-2" role="group" aria-label="First group">
                 <button class="btn btn-primary" @@click="autoBucket()">Auto Bucket</button>
                 <button class="btn btn-secondary" @@click="bucketIndex++">Add Bucket{{ bucketIndex >= 1 ? ' : ' + bucketIndex : '' }}</button>
-            
+
                 <div v-if="bucketIndex > 0" v-for="i of Array(bucketIndex).fill().map((element, index) => index)">
                     <button v-if="i > 0" class="btn btn-success" @@click="setBucketGroup(i, 'Approved')">Approve Bucket {{ i }}</button>
                     <button v-if="i > 0" class="btn btn-warning" @@click="setBucketGroup(i, null)">Clear Bucket {{ i }}</button>
@@ -266,7 +270,7 @@
         </div>
     </div>
 
-    <div v-if="errorList && errorList.length > 0">
+    <div v-if="errorLog && errorLog.length > 0">
         <h3>Errors:</h3>
         <ul id="errorLogList" v-for="e of errorLog.slice().reverse()">
             <li>{{ e }}</li>
