@@ -63,6 +63,7 @@
 <div>
     <a asp-page="./Edit" asp-route-id="@Model.IssueLogEntry?.Id">Edit</a> |
     <a asp-page="./Index">Back to List</a>
+    <a class="btn btn-danger" style="float: right" asp-page="./Delete" asp-route-id="@Model.IssueLogEntry?.Id">Delete</a>
 </div>
 
 
