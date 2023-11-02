@@ -22,7 +22,7 @@ namespace McAttributes.Pages.UserIssues
         [BindProperty]
       public AlertLogEntry IssueLogEntry { get; set; } = default!;
 
-        public async Task<IActionResult> OnGetAsync(uint? id)
+        public async Task<IActionResult> OnGetAsync(long? id)
         {
             if (id == null || _context.AlertLogEntry == null)
             {
@@ -35,14 +35,14 @@ namespace McAttributes.Pages.UserIssues
             {
                 return NotFound();
             }
-            else 
+            else
             {
                 IssueLogEntry = issuelogentry;
             }
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(uint? id)
+        public async Task<IActionResult> OnPostAsync(long? id)
         {
             if (id == null || _context.AlertLogEntry == null)
             {
