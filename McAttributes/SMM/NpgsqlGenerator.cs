@@ -7,10 +7,10 @@ using System.Reflection;
 namespace SMM
 {
 	public class NpgsqlGenerator : McRule.ExpressionGeneratorBase {
-		/// <summary> 
+		/// <summary>
 		/// Builds expressions using string member functions StartsWith, EndsWith or Contains as the comparator,
 		/// case-insensitive matches produce an ILike expression for Npgsql.
-		/// </summary> 
+		/// </summary>
 		public override Expression<Func<T, bool>> AddStringPropertyExpression<T>(
 			Expression<Func<T, string>> lambda, string filter, string filterType, bool ignoreCase = false) {
 #if DEBUG
@@ -18,8 +18,8 @@ namespace SMM
 				  filterType == "Equals")) {
 				throw new Exception($"filterType must equal StartsWith, EndsWith or Contains. Passed: {filterType}");
 			}
-#endif	
-			// If a case insensitive comparision is requested, we resolve that against the 
+#endif
+			// If a case insensitive comparision is requested, we resolve that against the
 			// Npgsql ILike extension method. EF will translate that into the proper SQL before
 			// sending it to the database.
 			if (ignoreCase) {

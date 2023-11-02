@@ -74,7 +74,7 @@ namespace McAttributes.Pages.UserIssues
 
 
         public IActionResult OnPost([FromForm] string SearchCriteria, bool ShowReview, bool ShowDenied, bool ShowItsFine, bool ShowResolved, int Page) {
-            
+
             TempData[nameof(SearchCriteria)] = SearchCriteria;
             TempData[nameof(ShowReview)] = ShowReview.ToString();
             TempData[nameof(ShowDenied)] = ShowDenied.ToString();
@@ -113,7 +113,7 @@ namespace McAttributes.Pages.UserIssues
 
 
             var filterExpression = PredicateBuilder.And(
-                efGenerator.GetPredicateExpressionOrFalse<AlertLogEntry>(toggleFilter), 
+                efGenerator.GetPredicateExpressionOrFalse<AlertLogEntry>(toggleFilter),
                 efGenerator.GetPredicateExpressionOrFalse<AlertLogEntry>(searchFilter));
             return filterExpression;
         }
