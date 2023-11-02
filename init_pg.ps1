@@ -26,7 +26,7 @@ process {
         -e POSTGRES_PASSWORD=egm7DfeK `
         -e POSTGRESQL_DATABASE=identity `
         -p 5432:5432 `
-        docker.io/library/postgres:latest
+        docker.io/library/postgres:15
         #-v "$((pwd).Path))/data":/var/lib/postgresql/data `
         #>
 
