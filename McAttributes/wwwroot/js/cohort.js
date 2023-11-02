@@ -90,9 +90,13 @@ const bucketAppDefinition = {
             issueAlert: window.issueAlert,
             errorLog: [],
             saveButtonText: "Save Bucket",
+            _: this.init(),
         }
     },
     methods: {
+        init() {
+            setTimeout(this.autoBucket, 500);
+        },
         autoBucket() {
             this.getBucketsFromCohort();
 
@@ -158,7 +162,7 @@ const bucketAppDefinition = {
         },
         getBucketsFromCohort() {
             let apiUrl = `${apiApproval}?alertId=${this.issueAlert.id}`;
-                
+
             $.ajax({
                 url: apiUrl,
                 type: "GET",
@@ -198,7 +202,7 @@ const bucketAppDefinition = {
     watch: {
         'cohorts'(added) {
             console.log(add);
-        }
+        },
     },
 };
 
