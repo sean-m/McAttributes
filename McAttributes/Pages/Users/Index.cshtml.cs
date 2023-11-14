@@ -70,6 +70,7 @@ namespace McAttributes.Pages.Users
             } else {
                 _rules.AddRange(new[] {
                     new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Upn), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
                     new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
                     new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
                     new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),

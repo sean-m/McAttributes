@@ -104,6 +104,9 @@ namespace McAttributes.Pages.UserIssues
             }
 
             string firstSearchToken = SearchCriteria.Split()?.FirstOrDefault() ?? string.Empty;
+            if (!String.IsNullOrEmpty(firstSearchToken)) {
+                firstSearchToken = firstSearchToken.TrimStart(new char[] {'~','*'});
+            }
             var searchFilter = new ExpressionRuleCollection();
             searchFilter.RuleOperator = RuleOperator.Or;
             searchFilter.Rules = new List<IExpressionPolicy>() {
