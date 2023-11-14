@@ -40,6 +40,9 @@
                 @Html.DisplayNameFor(model => model.UserSet[0].Enabled)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.UserSet[0].Deleted)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].Tenant)
             </th>
             <th>
@@ -75,7 +78,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].PreferredSurname)
             </th>
-            
+
         </tr>
     </thead>
     <tbody>
@@ -98,6 +101,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Enabled)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Deleted)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Tenant)
