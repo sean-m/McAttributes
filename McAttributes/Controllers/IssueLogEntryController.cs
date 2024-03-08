@@ -12,7 +12,7 @@ namespace McAttributes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = Globals.AUTH_SCHEMES)]
     public class IssueLogEntryController : ODataController
     {
         private readonly IdDbContext _ctx;

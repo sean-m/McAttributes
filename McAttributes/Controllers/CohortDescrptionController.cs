@@ -13,7 +13,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace McAttributes.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = Globals.AUTH_SCHEMES)]
     public class CohortDescrptionController : ControllerBase {
 
         ILogger _logger;
@@ -58,7 +58,7 @@ namespace McAttributes.Controllers {
 
                 return Ok(result);
             }
-            
+
             return BadRequest($"id {id} cannot resolve against any cohort ids or memberIds.");
         }
 

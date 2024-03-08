@@ -8,7 +8,7 @@ using Polly;
 namespace McAttributes.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = Globals.AUTH_SCHEMES)]
     public class AlertApprovalController : ControllerBase {
 
 
