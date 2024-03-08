@@ -26,7 +26,7 @@ namespace McAttributes.Models {
         [Column("partition")]
         [StringLength(256)]
         public string? Partition { get; set; }
-        
+
         [Column("joinseed")]
         [StringLength(256)]
         public string? Joinseed { get; set; }
@@ -35,7 +35,7 @@ namespace McAttributes.Models {
 
     public enum StargateType {
         prime = 0,
-        natvie = 1,
+        native = 1,
         guest = 2,
         privileged = 3,
         userGroup = 10
