@@ -1,19 +1,14 @@
 ﻿using McAttributes.Data;
 using McAttributes.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
-using Newtonsoft.Json.Linq;
 using Polly;
-using SMM.Helper;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.CompilerServices;
 
 namespace McAttributes.Controllers {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AlertApprovalController : ControllerBase {
 
 
@@ -59,7 +54,7 @@ namespace McAttributes.Controllers {
                     innerResult = Ok(result.Result);
                 }
             }
-            
+
             return innerResult;
         }
 
@@ -91,7 +86,7 @@ namespace McAttributes.Controllers {
                 _logger.LogCritical($"Request ID {requestId} Failed. {ex.Message}. Rethrowing.");
                 throw;
             }
-            
+
             return NoContent();
         }
 
