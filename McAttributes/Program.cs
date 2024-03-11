@@ -133,6 +133,8 @@ builder.Services.AddDbContextFactory<IdDbContext>(
 //    options => { options.UseSqlServer(connString); });
 //}
 
+builder.Services.AddHttpLogging(options => { });
+
 var app = builder.Build();
 
 
@@ -178,9 +180,9 @@ if (app.Environment.IsDevelopment()) {
 }
 
 app.UseForwardedHeaders();
-app.UseHttpLogging();
-
 app.UseHttpsRedirection();
+
+app.UseHttpLogging();
 app.UseStaticFiles();
 
 app.UseAuthentication();
