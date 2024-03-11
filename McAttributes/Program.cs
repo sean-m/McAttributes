@@ -26,9 +26,9 @@ static IEdmModel GetEdmModel() {
     users.EntityType.Ignore(u => u.Pronouns);
 
     edmBuilder.EntitySet<AlertLogEntry>("IssueLogEntry");
-    
+
     edmBuilder.EntitySet<Stargate>("Stargate");
-    
+
     return edmBuilder.GetEdmModel();
 }
 
@@ -66,21 +66,13 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
 
 
 // Azure AD Auth OIDC
-builder.Services.AddAuthentication(options => {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-.AddOpenIdConnect(options => {
-    builder.Configuration.Bind("AzureAD", options);
-})
-.AddJwtBearer(options => {
-    builder.Configuration.Bind("AzureAD", options);
-})
-.AddCookie();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration, "AzureAd");
 
 // Use forwarded headers for hosting behind a proxy
-builder.Services.Configure<ForwardedHeadersOptions>(options => { 
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; 
+builder.Services.Configure<ForwardedHeadersOptions>(options => {
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     });
 
 
@@ -130,7 +122,7 @@ var sanitizedString = String.Join(';', conn.ConnectionString.Split(';').Select(x
 }));
 
 builder.Services.AddDbContextFactory<IdDbContext>(
-    options => { 
+    options => {
         options.UseNpgsql(conn, npgoptions => {
             npgoptions.EnableRetryOnFailure(4);
         });
@@ -159,13 +151,13 @@ using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory
         if (idDbContext.Database.EnsureCreated()) {
             logger.LogDebug("Initialized database tables.");
             if (app.Environment.IsDevelopment()) {
-                // Initialize the database with test data when running in 
+                // Initialize the database with test data when running in
                 // Development mode and having just created tables.
                 logger.LogDebug("Loading test data from test_values.csv.");
                 DebugInit.DbInit(idDbContext);
             }
         }
-    } 
+    }
     else {
         logger.LogInformation($"Database not automatically initialized. Environment: {app.Environment.IsDevelopment()}, InitializeDatabaseWhenMissing config: {shouldInitialize}");
     }
