@@ -87,8 +87,9 @@ builder.Services.AddRazorPages(options => {
 builder.Services.AddControllers()
     .AddNewtonsoftJson()
     .AddOData(options => {
-            options.AddRouteComponents("odata", GetEdmModel())
-                .EnableQueryFeatures(maxTopValue: 500);
+        options.AddRouteComponents("odata", GetEdmModel())
+            .EnableQueryFeatures(maxTopValue: 500)
+            .Count();
         });
 
 
