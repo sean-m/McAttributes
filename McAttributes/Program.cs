@@ -88,8 +88,7 @@ builder.Services.AddControllers()
     .AddNewtonsoftJson()
     .AddOData(options => {
         options.AddRouteComponents("odata", GetEdmModel())
-            .EnableQueryFeatures(maxTopValue: 500)
-            .Count();
+            .EnableQueryFeatures(maxTopValue: 500);
         });
 
 
