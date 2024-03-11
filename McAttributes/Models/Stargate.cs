@@ -35,9 +35,9 @@ namespace McAttributes.Models {
 
     public enum StargateType {
         prime = 0,
-        native = 1,
-        guest = 2,
-        privileged = 3,
-        userGroup = 10
+        native = 10,
+        guest = 20,
+        privileged = 30,
+        userGroup = 100
     }
 }
