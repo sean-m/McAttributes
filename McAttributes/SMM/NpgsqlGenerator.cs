@@ -30,7 +30,10 @@ namespace SMM
 					case "EndsWith":
 						filter = $"%{filter}";
 						break;
-				}
+					case "Contains":
+                        filter = $"%{filter}%";
+                        break;
+                }
 
 				// ILike is a virtual static extension method so needs a statically typed
 				// null as the first parameter. Smart people made the type system so
