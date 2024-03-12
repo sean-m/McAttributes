@@ -54,19 +54,46 @@ namespace McAttributes.Pages.Users
             return RedirectToPage("Index");
         }
 
-        private Expression<Func<User,bool>> GetUserFilter () {
+        private Expression<Func<User, bool>> GetUserFilter() {
             if (String.IsNullOrEmpty(SearchCriteria)) return PredicateBuilder.False<User>();
 
-            var filter = new ExpressionRuleCollection();
+
+            var efGenerator = new SMM.NpgsqlGenerator();
+
+            var filter = new ExpressionRuleCollection() {
+                TargetType = nameof(Models.User),
+            };
             filter.RuleOperator = RuleOperator.Or;
             var _rules = new List<IExpressionPolicy>();
+
+            IExpressionPolicy subFilter = null;
 
             // If the search criteria contains spaces, it's likely the intent is to match against display name,
             // as it's the only property where users likely have spaces in the value.
             if (SearchCriteria.Trim().Contains(' ')) {
                 _rules.Add(
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.Contains | FilterOptions.IgnoreCase)))
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase)))
                 );
+                subFilter = new ExpressionRuleCollection();
+                ((ExpressionRuleCollection)subFilter).RuleOperator = RuleOperator.And;
+                var subRules = new List<IExpressionPolicy>();
+
+                foreach (var token in SearchCriteria.Trim().Split().Where(x => !String.IsNullOrEmpty(x))) {
+                    subRules.Add(new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), token.Trim()?.AddFilterOptionsIfNotSpecified(FilterOptions.Contains | FilterOptions.IgnoreCase))));
+                }
+
+                ((ExpressionRuleCollection)subFilter).Rules = subRules;
+
+                filter.Rules = _rules;
+
+                // TODO make this kind of thing eaiser
+                var metaExpression = new ExpressionRuleCollection() {
+                    TargetType = nameof(Models.User),
+                    RuleOperator = RuleOperator.Or,
+                    Rules = new[] { filter, subFilter }
+                };
+
+                return efGenerator.GetPredicateExpression<User>((IExpressionRuleCollection)metaExpression) ?? PredicateBuilder.False<User>();
             } else {
                 _rules.AddRange(new[] {
                     new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
@@ -78,9 +105,7 @@ namespace McAttributes.Pages.Users
             }
             filter.Rules = _rules;
 
-            var efGenerator = new SMM.NpgsqlGenerator();
             return efGenerator.GetPredicateExpression<User>((IExpressionRuleCollection)filter) ?? PredicateBuilder.False<User>();
         }
-
     }
 }
