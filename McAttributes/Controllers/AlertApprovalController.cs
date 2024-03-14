@@ -2,6 +2,7 @@
 using McAttributes.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Polly;
 
@@ -9,7 +10,7 @@ namespace McAttributes.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = Globals.AUTH_SCHEMES)]
-    public class AlertApprovalController : ControllerBase {
+    public class AlertApprovalController : ODataController {
 
 
         ILogger _logger;
@@ -30,34 +31,14 @@ namespace McAttributes.Controllers {
                 + TimeSpan.FromMilliseconds(jitterer.Next(0, 1000)));
         }
 
-        public class ResolveAlertApproval {
-            public long? id { get; set; }
-            public long? alertId { get; set; }
-        }
-
-        [HttpGet]
-        public IActionResult Get([FromQuery] ResolveAlertApproval approval) {
-            IActionResult innerResult = NoContent();
-
-            if (approval.alertId != 0 && approval.alertId != null) {
-                using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
-                    var list = ctx.AlertApprovals.Where(x => x.AlertId == approval.alertId).ToList();
-                    innerResult = Ok(list);
-                }
-            } else {
-                using (IdDbContext ctx = _ctxFactory.CreateDbContext()) {
-                    if (approval.id == null) {
-                        innerResult = BadRequest("Must pass an object looking like this { id:0, alertId:0 } with one of the properties populated with a non-zero number.");
-                    }
-
-                    var result = retry.ExecuteAndCapture(() => ctx.AlertApprovals.Find(approval.id));
-                    innerResult = Ok(result.Result);
-                }
+        [HttpGet("{id}")]
+        public IQueryable Get(long? id) {
+            IdDbContext ctx = _ctxFactory.CreateDbContext();
+            if (id != null && id > 0) {
+                return ctx.AlertApprovals.Where(x => x.Id == (long)id);
             }
-
-            return innerResult;
+            return ctx.Set<AlertLogApproval>();
         }
-
 
         [HttpPatch]
         public async Task<IActionResult> Patch([FromBody] AlertApprovalBase[] approvals) {

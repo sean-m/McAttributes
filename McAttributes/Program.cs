@@ -27,7 +27,7 @@ static IEdmModel GetEdmModel() {
 
     edmBuilder.EntitySet<AlertLogEntry>("AlertLogEntry");
 
-    edmBuilder.EntitySet<AlertLogApproval>("AlertLogApproval");
+    edmBuilder.EntitySet<AlertLogApproval>("AlertApproval");
 
     edmBuilder.EntitySet<Stargate>("Stargate");
 

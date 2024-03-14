@@ -13,11 +13,11 @@ namespace McAttributes.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = Globals.AUTH_SCHEMES)]
-    public class IssueLogEntryController : ODataController
+    public class AlertLogEntryController : ODataController
     {
         private readonly IdDbContext _ctx;
 
-        public IssueLogEntryController(ILogger<IssueLogEntryController> logger, IdDbContext context)
+        public AlertLogEntryController(ILogger<AlertLogEntryController> logger, IdDbContext context)
         {
             _ctx = context;
         }
