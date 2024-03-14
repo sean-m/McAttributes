@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace McAttributes.Models {
     [Table("alertapproval")]
-    public class AlertApproval : AlertApprovalBase {
+    public class AlertLogApproval : AlertApprovalBase {
 
         [Column("userid")]
         [ForeignKey(nameof(Principal))]
@@ -26,8 +26,8 @@ namespace McAttributes.Models {
 
         public string? Status { get; set; }
 
-        public AlertApproval ToAlertApproval() {
-            return new AlertApproval {
+        public AlertLogApproval ToAlertApproval() {
+            return new AlertLogApproval {
                 UserId = this.UserId,
                 AlertId = this.AlertId,
                 Status = this.Status,

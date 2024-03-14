@@ -14,7 +14,7 @@ namespace McAttributes.Data {
 
         public DbSet<AlertLogEntry> AlertLogEntry { get; set; } = default!;
 
-        public DbSet<AlertApproval> AlertApprovals { get; set; } = default!;
+        public DbSet<AlertLogApproval> AlertApprovals { get; set; } = default!;
 
         public DbSet<CohortDescription> CohortDescriptions { get; set; } = default!;
 

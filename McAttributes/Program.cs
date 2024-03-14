@@ -25,7 +25,9 @@ static IEdmModel GetEdmModel() {
     var users = edmBuilder.EntitySet<User>("User");
     users.EntityType.Ignore(u => u.Pronouns);
 
-    edmBuilder.EntitySet<AlertLogEntry>("IssueLogEntry");
+    edmBuilder.EntitySet<AlertLogEntry>("AlertLogEntry");
+
+    edmBuilder.EntitySet<AlertLogApproval>("AlertLogApproval");
 
     edmBuilder.EntitySet<Stargate>("Stargate");
 
