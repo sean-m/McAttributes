@@ -35,8 +35,12 @@ namespace McAttributes.Controllers
             }
 
             Guid id;
+            long idnum;
             if (Guid.TryParse(aadid, out id)) {
                 return _ctx.Set<User>().Where(u => u.AadId == id).AsQueryable();
+            } else if (long.TryParse(aadid, out idnum))
+            {
+                return _ctx.Set<User>().Where(u => u.Id == idnum).AsQueryable();
             }
 
             var errMsg = $"Could not parse provided addid value in a Guid: {aadid.Substring(0, Math.Min(64, aadid.Length))}";
@@ -58,7 +62,7 @@ namespace McAttributes.Controllers
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] User value) {
+        public async Task<IActionResult> Put(long id, [FromBody] User value) {
 
             if (id != value.Id)
                 return BadRequest($"Specified id: {id} and entity id: {value.Id} do not match.");
