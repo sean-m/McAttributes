@@ -116,7 +116,7 @@ namespace McAttributes.Controllers
             return NoContent();
         }
 
-        private bool UserRecordExists(int id)
+        private bool UserRecordExists(long id)
         {
             return (_ctx.Set<User>()?.Any(x => x.Id == id)).GetValueOrDefault();
         }
