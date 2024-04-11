@@ -19,21 +19,24 @@ namespace McAttributes.Pages.Users
             _context = context;
         }
 
-      public User User { get; set; } = default!; 
+      public User User { get; set; } = default!;
 
-        public async Task<IActionResult> OnGetAsync(uint? id)
+        public async Task<IActionResult> OnGetAsync(string? id)
         {
-            if (id == null || _context.Users == null)
+            if (string.IsNullOrWhiteSpace(id) || _context.Users == null)
             {
                 return NotFound();
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
+            long _id = -1;
+            if (!long.TryParse(id.Trim(), out _id) || _id < 0) { return BadRequest("'id' must be a positive number that fits in a long."); }
+
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.Id == _id);
             if (user == null)
             {
                 return NotFound();
             }
-            else 
+            else
             {
                 User = user;
             }
