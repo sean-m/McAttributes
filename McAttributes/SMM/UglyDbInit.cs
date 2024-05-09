@@ -11,9 +11,6 @@ namespace SMM {
             if (!File.Exists(CsvPath)) throw new ArgumentNullException($"CsvFile path not exists {CsvPath}, do better.");
 
 
-            var csvReader = new CsvFileReader(CsvPath, true);
-            var _ = csvReader.ReadFileValues().FirstOrDefault();
-
             var types = new Dictionary<string, PropertyInfo>();
             var modelType = typeof(T);
             if (modelType == null) { throw new Exception($"Can't get type info for {modelType.Name}, you got problems."); }
@@ -42,10 +39,9 @@ namespace SMM {
                 return prop;
             }
 
-            csvReader = new CsvFileReader(CsvPath);
             var userType = typeof(T);
 
-            foreach (var row in csvReader.ReadFileValues()) {
+            foreach (var row in CsvFileReader.GetRecords(CsvPath)) {
                 var columns = row.Keys.Where(k => !String.IsNullOrEmpty(row.GetValueOrDefault(k)));
 
                 var record = Activator.CreateInstance(modelType);
