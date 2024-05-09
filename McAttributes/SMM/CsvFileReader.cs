@@ -77,9 +77,18 @@ namespace SMM
             return csvReader.ReadFileValues();
         }
 
+        public static IEnumerable<dynamic> GetRecordsDynamic(string CsvPath) {
+            foreach (var r in GetRecords(CsvPath)) {
+                var record = new System.Dynamic.ExpandoObject();
+                foreach (var kv in r) {
+                    ((ICollection<KeyValuePair<String, Object>>)record).Add(new KeyValuePair<string, object>(kv.Key, kv.Value));
+                }
+                yield return record;
+            }
+        }
+
         public static IEnumerable<T> GetRecords<T>(string CsvPath) {
             if (!File.Exists(CsvPath)) throw new ArgumentNullException($"CsvFile path not exists {CsvPath}, do better. CD: {System.Environment.CurrentDirectory}");
-
 
             var csvReader = new CsvFileReader(CsvPath, true);
             var _ = csvReader.ReadFileValues().FirstOrDefault();
