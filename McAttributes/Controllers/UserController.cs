@@ -26,7 +26,7 @@ namespace McAttributes.Controllers
 
         // GET: api/<UserController>
         [HttpGet("{aadid}")]
-        [EnableQuery(PageSize = 100)]
+        [EnableQuery(PageSize = 1000)]
         public IQueryable<User> Get(string? aadid) {
 
             // TODO filter based on requestor identity
