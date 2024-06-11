@@ -225,8 +225,9 @@ $useCompanyName = 0.9
 $disableddRate = 0.005
 $pronounRate   = 0.01
 $articleRate   = 0.001
-$spoofRate     = 0.04
+$spoofRate     = 0.00
 $guestRate     = 0.8
+$paRate        = 0.2
 
 function GetUpn {
     param (
@@ -241,6 +242,20 @@ function GetUpn {
     }
 
     "$first`.$last@$domain"
+}
+
+function GetPAUpn {
+    param (
+        $first,
+        $last,
+        $domain,
+        $company,
+        $altCompany,
+        [switch]
+        $DoFirstInitial
+    )
+
+    "pa_$($company.Acronym)_$($first[0])$last@$domain"
 }
 
 function StandardAccount {
@@ -298,18 +313,79 @@ function StandardAccount {
             $guest
         })
     }
+
+}
+
+function PrivilegedAccount {
+    param (
+        $enabled,
+        $first,
+        $last,
+        $employeeId,
+        $tenant,
+        $comany,
+        $article,
+        $pronoun,
+        $upn
+    )
+
+    $_company = $comany.Acronym
+    if ((RndFloat) -ge $useCompanyAcronym * 0.5) {
+        $_company = $comany.CompanyName
+    }
+
+    $account = New-Object PSObject -Property @{
+        merged = $fetched.AddSeconds((Get-Random -Min 300 -Max 6555))
+        modified = (Get-Date).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
+        lastFetched = $fetched
+        created = (Get-Date).Addyears(- (Get-Random -Minimum 0 -Maximum 4)).AddDays(- (Get-Random -Minimum 0 -Maximum 365)).AddHours(- (Get-Random -Minimum 0 -Maximum 23 )).AddSeconds(- (Get-Random -Minimum 0 -Maximum 3600))
+        enabled = $enabled
+        tenant = $tenant
+        aadId = [Guid]::NewGuid()
+        upn = $upn
+        mail = "$first`.$last@$($tenant.Replace('.onthecloud',''))"
+        employeeId = $employeeId
+        adEmployeeId = $employeeId
+        hrEmployeeId = ''
+        wid = ''
+        creationType = ''
+        company = $_company 
+        displayName = "$first $($last.ToUpper())"
+        preferredGivenName = $first
+        preferredSurname = $last
+        articles = $article
+        pronouns = $pronoun
+    }
+
+    $account
+
+    if (RndFloat -le $guestRate) {
+        $tenants.Where({$account.upn -notlike "*$_"}).ForEach({
+            $guest = $account.PSObject.Copy()
+            $upn = $guest.upn.Replace("@","_") + "#EXT#@" + $_
+            $guest.tenant = $_
+            $guest.upn = $upn
+            $guest.company = $_company
+            $guest.creationType = 'Invitation'
+            $guest.aadId = [Guid]::NewGuid()
+            $guest
+        })
+    }
+
 }
 
 ################################################################################
 ##                                    Main                                    ##
 ################################################################################
-$recordCount = 1000 * 2
+$employeeCount = 1000 * 100
+$recordCount = 1000 * 60
 
 $firstInitialUpnTenants = @(
     $tenants[5]
 )
 
 $estimator = [TimeEstimator]::new($recordCount, 100)
+$emitted = 0
 1..$recordCount | foreach {
     
     $estimator.Tick()
@@ -351,6 +427,12 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
     StandardAccount -enabled $enabled -first $first -last $last -employeeId $employeeId -tenant $tenant `
         -article $article -pronoun $pronoun -upn $upn -comany $company
     
+    if (RndFloat -le $paRate) {
+        $paUpn = GetPAUpn -first $first -last $last -company $company -domain $tenant -DoFirstInitial:$doFirstInitial
+        PrivilegedAccount -enabled $enabled -first $first -last $last -employeeId $employeeId -tenant $tenant `
+            -article $article -pronoun $pronoun -upn $paUpn -comany $company
+    }
+
     if (RndFloat -le $alternatePrimaryRate) {
         # People may leave one company for another, that may be in another tenant or the same one
         # sometimes their old account is disabled, as it should be, sometimes it isn't.
@@ -363,4 +445,4 @@ $estimator = [TimeEstimator]::new($recordCount, 100)
         StandardAccount -enabled $enabled -first $first -last $last -employeeId $employeeId -tenant $tenant `
             -article $article -pronoun $pronoun -upn $upn -comany $company
     }
-} | export-csv -NoTypeInformation .\test_azusers_1.csv
+} | foreach { $emitted++; if ($emitted -ge $recordCount) { Write-Warning "Record threshold $recordCount reached!"; break }  $_} | export-csv -NoTypeInformation .\test_azusers_1.csv
