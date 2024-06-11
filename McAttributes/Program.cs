@@ -86,11 +86,12 @@ builder.Services.AddRazorPages(options => {
     .AddMicrosoftIdentityUI(); ;
 
 // Add services to the container.
+int maxTop = builder.Configuration.GetValue<int?>("maxTopValue") ?? 1000;
 builder.Services.AddControllers()
     .AddNewtonsoftJson()
     .AddOData(options => {
         options.AddRouteComponents("odata", GetEdmModel())
-            .EnableQueryFeatures(maxTopValue: 1000);
+            .EnableQueryFeatures(maxTopValue: maxTop);
         });
 
 
