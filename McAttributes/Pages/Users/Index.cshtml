@@ -78,7 +78,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.UserSet[0].PreferredSurname)
             </th>
-
+            <th>
+                @Html.DisplayNameFor(model => model.UserSet[0].SigninActivity)
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -141,7 +143,9 @@
             <td>
                 @Html.DisplayFor(modelItem => item.PreferredSurname)
             </td>
-
+            <td>
+                @Html.DisplayFor(modelItem => item.SigninActivity)
+            </td>
         </tr>
 }
     </tbody>

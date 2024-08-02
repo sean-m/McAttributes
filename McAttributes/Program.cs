@@ -24,6 +24,7 @@ static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
     var users = edmBuilder.EntitySet<User>("User");
     users.EntityType.Ignore(u => u.Pronouns);
+    users.EntityType.Ignore(u => u.SigninActivityJson);
 
     edmBuilder.EntitySet<AlertLogEntry>("AlertLogEntry");
 

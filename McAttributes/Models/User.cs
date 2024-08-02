@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using IndexAttribute = Microsoft.EntityFrameworkCore.IndexAttribute;
 
 namespace McAttributes.Models {
@@ -80,6 +83,26 @@ namespace McAttributes.Models {
         public string? OnPremiseDn { get; set; }
 
         [Column("signinactivity", TypeName = "jsonb")]
-        public Dictionary<string,string>? SigninActivity { get; set; }
+        public JsonDocument? SigninActivityJson { get; set; }
+
+        public Dictionary<string,string?> SigninActivity {
+            get {
+                var result = new Dictionary<string,string?>();
+                if (SigninActivityJson == null) return result;
+                var root = SigninActivityJson.RootElement;
+                switch (root.ValueKind) {
+                    case JsonValueKind.Object:
+                        var enumerator = root.EnumerateObject();
+                        foreach (var n in enumerator) {
+                            result.Add(n.Name, n.Value.ToString());
+                        }
+                        break;
+                    default:
+                        result.Add("Value", root.ToString());
+                        break;
+                }
+                return result;
+            }
+        }
     }
 }
