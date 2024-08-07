@@ -87,9 +87,7 @@ namespace McAttributes.Models {
 
         public List<Dictionary<string,string?>> SigninActivity {
             get {
-                var results = new List<Dictionary<string,string?>>();
-
-                if (SigninActivityJson == null) return results;
+                if (SigninActivityJson == null) return new List<Dictionary<string, string?>>() ;
 
                 var result = new Dictionary<string, string?>();
                 var root = SigninActivityJson.RootElement;
@@ -117,7 +115,7 @@ namespace McAttributes.Models {
                     yield return record;
                 }
 
-                return results;
+                return WalkJson(root).ToList();
             }
         }
     }
