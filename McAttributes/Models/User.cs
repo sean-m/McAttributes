@@ -85,23 +85,39 @@ namespace McAttributes.Models {
         [Column("signinactivity", TypeName = "jsonb")]
         public JsonDocument? SigninActivityJson { get; set; }
 
-        public Dictionary<string,string?> SigninActivity {
+        public List<Dictionary<string,string?>> SigninActivity {
             get {
-                var result = new Dictionary<string,string?>();
-                if (SigninActivityJson == null) return result;
+                var results = new List<Dictionary<string,string?>>();
+
+                if (SigninActivityJson == null) return results;
+
+                var result = new Dictionary<string, string?>();
                 var root = SigninActivityJson.RootElement;
-                switch (root.ValueKind) {
-                    case JsonValueKind.Object:
-                        var enumerator = root.EnumerateObject();
-                        foreach (var n in enumerator) {
-                            result.Add(n.Name, n.Value.ToString());
-                        }
-                        break;
-                    default:
-                        result.Add("Value", root.ToString());
-                        break;
+
+                IEnumerable<Dictionary<string, string?>> WalkJson(JsonElement root) {
+                    var record = new Dictionary<string, string?>();
+                    switch (root.ValueKind) {
+                        case JsonValueKind.Array:
+                            foreach (var n in root.EnumerateArray()) {
+                                foreach (var r in WalkJson(n)) {
+                                    yield return r;
+                                }
+                            }
+                            break;
+                        case JsonValueKind.Object:
+                            var enumerator = root.EnumerateObject();
+                            foreach (var n in enumerator) {
+                                record.Add(n.Name, n.Value.ToString());
+                            }
+                            break;
+                        default:
+                            record.Add("Value", root.ToString());
+                            break;
+                    }
+                    yield return record;
                 }
-                return result;
+
+                return results;
             }
         }
     }
