@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Newtonsoft.Json;
 using IndexAttribute = Microsoft.EntityFrameworkCore.IndexAttribute;
 
 namespace McAttributes.Models {
@@ -85,15 +86,15 @@ namespace McAttributes.Models {
         [Column("signinactivity", TypeName = "jsonb")]
         public JsonDocument? SigninActivityJson { get; set; }
 
-        public List<Dictionary<string,string?>> SigninActivity {
+        public List<Dictionary<string,object?>> SigninActivity {
             get {
-                if (SigninActivityJson == null) return new List<Dictionary<string, string?>>() ;
+                if (SigninActivityJson == null) return new List<Dictionary<string, object?>>() ;
 
                 var result = new Dictionary<string, string?>();
                 var root = SigninActivityJson.RootElement;
 
-                IEnumerable<Dictionary<string, string?>> WalkJson(JsonElement root) {
-                    var record = new Dictionary<string, string?>();
+                IEnumerable<Dictionary<string, object?>> WalkJson(JsonElement root) {
+                    var record = new Dictionary<string, object?>();
                     switch (root.ValueKind) {
                         case JsonValueKind.Array:
                             foreach (var n in root.EnumerateArray()) {
@@ -109,7 +110,18 @@ namespace McAttributes.Models {
                             }
                             break;
                         default:
-                            record.Add("Value", root.ToString());
+                            // TODO FIXME my goodness this is a pile of trash. It's shipping because it works but needs a serious rework.
+                            Dictionary<string, object> newton = default(Dictionary<string, object>);
+                            bool success = true;
+                            try {
+                                newton = JsonConvert.DeserializeObject<Dictionary<string, object>>(root.ToString());
+                            }
+                            catch (Exception ex) { success = false; }
+                            if (success) {
+                                yield return newton;
+                            } else {
+                                record.Add("Value", root.ToString());
+                            }
                             break;
                     }
                     yield return record;

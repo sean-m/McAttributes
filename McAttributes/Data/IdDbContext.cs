@@ -36,6 +36,9 @@ namespace McAttributes.Data {
                 .HasIndex(u => u.AadId)
                 .IsUnique();
 
+            builder.Entity<User>()
+                .Ignore(u => u.SigninActivity);
+
             // Index Mail and EmployeeId
             var userBuilder = builder.Entity<User>();
             userBuilder.HasIndex(u => u.Mail);
