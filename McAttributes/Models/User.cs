@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -83,6 +84,7 @@ namespace McAttributes.Models {
         [Column("onpremisedn")]
         public string? OnPremiseDn { get; set; }
 
+        [IgnoreDataMember]
         [Column("signinactivity", TypeName = "jsonb")]
         public JsonDocument? SigninActivityJson { get; set; }
 
