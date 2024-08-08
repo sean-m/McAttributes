@@ -124,7 +124,7 @@ namespace McAttributes.Models {
                             }
                             break;
                     }
-                    yield return record;
+                    if (record.Count > 0) yield return record;
                 }
 
                 return WalkJson(root).ToList();
