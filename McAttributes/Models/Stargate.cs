@@ -38,6 +38,6 @@ namespace McAttributes.Models {
         native = 10,
         guest = 20,
         privileged = 30,
-        userGroup = 100
+        hr = 100
     }
 }
