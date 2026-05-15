@@ -46,8 +46,12 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
     config.Sources.Clear();
 
     var env = hostingContext.HostingEnvironment;
-    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+    // In production, we'll use environment variables and azure app config for settings
+    if (env.IsDevelopment()) {
+        config.AddUserSecrets<Program>();
+        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+    }
 
     config.AddEnvironmentVariables();
 
@@ -101,6 +105,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(
     opt => opt.ResolveConflictingActions(a => a.First()));
 
+// Add health checks for Docker
+builder.Services.AddHealthChecks();
+
 // Logging
 builder.Logging.AddConsole();
 
@@ -113,31 +120,49 @@ if (String.IsNullOrEmpty(connString)) {
     throw new Exception($"You ain't getting there from here fam. No connection string, configuration isn't loaded.\n\t > configString: {configString}");
 }
 
-
-
-//if (configuredDbType.Like("npgsql")) {
-// Fine, we'll just use Postgres, don't like sqlserver much anyhow.
-var conn = new Npgsql.NpgsqlConnection(connString);
-var sanitizedString = String.Join(';', conn.ConnectionString.Split(';').Select(x => {
+var sanitizedString = String.Join(';', connString.Split(';').Select(x => {
     if (x.TrimStart().StartsWith("Password=", StringComparison.CurrentCultureIgnoreCase)) {
         return "Password=*******";
     }
     return x;
 }));
 
-builder.Services.AddDbContextFactory<IdDbContext>(
+if (configuredDbType.Like("npgsql")) {
+    // Fine, we'll just use Postgres, don't like sqlserver much anyhow.
+    var conn = new Npgsql.NpgsqlConnection(connString);
+    sanitizedString = String.Join(';', conn.ConnectionString.Split(';').Select(x => {
+        if (x.TrimStart().StartsWith("Password=", StringComparison.CurrentCultureIgnoreCase)) {
+            return "Password=*******";
+        }
+        return x;
+    }));
+    builder.Services.AddDbContextFactory<IdDbContext>(
     options => {
         options.UseNpgsql(conn, npgoptions => {
             npgoptions.EnableRetryOnFailure(4);
         });
     });
-//}
-//else if (configuredDbType.Like("sqlserver")) {
-//builder.Services.AddDbContext<IdDbContext>(
-//    options => { options.UseSqlServer(connString); });
-//}
+}
+else if (configuredDbType.Like("sqlserver")) {
+    builder.Services.AddDbContext<IdDbContext>(
+        options => { options.UseSqlServer(connString); });
+}
+else if (configuredDbType.Like("sqlite")) {
+    builder.Services.AddDbContext<IdDbContext>(
+        options => { options.UseSqlite(connString); });
+}
+else {
+    throw new Exception("This doesn't work without a database. You should really rethink that whole 'I can program thing'.");
+}
 
 builder.Services.AddHttpLogging(options => { });
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -201,6 +226,8 @@ app.UseAuthorization();
 
 app.UseSwagger();
 //app.UseSwaggerUI();
+
+app.MapHealthChecks("/health");
 
 app.MapRazorPages();
 app.MapControllers();
