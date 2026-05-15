@@ -113,7 +113,7 @@ builder.Logging.AddConsole();
 
 
 var connString = builder.Configuration.GetConnectionString("Identity") ??
-    builder.Configuration.GetValue<string>("ConnectionStrings:Identity"); // For whatever reason the ConnectionStrings section of app config doesn't translate directly to Az App Configuraiton key:value use.
+    builder.Configuration.GetValue<string>("ConnectionStrings:Identity") ?? "Data Source=./identity.db"; // For whatever reason the ConnectionStrings section of app config doesn't translate directly to Az App Configuraiton key:value use.
 var configuredDbType = builder.Configuration.GetValue<String>("DbType", "sqlite");
 
 if (String.IsNullOrEmpty(connString)) {
