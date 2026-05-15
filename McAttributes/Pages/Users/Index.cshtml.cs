@@ -58,7 +58,7 @@ namespace McAttributes.Pages.Users
             if (String.IsNullOrEmpty(SearchCriteria)) return PredicateBuilder.False<User>();
 
 
-            var efGenerator = new SMM.NpgsqlGenerator();
+            var efGenerator = new PolicyToExpressionGenerator(); // new SMM.NpgsqlGenerator();
 
             var filter = new ExpressionRuleCollection() {
                 TargetType = nameof(Models.User),
@@ -72,14 +72,14 @@ namespace McAttributes.Pages.Users
             // as it's the only property where users likely have spaces in the value.
             if (SearchCriteria.Trim().Contains(' ')) {
                 _rules.Add(
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase)))
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), SearchCriteria))
                 );
                 subFilter = new ExpressionRuleCollection();
                 ((ExpressionRuleCollection)subFilter).RuleOperator = RuleOperator.And;
                 var subRules = new List<IExpressionPolicy>();
 
                 foreach (var token in SearchCriteria.Trim().Split().Where(x => !String.IsNullOrEmpty(x))) {
-                    subRules.Add(new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), token.Trim()?.AddFilterOptionsIfNotSpecified(FilterOptions.Contains | FilterOptions.IgnoreCase))));
+                    subRules.Add(new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), token.Trim())));
                 }
 
                 ((ExpressionRuleCollection)subFilter).Rules = subRules;
@@ -96,11 +96,11 @@ namespace McAttributes.Pages.Users
                 return efGenerator.GetPredicateExpression<User>((IExpressionRuleCollection)metaExpression) ?? PredicateBuilder.False<User>();
             } else {
                 _rules.AddRange(new[] {
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Upn), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria.AddFilterOptionsIfNotSpecified(FilterOptions.StartsWith | FilterOptions.IgnoreCase))),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria)),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Upn), SearchCriteria)),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria)),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria)),
+                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria)),
                 });
             }
             filter.Rules = _rules;

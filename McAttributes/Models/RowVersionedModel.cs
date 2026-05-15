@@ -11,6 +11,6 @@ namespace McAttributes.Models {
         // that don't support concurrency same as the SQL Server client.
         // NOTE change this datatype to byte[] if you plan to use this with SQL Server
         [Timestamp]
-        public uint Version { get; set; }
+        public uint? Version { get; set; }
     }
 }

@@ -86,50 +86,52 @@ namespace McAttributes.Models {
 
         [IgnoreDataMember]
         [Column("signinactivity", TypeName = "jsonb")]
-        public JsonDocument? SigninActivityJson { get; set; }
+        public string? SigninActivityJson { get; set; }
 
         public List<Dictionary<string,object?>> SigninActivity {
             get {
-                if (SigninActivityJson == null) return new List<Dictionary<string, object?>>() ;
+                return new List<Dictionary<string, object?>>();
 
-                var result = new Dictionary<string, string?>();
-                var root = SigninActivityJson.RootElement;
+                //if (SigninActivityJson == null) return new List<Dictionary<string, object?>>() ;
 
-                IEnumerable<Dictionary<string, object?>> WalkJson(JsonElement root) {
-                    var record = new Dictionary<string, object?>();
-                    switch (root.ValueKind) {
-                        case JsonValueKind.Array:
-                            foreach (var n in root.EnumerateArray()) {
-                                foreach (var r in WalkJson(n)) {
-                                    yield return r;
-                                }
-                            }
-                            break;
-                        case JsonValueKind.Object:
-                            var enumerator = root.EnumerateObject();
-                            foreach (var n in enumerator) {
-                                record.Add(n.Name, n.Value.ToString());
-                            }
-                            break;
-                        default:
-                            // TODO FIXME my goodness this is a pile of trash. It's shipping because it works but needs a serious rework.
-                            Dictionary<string, object> newton = default(Dictionary<string, object>);
-                            bool success = true;
-                            try {
-                                newton = JsonConvert.DeserializeObject<Dictionary<string, object>>(root.ToString());
-                            }
-                            catch (Exception ex) { success = false; }
-                            if (success) {
-                                yield return newton;
-                            } else {
-                                record.Add("Value", root.ToString());
-                            }
-                            break;
-                    }
-                    if (record.Count > 0) yield return record;
-                }
+                //var result = new Dictionary<string, string?>();
+                //var root = SigninActivityJson.RootElement;
 
-                return WalkJson(root).ToList();
+                //IEnumerable<Dictionary<string, object?>> WalkJson(JsonElement root) {
+                //    var record = new Dictionary<string, object?>();
+                //    switch (root.ValueKind) {
+                //        case JsonValueKind.Array:
+                //            foreach (var n in root.EnumerateArray()) {
+                //                foreach (var r in WalkJson(n)) {
+                //                    yield return r;
+                //                }
+                //            }
+                //            break;
+                //        case JsonValueKind.Object:
+                //            var enumerator = root.EnumerateObject();
+                //            foreach (var n in enumerator) {
+                //                record.Add(n.Name, n.Value.ToString());
+                //            }
+                //            break;
+                //        default:
+                //            // TODO FIXME my goodness this is a pile of trash. It's shipping because it works but needs a serious rework.
+                //            Dictionary<string, object> newton = default(Dictionary<string, object>);
+                //            bool success = true;
+                //            try {
+                //                newton = JsonConvert.DeserializeObject<Dictionary<string, object>>(root.ToString());
+                //            }
+                //            catch (Exception ex) { success = false; }
+                //            if (success) {
+                //                yield return newton;
+                //            } else {
+                //                record.Add("Value", root.ToString());
+                //            }
+                //            break;
+                //    }
+                //    if (record.Count > 0) yield return record;
+                //}
+
+                //return WalkJson(root).ToList();
             }
         }
     }
