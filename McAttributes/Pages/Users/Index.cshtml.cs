@@ -8,12 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using McAttributes.Data;
 using McAttributes.Models;
 using System.Linq.Expressions;
-using McRule;
-using Microsoft.Extensions.Azure;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Text.RegularExpressions;
-
-using static SMM.FilterPatternHelpers;
 
 namespace McAttributes.Pages.Users
 {
@@ -55,57 +49,17 @@ namespace McAttributes.Pages.Users
         }
 
         private Expression<Func<User, bool>> GetUserFilter() {
-            if (String.IsNullOrEmpty(SearchCriteria)) return PredicateBuilder.False<User>();
+            if (String.IsNullOrEmpty(SearchCriteria)) return x => true;
 
+            var searchTerm = SearchCriteria.Trim().ToLower();
 
-            var efGenerator = new PolicyToExpressionGenerator(); // new SMM.NpgsqlGenerator();
-
-            var filter = new ExpressionRuleCollection() {
-                TargetType = nameof(Models.User),
-            };
-            filter.RuleOperator = RuleOperator.Or;
-            var _rules = new List<IExpressionPolicy>();
-
-            IExpressionPolicy subFilter = null;
-
-            // If the search criteria contains spaces, it's likely the intent is to match against display name,
-            // as it's the only property where users likely have spaces in the value.
-            if (SearchCriteria.Trim().Contains(' ')) {
-                _rules.Add(
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.DisplayName), SearchCriteria))
-                );
-                subFilter = new ExpressionRuleCollection();
-                ((ExpressionRuleCollection)subFilter).RuleOperator = RuleOperator.And;
-                var subRules = new List<IExpressionPolicy>();
-
-                foreach (var token in SearchCriteria.Trim().Split().Where(x => !String.IsNullOrEmpty(x))) {
-                    subRules.Add(new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), token.Trim())));
-                }
-
-                ((ExpressionRuleCollection)subFilter).Rules = subRules;
-
-                filter.Rules = _rules;
-
-                // TODO make this kind of thing eaiser
-                var metaExpression = new ExpressionRuleCollection() {
-                    TargetType = nameof(Models.User),
-                    RuleOperator = RuleOperator.Or,
-                    Rules = new[] { filter, subFilter }
-                };
-
-                return efGenerator.GetPredicateExpression<User>((IExpressionRuleCollection)metaExpression) ?? PredicateBuilder.False<User>();
-            } else {
-                _rules.AddRange(new[] {
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Mail), SearchCriteria)),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.Upn), SearchCriteria)),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.EmployeeId), SearchCriteria)),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredGivenName), SearchCriteria)),
-                    new ExpressionRule((nameof(Models.User), nameof(Models.User.PreferredSurname), SearchCriteria)),
-                });
-            }
-            filter.Rules = _rules;
-
-            return efGenerator.GetPredicateExpression<User>((IExpressionRuleCollection)filter) ?? PredicateBuilder.False<User>();
+            return user => 
+                (user.DisplayName != null && user.DisplayName.ToLower().Contains(searchTerm)) ||
+                (user.Mail != null && user.Mail.ToLower().Contains(searchTerm)) ||
+                (user.Upn != null && user.Upn.ToLower().Contains(searchTerm)) ||
+                (user.EmployeeId != null && user.EmployeeId.ToLower().Contains(searchTerm)) ||
+                (user.PreferredGivenName != null && user.PreferredGivenName.ToLower().Contains(searchTerm)) ||
+                (user.PreferredSurname != null && user.PreferredSurname.ToLower().Contains(searchTerm));
         }
     }
 }

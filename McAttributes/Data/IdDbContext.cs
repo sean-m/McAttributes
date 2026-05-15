@@ -46,10 +46,7 @@ namespace McAttributes.Data {
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
-            foreach (var entry in ChangeTracker.Entries<RowVersionedModel>()) {
-                var prop = entry.Property(nameof(RowVersionedModel.Version));
-                prop.OriginalValue = prop.CurrentValue;
-            }
+
             return base.SaveChangesAsync(cancellationToken);
         }
 
