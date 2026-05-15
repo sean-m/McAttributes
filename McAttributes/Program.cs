@@ -61,6 +61,7 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
 
     // NOTE: set the connection string value in an environment variable or appsettings json file with key: AppConfigConnectionString
     configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
+    Console.WriteLine($"Config string: {(String.IsNullOrEmpty(configString) ? "Not found" : "Found")}");
     if (!String.IsNullOrEmpty(configString)) {
         config.AddAzureAppConfiguration(options => {
             options.Connect(configString)
@@ -69,6 +70,7 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
         didAzAppConfig = true;
     }
 });
+Console.WriteLine($"Did we load Azure App Configuration? {didAzAppConfig}");
 #pragma warning restore ASP0013 // Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
 
 
