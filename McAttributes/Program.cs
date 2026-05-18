@@ -1,4 +1,3 @@
-
 using McAttributes;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +18,7 @@ using SMM.Helper;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Diagnostics.HealthChecks; // Add this using directive at the top of the file
 
 static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
@@ -107,9 +107,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(
     opt => opt.ResolveConflictingActions(a => a.First()));
 
-// Add health checks for Docker
-builder.Services.AddHealthChecks();
-
 // Logging
 builder.Logging.AddConsole();
 
@@ -156,7 +153,6 @@ else if (configuredDbType.Like("sqlite")) {
 else {
     throw new Exception("This doesn't work without a database. You should really rethink that whole 'I can program thing'.");
 }
-
 builder.Services.AddHttpLogging(options => { });
 
 builder.Services.AddDistributedMemoryCache();
@@ -165,6 +161,14 @@ builder.Services.AddSession(options => {
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+// Add health checks for Azure Container Apps
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<IdDbContext>(
+        name: "database",
+        failureStatus: HealthStatus.Unhealthy,
+        tags: new[] { "db", "ready" })
+    .AddCheck("self", () => HealthCheckResult.Healthy(), tags: new[] { "live" });
 
 var app = builder.Build();
 
@@ -192,7 +196,7 @@ using (IServiceScope serviceScope = app.Services.GetService<IServiceScopeFactory
         }
     }
     else {
-        logger.LogInformation($"Database not automatically initialized. Environment: {app.Environment.IsDevelopment()}, InitializeDatabaseWhenMissing config: {shouldInitialize}");
+        logger.LogInformation($"Database not automatically initialized. Environment is development: {app.Environment.IsDevelopment()}, InitializeDatabaseWhenMissing config: {shouldInitialize}");
     }
 }
 
@@ -229,7 +233,20 @@ app.UseAuthorization();
 app.UseSwagger();
 //app.UseSwaggerUI();
 
+// Health check endpoints for Azure Container Apps
 app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live")
+});
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+app.MapHealthChecks("/health/startup", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 
 app.MapRazorPages();
 app.MapControllers();
