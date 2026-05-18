@@ -1,24 +1,27 @@
 using McAttributes;
-using Microsoft.AspNetCore.OData;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using McAttributes.Data;
 using McAttributes.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.OData;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks; // Add this using directive at the top of the file
+using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Configuration;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Identity.Web.UI;
 using SMM.Helper;
-using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Diagnostics.HealthChecks; // Add this using directive at the top of the file
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+using static SMM.ConfigFormatter;
 
 static IEdmModel GetEdmModel() {
     var edmBuilder = new ODataConventionModelBuilder();
@@ -34,6 +37,7 @@ static IEdmModel GetEdmModel() {
 
     return edmBuilder.GetEdmModel();
 }
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,8 +74,19 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
         didAzAppConfig = true;
     }
 });
-Console.WriteLine($"Did we load Azure App Configuration? {didAzAppConfig}");
+Console.WriteLine($"Did we load Azure App Configuration? {(didAzAppConfig ? "YES" : "NO")}");
+{
+    var configs = FlattenConfiguration(builder.Configuration);
+    var table = SMM.ConsoleTable.FromItems<SMM.ConfigFormatter.Setting>(configs.Select(kv => kv.Value));
+    var formatted = table.FormatTable(80, configs.Select(kv => kv.Value));
+    Debug.WriteLine(formatted);
+    Console.WriteLine(formatted);
+}
+
+
+
 #pragma warning restore ASP0013 // Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
+
 
 
 // Azure AD Auth OIDC
@@ -252,3 +267,5 @@ app.MapRazorPages();
 app.MapControllers();
 
 app.Run();
+
+
