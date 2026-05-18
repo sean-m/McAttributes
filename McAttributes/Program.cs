@@ -66,10 +66,11 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) => {
     // NOTE: set the connection string value in an environment variable or appsettings json file with key: AppConfigConnectionString
     configString = builder.Configuration.GetValue<string>("AppConfigConnectionString");
     Console.WriteLine($"Config string: {(String.IsNullOrEmpty(configString) ? "Not found" : "Found")}");
+    var labelFilter = builder.Configuration.GetValue<string>("AppConfigLabelFilter", "\0");
     if (!String.IsNullOrEmpty(configString)) {
         config.AddAzureAppConfiguration(options => {
             options.Connect(configString)
-                .Select("*","McAttributes");
+                .Select("*", labelFilter);
         });
         didAzAppConfig = true;
     }
