@@ -1,5 +1,6 @@
 using McAttributes;
 using McAttributes.Data;
+using McAttributes.Middleware;
 using McAttributes.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -104,7 +105,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options => {
 builder.Services.AddRazorPages(options => {
     options.Conventions.AuthorizeFolder("/Users");
     options.Conventions.AuthorizeFolder("/AlertLog");
-    })
+    options.Conventions.AuthorizePage("/nslookup");
+    options.Conventions.AuthorizePage("/Admin");
+})
     .AddMicrosoftIdentityUI(); ;
 
 // Add services to the container.
@@ -231,6 +234,9 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
+
+// Infrastructure testing middleware (should be early in pipeline)
+app.UseInfrastructureTestMiddleware();
 
 app.UseHttpLogging();
 app.UseStaticFiles();

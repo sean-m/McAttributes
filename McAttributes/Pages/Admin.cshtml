@@ -1,0 +1,175 @@
+﻿@page
+@model McAttributes.Pages.AdminModel
+@{
+    ViewData["Title"] = "Infrastructure Testing";
+}
+
+<div class="container">
+    <h1>Infrastructure Testing Admin</h1>
+    <p class="text-danger">⚠️ Warning: These actions will disrupt service and are intended for testing resilience configurations.</p>
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Action Executed:</strong> @Model.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mt-4">
+        <!-- Freeze Actions -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">🧊 Freeze/Delay Actions</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Freeze All Requests</h6>
+                    <p class="small">Stops responding to ALL requests including health checks. Simulates complete hang.</p>
+                    <form method="post" asp-page-handler="FreezeAll" class="mb-3">
+                        <div class="input-group">
+                            <input type="number" name="seconds" class="form-control" value="30" min="1" max="300" />
+                            <button type="submit" class="btn btn-warning">Freeze for N seconds</button>
+                        </div>
+                    </form>
+
+                    <h6>Freeze Health Endpoints Only</h6>
+                    <p class="small">Health checks fail while app continues serving traffic. Tests orchestrator behavior.</p>
+                    <form method="post" asp-page-handler="FreezeHealth" class="mb-3">
+                        <div class="input-group">
+                            <input type="number" name="seconds" class="form-control" value="30" min="1" max="300" />
+                            <button type="submit" class="btn btn-warning">Freeze Health for N seconds</button>
+                        </div>
+                    </form>
+
+                    <h6>Slow Response Mode</h6>
+                    <p class="small">Adds delay to all requests. Tests timeout configurations.</p>
+                    <form method="post" asp-page-handler="SlowResponse" class="mb-2">
+                        <div class="input-group">
+                            <input type="number" name="milliseconds" class="form-control" value="5000" min="100" max="60000" />
+                            <button type="submit" class="btn btn-secondary">Set Delay (ms)</button>
+                        </div>
+                    </form>
+                    <form method="post" asp-page-handler="ClearSlowResponse">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Clear Delay</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crash Actions -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">💥 Crash/Shutdown Actions</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Crash Application</h6>
+                    <p class="small">Immediately terminates the process with exit code 1. Tests restart policies.</p>
+                    <form method="post" asp-page-handler="CrashApp" class="mb-3" onsubmit="return confirm('This will crash the application. Continue?');">
+                        <button type="submit" class="btn btn-danger">💀 Crash Now</button>
+                    </form>
+
+                    <h6>Graceful Shutdown</h6>
+                    <p class="small">Initiates proper shutdown sequence. Tests graceful termination handling.</p>
+                    <form method="post" asp-page-handler="GracefulShutdown" class="mb-3" onsubmit="return confirm('This will shut down the application. Continue?');">
+                        <button type="submit" class="btn btn-warning">🛑 Graceful Shutdown</button>
+                    </form>
+
+                    <h6>Throw Unhandled Exception</h6>
+                    <p class="small">Throws an exception on this request. Tests error handling and logging.</p>
+                    <form method="post" asp-page-handler="ThrowException" class="mb-3">
+                        <button type="submit" class="btn btn-danger">⚡ Throw Exception</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource Actions -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📊 Resource Exhaustion</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Memory Leak</h6>
+                    <p class="small">Allocates memory that won't be released. Tests memory limits and OOM behavior.</p>
+                    <form method="post" asp-page-handler="MemoryLeak" class="mb-3">
+                        <div class="input-group">
+                            <input type="number" name="megabytes" class="form-control" value="100" min="10" max="2000" />
+                            <button type="submit" class="btn btn-info">Allocate MB</button>
+                        </div>
+                    </form>
+
+                    <h6>CPU Burn</h6>
+                    <p class="small">Consumes CPU with busy loop. Tests CPU limits and performance degradation.</p>
+                    <form method="post" asp-page-handler="CpuBurn" class="mb-3">
+                        <div class="input-group">
+                            <input type="number" name="seconds" class="form-control" value="10" min="1" max="60" />
+                            <button type="submit" class="btn btn-info">Burn CPU for N seconds</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Info -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">📋 Current Status</h5>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>All Requests Frozen:</dt>
+                        <dd>@(McAttributes.Pages.InfrastructureTestHelper.IsFrozenAll ? "Yes ❄️" : "No ✅")</dd>
+
+                        <dt>Health Endpoints Frozen:</dt>
+                        <dd>@(McAttributes.Pages.InfrastructureTestHelper.IsFrozenHealth ? "Yes ❄️" : "No ✅")</dd>
+
+                        <dt>Slow Response Delay:</dt>
+                        <dd>@(McAttributes.Pages.InfrastructureTestHelper.SlowResponseMs > 0 ? $"{McAttributes.Pages.InfrastructureTestHelper.SlowResponseMs}ms 🐌" : "None ✅")</dd>
+
+                        <dt>Current Time:</dt>
+                        <dd>@DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+
+                        <dt>Process ID:</dt>
+                        <dd>@System.Diagnostics.Process.GetCurrentProcess().Id</dd>
+
+                        <dt>Working Set:</dt>
+                        <dd>@((System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / 1024 / 1024).ToString("N0")) MB</dd>
+                    </dl>
+
+                    <a href="/Admin" class="btn btn-outline-secondary btn-sm">🔄 Refresh Status</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📖 Testing Scenarios</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Azure Container Apps / Kubernetes Testing:</h6>
+                    <ul>
+                        <li><strong>Liveness Probe Failure:</strong> Use "Freeze All" to simulate hung process. Orchestrator should restart container.</li>
+                        <li><strong>Readiness Probe Failure:</strong> Use "Freeze Health" to fail health checks while app runs. Traffic should stop routing.</li>
+                        <li><strong>Memory Limits:</strong> Use "Memory Leak" to exceed container memory limits. Should trigger OOMKilled.</li>
+                        <li><strong>Graceful Termination:</strong> Use "Graceful Shutdown" to test proper shutdown handling (SIGTERM).</li>
+                        <li><strong>Crash Loop:</strong> Use "Crash App" repeatedly to test restart backoff policies.</li>
+                    </ul>
+
+                    <h6>Load Balancer Testing:</h6>
+                    <ul>
+                        <li><strong>Slow Responses:</strong> Use "Slow Response Mode" to test request timeouts and circuit breakers.</li>
+                        <li><strong>Partial Availability:</strong> Use "Freeze Health" while serving traffic to test health check vs traffic behavior.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
