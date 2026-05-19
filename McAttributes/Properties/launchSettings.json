@@ -3,7 +3,7 @@
     "McAttributes": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "UserAlerts",
+      "launchUrl": "AlertLog",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

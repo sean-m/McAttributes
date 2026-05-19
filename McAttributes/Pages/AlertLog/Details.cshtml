@@ -1,0 +1,55 @@
+﻿@page
+@model McAttributes.Pages.AlertLog.DetailsModel
+
+<div>
+    <h4>AlertLogEntry</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AlertLogEntry.AttrName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AlertLogEntry.AttrName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AlertLogEntry.Created)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AlertLogEntry.Created)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AlertLogEntry.LastSeen)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AlertLogEntry.LastSeen)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AlertLogEntry.AlertHash)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AlertLogEntry.AlertHash)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AlertLogEntry.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AlertLogEntry.Status)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AlertLogEntry.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AlertLogEntry.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AlertLogEntry.Notes)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AlertLogEntry.Notes)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.AlertLogEntry.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

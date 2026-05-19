@@ -1,0 +1,53 @@
+﻿@page
+@model McAttributes.Pages.AlertLog.CreateModel
+
+<h4>AlertLogEntry</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="AlertLogEntry.AttrName" class="control-label"></label>
+                <input asp-for="AlertLogEntry.AttrName" class="form-control" />
+                <span asp-validation-for="AlertLogEntry.AttrName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AlertLogEntry.LastSeen" class="control-label"></label>
+                <input asp-for="AlertLogEntry.LastSeen" class="form-control" />
+                <span asp-validation-for="AlertLogEntry.LastSeen" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AlertLogEntry.AlertHash" class="control-label"></label>
+                <input asp-for="AlertLogEntry.AlertHash" class="form-control" />
+                <span asp-validation-for="AlertLogEntry.AlertHash" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AlertLogEntry.Status" class="control-label"></label>
+                <input asp-for="AlertLogEntry.Status" class="form-control" />
+                <span asp-validation-for="AlertLogEntry.Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AlertLogEntry.Description" class="control-label"></label>
+                <input asp-for="AlertLogEntry.Description" class="form-control" />
+                <span asp-validation-for="AlertLogEntry.Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AlertLogEntry.Notes" class="control-label"></label>
+                <input asp-for="AlertLogEntry.Notes" class="form-control" />
+                <span asp-validation-for="AlertLogEntry.Notes" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

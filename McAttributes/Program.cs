@@ -102,9 +102,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options => {
 
 
 builder.Services.AddRazorPages(options => {
-    options.Conventions.AuthorizeFolder("/EmployeeIdRecords");
     options.Conventions.AuthorizeFolder("/Users");
-    options.Conventions.AuthorizeFolder("/UserAlerts");
+    options.Conventions.AuthorizeFolder("/AlertLog");
     })
     .AddMicrosoftIdentityUI(); ;
 
