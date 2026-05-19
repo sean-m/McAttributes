@@ -5,7 +5,7 @@ This guide explains how to build and run the McAttributes application using Dock
 
 ## Prerequisites
 - Docker Desktop installed
-- Azure AD application configured (for authentication)
+- Microsoft Entra ID application configured (for authentication)
 
 ## Quick Start
 
@@ -16,8 +16,8 @@ Copy the example environment file:
 copy .env.example .env
 ```
 
-Edit `.env` and set your Azure AD values:
-- `AZURE_AD_TENANT_ID`: Your Azure AD tenant ID
+Edit `.env` and set your Microsoft Entra ID values:
+- `AZURE_AD_TENANT_ID`: Your Microsoft Entra ID tenant ID
 - `AZURE_AD_CLIENT_ID`: Your application client ID
 - `AZURE_AD_CLIENT_SECRET`: Your application client secret
 
@@ -49,6 +49,7 @@ docker build -t mcattributes:latest .
 
 ### Run the Container
 ```sh
+# Note: AzureAd__ prefix is kept for backward compatibility with Microsoft Entra ID
 docker run -d -p 8080:8080 \
   -e ConnectionStrings__Identity="Host=host.docker.internal;Database=mcattributes;Username=postgres;Password=yourpassword" \
   -e AzureAd__Instance="https://login.microsoftonline.com/" \
@@ -75,19 +76,30 @@ docker run -d -p 8080:8080 \
 
 ## Health Check
 
-The application includes a health check endpoint at `/health` that Docker uses to monitor container health:
+The application includes multiple health check endpoints for monitoring:
+
+- `/health` - General health status
+- `/health/live` - Liveness probe (checks if app is running)
+- `/health/ready` - Readiness probe (checks if app and database are ready)
+- `/health/startup` - Startup probe (for container initialization)
+
+Test the health endpoints:
 
 ```sh
 curl http://localhost:8080/health
+curl http://localhost:8080/health/live
+curl http://localhost:8080/health/ready
 ```
+
+See `AZURE-CONTAINER-APPS.md` for details on using these probes in Azure Container Apps.
 
 ## Environment Variables
 
 ### Required
 - `ConnectionStrings__Identity` - PostgreSQL connection string
-- `AzureAd__Instance` - Azure AD instance URL
-- `AzureAd__TenantId` - Azure AD tenant ID
-- `AzureAd__ClientId` - Azure AD application client ID
+- `AzureAd__Instance` - Microsoft Entra ID instance URL
+- `AzureAd__TenantId` - Microsoft Entra ID tenant ID
+- `AzureAd__ClientId` - Microsoft Entra ID application client ID
 
 ### Optional
 - `ASPNETCORE_ENVIRONMENT` - Environment (Production/Development)
@@ -130,7 +142,7 @@ For production:
 1. **Update passwords** in `docker-compose.yml` or use Docker secrets
 2. **Enable HTTPS** by configuring a reverse proxy (nginx/traefik)
 3. **Set proper environment** variables for production
-4. **Configure Azure AD** redirect URIs for your production domain
+4. **Configure Microsoft Entra ID** redirect URIs for your production domain
 5. **Use volume mounts** for persistent data
 6. **Set up monitoring** and log aggregation
 

@@ -11,6 +11,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
+      # Microsoft Entra ID (formerly Azure AD) - AzureAd__ prefix kept for backward compatibility
       - AppConfigConnectionString=Endpoint=https://aadc-webservice-config.azconfig.io;Id=PNaY-l1-s0:GIsKQnTDfxgSFcCJ6g2m;Secret=OuhZFitpCJaBwgw4gSL694U8MTHERjv0bucRlvaShsI=
       - InitializeDatabaseWhenMissing=true
       - ForceHttpsScheme=false
