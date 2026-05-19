@@ -1,0 +1,64 @@
+﻿@page
+@model McAttributes.Pages.nslookupModel
+@{
+    ViewData["Title"] = "DNS Lookup";
+}
+
+<h1>DNS Lookup</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="Hostname" class="form-label">Hostname or Domain</label>
+                <input asp-for="Hostname" class="form-control" placeholder="example.com" autofocus />
+                <div class="form-text">Enter a hostname or domain name to resolve using system DNS</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Lookup</button>
+        </form>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger mt-4" role="alert">
+        @Model.ErrorMessage
+    </div>
+}
+
+@if (Model.Results.Any())
+{
+    <div class="mt-4">
+        <h3>Results for: @Model.Hostname</h3>
+        <p class="text-muted">Using System DNS</p>
+
+        @foreach (var result in Model.Results)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <strong>@result.QueryType Records</strong>
+                </div>
+                <div class="card-body">
+                    @if (result.Addresses.Any())
+                    {
+                        <ul class="list-unstyled mb-0">
+                            @foreach (var address in result.Addresses)
+                            {
+                                <li class="mb-1">
+                                    <code>@address</code>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No records found</p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+
